@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UPGCExam - Tableau de bord</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        * { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-[#F5F7FA] min-h-screen">
+    <!-- HEADER : Logo + Navigation à gauche, Recherche + Avatar à droite -->
+    <header class="bg-white border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-10">
+                <h1 class="text-xl font-black text-[#0037B0]">UPGCExam</h1>
+                <nav class="flex items-center space-x-6">
+                    <a href="{% url 'tableau_de_bord' %}" class="text-[#0037B0] font-semibold text-sm border-b-2 border-[#0037B0]">Accueil</a>
+                    <a href="{% url 'bibliotheque' %}" class="text-gray-500 hover:text-gray-700 font-medium text-sm">Sujets</a>
+                    <a href="{% url 'ajouter_sujet' %}" class="text-gray-500 hover:text-gray-700 font-medium text-sm">Ajouter un sujet</a>
+                    {% if request.user.is_staff %}
+                    <a href="{% url 'admin_dashboard' %}" class="text-orange-500 hover:text-orange-600 font-medium text-sm">Admin</a>
+                    {% endif %}
+                </nav>
+            </div>
+            <div class="flex items-center space-x-3">
+                <div class="hidden sm:block relative">
+                    <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                        </svg>
+                    </span>
+                    <input type="text" placeholder="Rechercher..."
+                           class="pl-9 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-600 w-48">
+                </div>
+                <div class="relative" id="profileMenu">
+                    <button onclick="toggleMenu()" class="w-9 h-9 bg-[#0037B0] rounded-full flex items-center justify-center text-white text-sm font-bold hover:bg-[#002A8A] transition cursor-pointer">
+                        {{ request.user.username|first|upper }}
+                    </button>
+                    <div id="dropdownMenu" class="hidden absolute right-0 mt-2 w-44 bg-white rounded-xl shadow-lg border border-gray-100 py-2 z-50">
+                        <div class="px-4 py-2 border-b border-gray-100">
+                            <p class="text-sm font-semibold text-gray-900">{{ request.user.username }}</p>
+                            <p class="text-xs text-gray-400">{{ request.user.email }}</p>
+                        </div>
+                        <a href="{% url 'parametres' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Paramètres du compte</a>
+                        {% if request.user.is_staff %}
+                        <a href="{% url 'admin_dashboard' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Administration</a>
+                        {% endif %}
+                        <hr class="my-1 border-gray-100">
+                        <a href="{% url 'deconnexion' %}" class="block px-4 py-2 text-sm text-red-500 hover:bg-red-50">Déconnexion</a>
+                    </div>
+                </div>
+            </div>
+                <button id="mobileMenuBtn" class="md:hidden p-2 text-gray-500 hover:text-gray-800">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <!-- Mobile nav -->
+        <div id="mobileMenu" class="hidden md:hidden border-t border-gray-100 px-6 py-4 bg-white">
+            <nav class="flex flex-col space-y-3">
+                <a href="{% url 'tableau_de_bord' %}" class="text-[#0037B0] font-semibold text-sm">Accueil</a>
+                <a href="{% url 'bibliotheque' %}" class="text-gray-500 hover:text-gray-800 font-medium text-sm">Sujets</a>
+                <a href="{% url 'ajouter_sujet' %}" class="text-gray-500 hover:text-gray-800 font-medium text-sm">Ajouter un sujet</a>
+                {% if request.user.is_staff %}
+                <a href="{% url 'admin_dashboard' %}" class="text-orange-500 font-medium text-sm">Admin</a>
+                {% endif %}
+                <hr class="border-gray-100">
+                <a href="{% url 'parametres' %}" class="text-sm text-gray-700 font-medium">Paramètres</a>
+                <a href="{% url 'deconnexion' %}" class="text-sm text-red-500 font-medium">Déconnexion</a>
+            </nav>
+        </div>
+    </header>
+
+    <script>
+        function toggleMenu() {
+            document.getElementById('dropdownMenu').classList.toggle('hidden');
+        }
+        document.addEventListener('click', function(e) {
+            const menu = document.getElementById('profileMenu');
+            const dropdown = document.getElementById('dropdownMenu');
+            if (menu && dropdown && !menu.contains(e.target)) {
+                dropdown.classList.add('hidden');
+            }
+        });
+        document.addEventListener('DOMContentLoaded', function() {
+            const btn = document.getElementById('mobileMenuBtn');
+            const menu = document.getElementById('mobileMenu');
+            if (btn && menu) {
+                btn.addEventListener('click', function() { menu.classList.toggle('hidden'); });
+            }
+        });
+    </script>
+
+    <main class="max-w-7xl mx-auto px-6 py-8">
+        <!-- Message de bienvenue -->
+        <div class="mb-8">
+            <p class="text-sm font-semibold text-[#0037B0] tracking-wider">TABLEAU DE BORD</p>
+            <div class="flex items-center justify-between">
+                <div>
+                    <h2 class="text-4xl font-black text-[#0B1C30] mt-1">{{ salutation }}, {{ request.user.username }}</h2>
+                    <p class="text-gray-500 mt-1">Prêt pour votre session de révision aujourd'hui ?</p>
+                </div>
+                <a href="#" class="inline-flex items-center bg-[#0037B0] text-white px-5 py-2.5 rounded-lg font-bold text-sm hover:bg-[#002A8A] transition shadow-sm whitespace-nowrap">
+                    <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/>
+                    </svg>
+                    Nouveau sujet
+                </a>
+            </div>
+        </div>
+
+        <!-- Cartes statistiques -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
+            <div class="bg-white rounded-xl shadow-sm p-5">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center">
+                        <svg class="w-5 h-5 text-[#0037B0]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                        </svg>
+                    </div>
+                    <span class="text-xs text-green-500 font-medium bg-green-50 px-2 py-1 rounded">+12%</span>
+                </div>
+                <p class="text-3xl font-black text-[#0B1C30]">{{ stats.sujets_vus }}</p>
+                <p class="text-sm text-gray-400 mt-1">Sujets vus</p>
+            </div>
+            <div class="bg-white rounded-xl shadow-sm p-5">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="w-10 h-10 bg-purple-50 rounded-lg flex items-center justify-center">
+                        <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                        </svg>
+                    </div>
+                    <span class="text-xs text-green-500 font-medium bg-green-50 px-2 py-1 rounded">+8%</span>
+                </div>
+                <p class="text-3xl font-black text-[#0B1C30]">{{ stats.pdfs_telecharges }}</p>
+                <p class="text-sm text-gray-400 mt-1">PDFs téléchargés</p>
+            </div>
+            <div class="bg-white rounded-xl shadow-sm p-5">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="w-10 h-10 bg-orange-50 rounded-lg flex items-center justify-center">
+                        <svg class="w-5 h-5 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                        </svg>
+                    </div>
+                </div>
+                <p class="text-3xl font-black text-[#0B1C30]">{{ stats.matieres }}</p>
+                <p class="text-sm text-gray-400 mt-1">Matières</p>
+            </div>
+            <div class="bg-white rounded-xl shadow-sm p-5">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="w-10 h-10 bg-red-50 rounded-lg flex items-center justify-center">
+                        <svg class="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                        </svg>
+                    </div>
+                </div>
+                <p class="text-3xl font-black text-[#0B1C30]">{{ stats.filieres }}</p>
+                <p class="text-sm text-gray-400 mt-1">Filières</p>
+            </div>
+        </div>
+
+        <!-- Graphique + Progression -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            <div class="bg-white rounded-xl shadow-sm p-6">
+                <h3 class="text-sm font-bold text-[#0B1C30] mb-4">Activité Hebdomadaire</h3>
+                <div class="flex items-end justify-between h-32">
+                    {% for jour, val in activite %}
+                    <div class="flex flex-col items-center">
+                        <div class="w-8 rounded-lg transition-all duration-300 hover:opacity-80" style="height: {{ val }}px; background: linear-gradient(180deg, #0037B0, #4F8CFF);"></div>
+                        <span class="text-xs text-gray-400 mt-2">{{ jour }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="bg-white rounded-xl shadow-sm p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-sm font-bold text-[#0B1C30]">Progression par filière</h3>
+                    <a href="#" class="text-xs text-[#0037B0] font-semibold hover:underline">Voir tout</a>
+                </div>
+                <div class="space-y-4">
+                    {% for prog in progressions %}
+                    <div>
+                        <div class="flex justify-between text-sm mb-1">
+                            <span class="font-medium text-gray-700">{{ prog.nom }}</span>
+                            <span class="font-bold text-[#0B1C30]">{{ prog.pourcentage }}%</span>
+                        </div>
+                        <div class="w-full bg-gray-100 rounded-full h-2">
+                            <div class="h-2 rounded-full transition-all" style="width: {{ prog.pourcentage }}%; background: {{ prog.couleur }};"></div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Grille : Sujets recommandés + Activités récentes -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            <!-- Sujets recommandés -->
+            <div class="bg-white rounded-xl shadow-sm p-6">
+                <div class="flex justify-between items-center mb-5">
+                    <h3 class="text-sm font-bold text-[#0B1C30]">Sujets recommandés</h3>
+                    <a href="#" class="text-xs text-[#0037B0] font-semibold hover:underline">Voir tout</a>
+                </div>
+                <div class="space-y-4">
+                    {% for sujet in sujets_recommandes %}
+                    <div class="flex items-center border border-gray-100 rounded-lg p-3 hover:shadow-sm transition">
+                        <div class="w-12 h-12 bg-blue-50 rounded-lg flex items-center justify-center mr-3 flex-shrink-0">
+                            <svg class="w-6 h-6 text-[#0037B0]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                            </svg>
+                        </div>
+                        <div class="flex-1">
+                            <h4 class="font-semibold text-sm text-[#0B1C30]">{{ sujet.titre }}</h4>
+                            <p class="text-xs text-gray-400">{{ sujet.annee }}</p>
+                        </div>
+                        <a href="{% url 'bibliotheque' %}" class="text-xs text-[#0037B0] font-semibold hover:underline whitespace-nowrap">Consulter →</a>
+                    </div>
+                    {% empty %}
+                    <p class="text-sm text-gray-400 text-center py-4">Aucun sujet pour l'instant</p>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Activités récentes -->
+            <div class="bg-white rounded-xl shadow-sm p-6">
+                <div class="flex justify-between items-center mb-5">
+                    <h3 class="text-sm font-bold text-[#0B1C30]">Activités récentes</h3>
+                    <a href="#" class="text-xs text-[#0037B0] font-semibold hover:underline">Voir tout</a>
+                </div>
+                <div class="space-y-4">
+                    {% for act in activites_recentes %}
+                    <div class="flex items-start">
+                        <div class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 mr-3 
+                            {% if act.type == 'telechargement' %}bg-green-50 text-green-500
+                            {% elif act.type == 'consultation' %}bg-blue-50 text-blue-500
+                            {% else %}bg-gray-50 text-gray-500{% endif %}">
+                            {% if act.type == 'telechargement' %}
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                            </svg>
+                            {% elif act.type == 'consultation' %}
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0zM2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                            </svg>
+                            {% else %}
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                            </svg>
+                            {% endif %}
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-700">{{ act.description }}</p>
+                            <p class="text-xs text-gray-400 mt-0.5">{{ act.temps }}</p>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <p class="text-sm text-gray-400 text-center py-4">Aucune activité récente</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- ==================== FOOTER ==================== -->
+    <footer class="bg-[#0B1C30] mt-12">
+        <div class="max-w-7xl mx-auto px-6 py-12">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-10">
+                <div class="md:col-span-1">
+                    <h3 class="text-white font-black text-lg mb-3">UPGCExam</h3>
+                    <p class="text-gray-400 text-xs leading-relaxed">L'EXCELLENCE ACADÉMIQUE À PORTÉE DE MAIN.</p>
+                </div>
+                <div>
+                    <h4 class="text-white text-xs font-bold tracking-wider mb-4 uppercase">Plateforme</h4>
+                    <ul class="space-y-2.5">
+                        <li><a href="{% url 'accueil' %}" class="text-gray-400 hover:text-white text-xs transition">Accueil</a></li>
+                        <li><a href="{% url 'bibliotheque' %}" class="text-gray-400 hover:text-white text-xs transition">Sujets</a></li>
+                        <li><a href="{% url 'bibliotheque' %}" class="text-gray-400 hover:text-white text-xs transition">Bibliothèque</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-white text-xs font-bold tracking-wider mb-4 uppercase">Université</h4>
+                    <ul class="space-y-2.5">
+                        <li><a href="#" class="text-gray-400 hover:text-white text-xs transition">University Info</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white text-xs transition">Mentions Légales</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white text-xs transition">Contact</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-white text-xs font-bold tracking-wider mb-4 uppercase">Compte</h4>
+                    <ul class="space-y-2.5">
+                        <li><a href="{% url 'tableau_de_bord' %}" class="text-gray-400 hover:text-white text-xs transition">Tableau de bord</a></li>
+                        <li><a href="{% url 'parametres' %}" class="text-gray-400 hover:text-white text-xs transition">Paramètres</a></li>
+                        <li><a href="{% url 'deconnexion' %}" class="text-gray-400 hover:text-white text-xs transition">Déconnexion</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="border-t border-gray-800 pt-6">
+                <div class="flex flex-col md:flex-row items-center justify-between">
+                    <p class="text-gray-500 text-xs">© {% now "Y" %} UPGCExam — EXCELLENCE ACADÉMIQUE</p>
+                    <div class="flex space-x-4 mt-3 md:mt-0">
+                        <a href="#" class="text-gray-500 hover:text-gray-300 text-xs">Confidentialité</a>
+                        <a href="#" class="text-gray-500 hover:text-gray-300 text-xs">CGU</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

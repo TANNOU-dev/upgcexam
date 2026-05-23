@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UPGCExam - Bibliothèque</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        * { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-[#F5F7FA] min-h-screen">
+
+    <!-- ==================== HEADER / NAVBAR ==================== -->
+    <header class="bg-white border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+            <!-- Logo -->
+            <a href="{% url 'accueil' %}" class="text-xl font-black text-[#0037B0] tracking-tight flex-shrink-0">UPGCExam</a>
+
+            <!-- Nav links (desktop) -->
+            <nav class="hidden md:flex items-center space-x-8">
+                <a href="{% if user.is_authenticated %}{% url 'tableau_de_bord' %}{% else %}{% url 'accueil' %}{% endif %}" class="text-gray-500 hover:text-gray-800 font-medium text-sm">Accueil</a>
+                <a href="{% url 'bibliotheque' %}" class="text-[#0037B0] font-semibold text-sm border-b-2 border-[#0037B0]">Sujets</a>
+                <a href="{% url 'ajouter_sujet' %}" class="text-gray-500 hover:text-gray-800 font-medium text-sm">Ajouter un sujet</a>
+            </nav>
+
+            <!-- Actions -->
+            <div class="flex items-center space-x-3">
+                {% if user.is_authenticated %}
+                <div class="relative" id="profileMenu">
+                    <button onclick="toggleMenu()" class="w-9 h-9 bg-[#0037B0] rounded-full flex items-center justify-center text-white text-sm font-bold hover:bg-[#002A8A] transition cursor-pointer">
+                        {{ user.username|first|upper }}
+                    </button>
+                    <div id="dropdownMenu" class="hidden absolute right-0 mt-2 w-44 bg-white rounded-xl shadow-lg border border-gray-100 py-2 z-50">
+                        <div class="px-4 py-2 border-b border-gray-100">
+                            <p class="text-sm font-semibold text-gray-900">{{ user.username }}</p>
+                            <p class="text-xs text-gray-400">{{ user.email }}</p>
+                        </div>
+                        <a href="{% url 'parametres' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Paramètres</a>
+                        <hr class="my-1 border-gray-100">
+                        <a href="{% url 'deconnexion' %}" class="block px-4 py-2 text-sm text-red-500 hover:bg-red-50">Déconnexion</a>
+                    </div>
+                </div>
+                {% else %}
+                <a href="{% url 'connexion' %}"
+                   class="hidden sm:inline-flex text-sm font-semibold text-gray-700 border border-gray-300 hover:border-gray-400 hover:bg-gray-50 px-4 py-2 rounded-lg transition">
+                    Connexion
+                </a>
+                <a href="{% url 'inscription' %}"
+                   class="text-sm font-bold text-white bg-[#0037B0] hover:bg-[#002A8A] px-4 py-2 rounded-lg transition shadow-sm">
+                    Inscription
+                </a>
+                {% endif %}
+                <button id="mobileMenuBtn" class="md:hidden p-2 text-gray-500 hover:text-gray-800">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Mobile nav -->
+        <div id="mobileMenu" class="hidden md:hidden border-t border-gray-100 px-6 py-4 bg-white">
+            <nav class="flex flex-col space-y-3">
+                <a href="{% if user.is_authenticated %}{% url 'tableau_de_bord' %}{% else %}{% url 'accueil' %}{% endif %}" class="text-gray-500 hover:text-gray-800 font-medium text-sm">Accueil</a>
+                <a href="{% url 'bibliotheque' %}" class="text-[#0037B0] font-semibold text-sm">Sujets</a>
+                <a href="{% url 'ajouter_sujet' %}" class="text-gray-500 hover:text-gray-800 font-medium text-sm">Ajouter un sujet</a>
+                <hr class="border-gray-100">
+                {% if user.is_authenticated %}
+                <a href="{% url 'deconnexion' %}" class="text-sm text-red-500 font-medium">Déconnexion</a>
+                {% else %}
+                <a href="{% url 'connexion' %}" class="text-sm font-semibold text-gray-700">Connexion</a>
+                <a href="{% url 'inscription' %}" class="text-sm font-bold text-white bg-[#0037B0] hover:bg-[#002A8A] px-4 py-2 rounded-lg text-center transition">Inscription</a>
+                {% endif %}
+            </nav>
+        </div>
+    </header>
+
+    <!-- ==================== MAIN CONTENT ==================== -->
+    <main class="max-w-7xl mx-auto px-6 py-8">
+
+        <!-- Header section -->
+        <div class="mb-8">
+            <h1 class="text-3xl md:text-4xl font-black text-[#0B1C30]">Bibliothèque</h1>
+            <p class="text-gray-500 mt-2">Accédez à l'archive complète des examens de l'Université Peleforo Gon Coulibaly. Filtrez par filière, matière ou année pour trouver vos ressources d'étude.</p>
+        </div>
+
+        <!-- Search bar -->
+        <div class="mb-6">
+            <form method="get" action="{% url 'recherche' %}" class="flex flex-col sm:flex-row gap-3">
+                <div class="relative flex-1">
+                    <span class="absolute inset-y-0 left-0 pl-4 flex items-center text-gray-400">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                        </svg>
+                    </span>
+                    <input type="text" name="q" value="{{ query }}"
+                           placeholder="Rechercher un examen, une thématique ou un auteur…"
+                           class="w-full pl-11 pr-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#0037B0] focus:border-[#0037B0] shadow-sm">
+                </div>
+                <button type="submit"
+                        class="bg-[#0037B0] hover:bg-[#002A8A] text-white font-bold text-sm px-6 py-2.5 rounded-lg transition shadow-sm whitespace-nowrap">
+                    Rechercher
+                </button>
+            </form>
+        </div>
+
+        <!-- Filters -->
+        <div class="flex flex-wrap items-center gap-3 mb-8">
+            <!-- Filière filter -->
+            <div class="relative">
+                <select name="filiere" onchange="this.form.submit()" class="appearance-none bg-white border border-gray-200 text-gray-700 text-sm font-medium px-4 py-2 pr-8 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0037B0] focus:border-[#0037B0] shadow-sm cursor-pointer">
+                    <option value="">Toutes les filières</option>
+                    {% for f in filieres %}
+                    <option value="{{ f.id }}" {% if filiere_id == f.id|stringformat:'s' %}selected{% endif %}>{{ f.nom }}</option>
+                    {% endfor %}
+                </select>
+                <span class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-gray-400">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                    </svg>
+                </span>
+            </div>
+
+            <!-- Matière filter -->
+            <div class="relative">
+                <select name="matiere" onchange="this.form.submit()" class="appearance-none bg-white border border-gray-200 text-gray-700 text-sm font-medium px-4 py-2 pr-8 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0037B0] focus:border-[#0037B0] shadow-sm cursor-pointer">
+                    <option value="">Toutes les matières</option>
+                    {% for m in matieres %}
+                    <option value="{{ m.id }}" {% if matiere_id == m.id|stringformat:'s' %}selected{% endif %}>{{ m.nom }}</option>
+                    {% endfor %}
+                </select>
+                <span class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-gray-400">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                    </svg>
+                </span>
+            </div>
+
+            <!-- Année filter -->
+            <div class="relative">
+                <select name="annee" onchange="this.form.submit()" class="appearance-none bg-white border border-gray-200 text-gray-700 text-sm font-medium px-4 py-2 pr-8 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0037B0] focus:border-[#0037B0] shadow-sm cursor-pointer">
+                    <option value="">Toutes les années</option>
+                    {% for a in annees %}
+                    <option value="{{ a }}" {% if annee == a %}selected{% endif %}>{{ a }}</option>
+                    {% endfor %}
+                </select>
+                <span class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-gray-400">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                    </svg>
+                </span>
+            </div>
+
+            <!-- Reset button (visible only when filters active) -->
+            {% if query or filiere_id or matiere_id or annee %}
+            <a href="{% url 'bibliotheque' %}" class="text-sm text-gray-500 hover:text-[#0037B0] font-medium underline transition">Réinitialiser</a>
+            {% endif %}
+        </div>
+
+        <!-- Results count -->
+        <p class="text-xs font-bold text-gray-400 tracking-wider mb-4">
+            {% if sujets.paginator.count %}
+            {{ sujets.paginator.count }} RÉSULTAT{% if sujets.paginator.count > 1 %}S{% endif %} TROUVÉ{% if sujets.paginator.count > 1 %}S{% endif %}
+            {% else %}
+            AUCUN RÉSULTAT
+            {% endif %}
+        </p>
+
+        <!-- Sujets grid -->
+        {% if sujets %}
+        <form method="get" id="filterForm">
+            <!-- Hidden inputs to preserve other filters when using form submits -->
+            {% if query %}<input type="hidden" name="q" value="{{ query }}">{% endif %}
+            {% if filiere_id %}<input type="hidden" name="filiere" value="{{ filiere_id }}">{% endif %}
+            {% if matiere_id %}<input type="hidden" name="matiere" value="{{ matiere_id }}">{% endif %}
+            {% if annee %}<input type="hidden" name="annee" value="{{ annee }}">{% endif %}
+        </form>
+        {% endif %}
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            {% for sujet in sujets %}
+            <div class="bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition overflow-hidden">
+                <div class="flex">
+                    <!-- Left color strip -->
+                    <div class="w-1.5 flex-shrink-0 {% cycle 'bg-[#0037B0]' 'bg-[#8B5CF6]' 'bg-[#10B981]' 'bg-[#F59E0B]' 'bg-[#EF4444]' 'bg-[#EC4899]' %}"></div>
+                    <div class="flex-1 p-4">
+                        <!-- Badge filière + année -->
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs font-bold text-white bg-[#0037B0] px-2.5 py-0.5 rounded">{{ sujet.filiere.code }}</span>
+                            <span class="text-xs text-gray-400">{{ sujet.annee_academique }}</span>
+                        </div>
+
+                        <!-- Titre -->
+                        <h3 class="font-bold text-sm text-[#0B1C30] leading-snug mb-1">{{ sujet.titre }}</h3>
+
+                        <!-- Méta -->
+                        <div class="flex items-center gap-3 text-xs text-gray-400 mb-1">
+                            <span>📄 {{ sujet.matiere.nom }}</span>
+                            <span>🎓 {{ sujet.niveau.nom }}</span>
+                        </div>
+
+                        <!-- Auteur -->
+                        {% if sujet.auteur_nom %}
+                        <p class="text-xs text-gray-400 mb-3">👨‍🏫 {{ sujet.auteur_nom }}</p>
+                        {% endif %}
+
+                        {% if sujet.description %}
+                        <p class="text-xs text-gray-400 leading-relaxed mb-3 line-clamp-2">{{ sujet.description }}</p>
+                        {% endif %}
+
+                        <!-- Stats + action -->
+                        <div class="flex items-center justify-between pt-3 border-t border-gray-50">
+                            <div class="flex items-center gap-3 text-xs text-gray-400">
+                                <span>👁️ {{ sujet.vues }}</span>
+                                <span>⬇️ {{ sujet.telechargements }}</span>
+                            </div>
+                            <a href="{% if user.is_authenticated %}{% url 'detail_sujet' sujet.id %}{% else %}{% url 'connexion' %}?next={% url 'bibliotheque' %}{% endif %}" class="inline-flex text-xs font-semibold text-[#0037B0] hover:underline">
+                                {% if user.is_authenticated %}Consulter →{% else %}Se connecter →{% endif %}
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-span-full text-center py-16">
+                <svg class="w-16 h-16 text-gray-200 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                <p class="text-gray-400 text-sm">Aucun sujet trouvé</p>
+                <p class="text-gray-300 text-xs mt-1">Essayez de modifier vos filtres de recherche</p>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Pagination -->
+        {% if sujets.paginator.num_pages > 1 %}
+        <div class="flex items-center justify-center mt-10 gap-1">
+            {% if sujets.has_previous %}
+            <a href="?page=1{% if query %}&q={{ query }}{% endif %}{% if filiere_id %}&filiere={{ filiere_id }}{% endif %}{% if matiere_id %}&matiere={{ matiere_id }}{% endif %}{% if annee %}&annee={{ annee }}{% endif %}"
+               class="px-3 py-1.5 text-xs text-gray-500 hover:text-[#0037B0] border border-gray-200 rounded-lg hover:border-[#0037B0] transition">«</a>
+            <a href="?page={{ sujets.previous_page_number }}{% if query %}&q={{ query }}{% endif %}{% if filiere_id %}&filiere={{ filiere_id }}{% endif %}{% if matiere_id %}&matiere={{ matiere_id }}{% endif %}{% if annee %}&annee={{ annee }}{% endif %}"
+               class="px-3 py-1.5 text-xs text-gray-500 hover:text-[#0037B0] border border-gray-200 rounded-lg hover:border-[#0037B0] transition">‹</a>
+            {% endif %}
+
+            {% for i in sujets.paginator.page_range %}
+                {% if sujets.number == i %}
+                <span class="px-3 py-1.5 text-xs font-bold text-white bg-[#0037B0] rounded-lg">{{ i }}</span>
+                {% elif i > sujets.number|add:'-3' and i < sujets.number|add:'3' %}
+                <a href="?page={{ i }}{% if query %}&q={{ query }}{% endif %}{% if filiere_id %}&filiere={{ filiere_id }}{% endif %}{% if matiere_id %}&matiere={{ matiere_id }}{% endif %}{% if annee %}&annee={{ annee }}{% endif %}"
+                   class="px-3 py-1.5 text-xs text-gray-500 hover:text-[#0037B0] border border-gray-200 rounded-lg hover:border-[#0037B0] transition">{{ i }}</a>
+                {% endif %}
+            {% endfor %}
+
+            {% if sujets.has_next %}
+            <a href="?page={{ sujets.next_page_number }}{% if query %}&q={{ query }}{% endif %}{% if filiere_id %}&filiere={{ filiere_id }}{% endif %}{% if matiere_id %}&matiere={{ matiere_id }}{% endif %}{% if annee %}&annee={{ annee }}{% endif %}"
+               class="px-3 py-1.5 text-xs text-gray-500 hover:text-[#0037B0] border border-gray-200 rounded-lg hover:border-[#0037B0] transition">›</a>
+            <a href="?page={{ sujets.paginator.num_pages }}{% if query %}&q={{ query }}{% endif %}{% if filiere_id %}&filiere={{ filiere_id }}{% endif %}{% if matiere_id %}&matiere={{ matiere_id }}{% endif %}{% if annee %}&annee={{ annee }}{% endif %}"
+               class="px-3 py-1.5 text-xs text-gray-500 hover:text-[#0037B0] border border-gray-200 rounded-lg hover:border-[#0037B0] transition">»</a>
+            {% endif %}
+        </div>
+        {% endif %}
+
+    </main>
+
+    <!-- ==================== FOOTER ==================== -->
+    <footer class="bg-[#0B1C30] mt-12">
+        <div class="max-w-7xl mx-auto px-6 py-12">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-10">
+                <div class="md:col-span-1">
+                    <h3 class="text-white font-black text-lg mb-3">UPGCExam</h3>
+                    <p class="text-gray-400 text-xs leading-relaxed">L'EXCELLENCE ACADÉMIQUE À PORTÉE DE MAIN.</p>
+                </div>
+                <div>
+                    <h4 class="text-white text-xs font-bold tracking-wider mb-4 uppercase">Plateforme</h4>
+                    <ul class="space-y-2.5">
+                        <li><a href="{% url 'accueil' %}" class="text-gray-400 hover:text-white text-xs transition">Accueil</a></li>
+                        <li><a href="{% url 'bibliotheque' %}" class="text-gray-400 hover:text-white text-xs transition">Sujets</a></li>
+                        <li><a href="{% url 'bibliotheque' %}" class="text-gray-400 hover:text-white text-xs transition">Bibliothèque</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-white text-xs font-bold tracking-wider mb-4 uppercase">Université</h4>
+                    <ul class="space-y-2.5">
+                        <li><a href="#" class="text-gray-400 hover:text-white text-xs transition">University Info</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white text-xs transition">Mentions Légales</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white text-xs transition">Contact</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-white text-xs font-bold tracking-wider mb-4 uppercase">Compte</h4>
+                    <ul class="space-y-2.5">
+                        {% if user.is_authenticated %}
+                        <li><a href="{% url 'tableau_de_bord' %}" class="text-gray-400 hover:text-white text-xs transition">Tableau de bord</a></li>
+                        <li><a href="{% url 'deconnexion' %}" class="text-gray-400 hover:text-white text-xs transition">Déconnexion</a></li>
+                        {% else %}
+                        <li><a href="{% url 'connexion' %}" class="text-gray-400 hover:text-white text-xs transition">Connexion</a></li>
+                        <li><a href="{% url 'inscription' %}" class="text-gray-400 hover:text-white text-xs transition">Inscription</a></li>
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
+            <div class="border-t border-gray-800 pt-6">
+                <div class="flex flex-col md:flex-row items-center justify-between">
+                    <p class="text-gray-500 text-xs">© {% now "Y" %} UPGCExam — EXCELLENCE ACADÉMIQUE</p>
+                    <div class="flex space-x-4 mt-3 md:mt-0">
+                        <a href="#" class="text-gray-500 hover:text-gray-300 text-xs">Confidentialité</a>
+                        <a href="#" class="text-gray-500 hover:text-gray-300 text-xs">CGU</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Profile menu toggle
+        function toggleMenu() {
+            const menu = document.getElementById('dropdownMenu');
+            if (menu) menu.classList.toggle('hidden');
+        }
+        document.addEventListener('click', function(e) {
+            const menu = document.getElementById('profileMenu');
+            const dropdown = document.getElementById('dropdownMenu');
+            if (menu && dropdown && !menu.contains(e.target)) {
+                dropdown.classList.add('hidden');
+            }
+        });
+
+        // Mobile menu toggle
+        document.addEventListener('DOMContentLoaded', function() {
+            const btn = document.getElementById('mobileMenuBtn');
+            const menu = document.getElementById('mobileMenu');
+            if (btn && menu) {
+                btn.addEventListener('click', function() { menu.classList.toggle('hidden'); });
+            }
+        });
+    </script>
+</body>
+</html>

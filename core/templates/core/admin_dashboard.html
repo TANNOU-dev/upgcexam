@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UPGCExam - Administration</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        * { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-[#F5F7FA] min-h-screen">
+
+    <!-- ==================== HEADER ==================== -->
+    <header class="bg-white border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+            <a href="{% url 'accueil' %}" class="text-xl font-black text-[#0037B0] tracking-tight flex-shrink-0">UPGCExam</a>
+            <nav class="hidden md:flex items-center space-x-8">
+                <a href="{% url 'tableau_de_bord' %}" class="text-gray-500 hover:text-gray-800 font-medium text-sm">Accueil</a>
+                <a href="{% url 'bibliotheque' %}" class="text-gray-500 hover:text-gray-800 font-medium text-sm">Sujets</a>
+                <a href="{% url 'ajouter_sujet' %}" class="text-gray-500 hover:text-gray-800 font-medium text-sm">Ajouter un sujet</a>
+                <a href="{% url 'admin_dashboard' %}" class="text-[#0037B0] font-semibold text-sm border-b-2 border-[#0037B0]">Admin</a>
+            </nav>
+            <div class="flex items-center space-x-3">
+                <div class="relative" id="profileMenu">
+                    <button onclick="toggleMenu()" class="w-9 h-9 bg-[#0037B0] rounded-full flex items-center justify-center text-white text-sm font-bold hover:bg-[#002A8A] transition cursor-pointer">
+                        {{ user.username|first|upper }}
+                    </button>
+                    <div id="dropdownMenu" class="hidden absolute right-0 mt-2 w-44 bg-white rounded-xl shadow-lg border border-gray-100 py-2 z-50">
+                        <div class="px-4 py-2 border-b border-gray-100">
+                            <p class="text-sm font-semibold text-gray-900">{{ user.username }}</p>
+                            <p class="text-xs text-gray-400">{{ user.email }}</p>
+                        </div>
+                        <a href="{% url 'parametres' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Paramètres</a>
+                        <a href="{% url 'admin_dashboard' %}" class="block px-4 py-2 text-sm text-[#0037B0] font-semibold">Administration</a>
+                        <hr class="my-1 border-gray-100">
+                        <a href="{% url 'deconnexion' %}" class="block px-4 py-2 text-sm text-red-500 hover:bg-red-50">Déconnexion</a>
+                    </div>
+                </div>
+                <button id="mobileMenuBtn" class="md:hidden p-2 text-gray-500 hover:text-gray-800">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <div id="mobileMenu" class="hidden md:hidden border-t border-gray-100 px-6 py-4 bg-white">
+            <nav class="flex flex-col space-y-3">
+                <a href="{% url 'tableau_de_bord' %}" class="text-gray-500 hover:text-gray-800 font-medium text-sm">Accueil</a>
+                <a href="{% url 'bibliotheque' %}" class="text-gray-500 hover:text-gray-800 font-medium text-sm">Sujets</a>
+                <a href="{% url 'ajouter_sujet' %}" class="text-gray-500 hover:text-gray-800 font-medium text-sm">Ajouter un sujet</a>
+                <a href="{% url 'admin_dashboard' %}" class="text-[#0037B0] font-semibold text-sm">Admin</a>
+                <hr class="border-gray-100">
+                <a href="{% url 'parametres' %}" class="text-sm text-gray-700 font-medium">Paramètres</a>
+                <a href="{% url 'deconnexion' %}" class="text-sm text-red-500 font-medium">Déconnexion</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- ==================== MAIN ==================== -->
+    <main class="max-w-7xl mx-auto px-6 py-8">
+
+        <!-- Header -->
+        <div class="mb-8">
+            <span class="inline-flex items-center gap-1.5 bg-purple-100 text-purple-700 text-xs font-bold tracking-widest uppercase px-3 py-1.5 rounded-full mb-4">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                </svg>
+                Panneau d'administration
+            </span>
+            <h1 class="text-3xl md:text-4xl font-black text-[#0B1C30]">Administration</h1>
+            <p class="text-gray-500 mt-1">Gérez les utilisateurs, les sujets et la plateforme.</p>
+        </div>
+
+        <!-- Messages -->
+        {% if messages %}
+        <div class="mb-6 space-y-2">
+            {% for message in messages %}
+            <div class="p-3 rounded-lg text-sm {% if message.tags == 'error' %}bg-red-50 text-red-600 border border-red-200{% else %}bg-green-50 text-green-600 border border-green-200{% endif %}">
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Stats cards -->
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
+            <div class="bg-white rounded-xl shadow-sm p-5">
+                <p class="text-3xl font-black text-[#0037B0]">{{ stats.total_sujets }}</p>
+                <p class="text-sm text-gray-400 mt-1">Sujets totaux</p>
+            </div>
+            <div class="bg-white rounded-xl shadow-sm p-5">
+                <p class="text-3xl font-black text-[#10B981]">{{ stats.sujets_actifs }}</p>
+                <p class="text-sm text-gray-400 mt-1">Sujets actifs</p>
+            </div>
+            <div class="bg-white rounded-xl shadow-sm p-5">
+                <p class="text-3xl font-black text-[#8B5CF6]">{{ stats.total_utilisateurs }}</p>
+                <p class="text-sm text-gray-400 mt-1">Utilisateurs</p>
+            </div>
+            <div class="bg-white rounded-xl shadow-sm p-5">
+                <p class="text-3xl font-black text-[#F59E0B]">{{ stats.total_telechargements }}</p>
+                <p class="text-sm text-gray-400 mt-1">Téléchargements</p>
+            </div>
+            <div class="bg-white rounded-xl shadow-sm p-5">
+                <p class="text-3xl font-black text-[#EF4444]">{{ stats.sujets_en_attente }}</p>
+                <p class="text-sm text-gray-400 mt-1">En attente de validation</p>
+            </div>
+        </div>
+
+        <!-- Grille : Sujets récents + Utilisateurs récents -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+
+            <!-- Sujets récents -->
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-50">
+                <div class="flex items-center justify-between p-6 border-b border-gray-50">
+                    <h2 class="font-bold text-[#0B1C30]">Derniers sujets</h2>
+                    <a href="{% url 'bibliotheque' %}" class="text-xs text-[#0037B0] font-semibold hover:underline">Voir tout</a>
+                </div>
+                <div class="divide-y divide-gray-50">
+                    {% for sujet in sujets_recents %}
+                    <div class="flex items-center justify-between p-4 hover:bg-gray-50 transition">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold {% if sujet.statut == 'actif' %}bg-green-50 text-green-600{% else %}bg-gray-100 text-gray-400{% endif %}">
+                                {{ sujet.filiere.code|first }}
+                            </div>
+                            <div>
+                                <p class="text-sm font-medium text-[#0B1C30]">{{ sujet.titre|truncatechars:40 }}</p>
+                                <p class="text-xs text-gray-400">{{ sujet.publie_par.username|default:"Inconnu" }} · {{ sujet.cree_le|timesince }}</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs px-2 py-0.5 rounded-full {% if sujet.statut == 'actif' %}bg-green-50 text-green-600{% else %}bg-gray-100 text-gray-400{% endif %}">
+                                {{ sujet.statut }}
+                            </span>
+                            <a href="{% url 'detail_sujet' sujet.id %}" class="text-xs text-[#0037B0] hover:underline">Voir</a>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <p class="text-sm text-gray-400 text-center py-8">Aucun sujet</p>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Utilisateurs récents -->
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-50">
+                <div class="flex items-center justify-between p-6 border-b border-gray-50">
+                    <h2 class="font-bold text-[#0B1C30]">Derniers inscrits</h2>
+                    <a href="/admin/" target="_blank" class="text-xs text-[#0037B0] font-semibold hover:underline">Admin Django</a>
+                </div>
+                <div class="divide-y divide-gray-50">
+                    {% for u in utilisateurs_recents %}
+                    <div class="flex items-center justify-between p-4 hover:bg-gray-50 transition">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 bg-[#0037B0] rounded-full flex items-center justify-center text-white text-xs font-bold">
+                                {{ u.username|first|upper }}
+                            </div>
+                            <div>
+                                <p class="text-sm font-medium text-[#0B1C30]">{{ u.username }}</p>
+                                <p class="text-xs text-gray-400">{{ u.email }}</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs px-2 py-0.5 rounded-full {% if u.profil.email_verifie %}bg-green-50 text-green-600{% else %}bg-amber-50 text-amber-600{% endif %}">
+                                {{ u.profil.email_verifie|yesno:"Vérifié,En attente" }}
+                            </span>
+                            {% if u.is_staff %}
+                            <span class="text-xs px-2 py-0.5 rounded-full bg-purple-50 text-purple-600">Staff</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% empty %}
+                    <p class="text-sm text-gray-400 text-center py-8">Aucun utilisateur</p>
+                    {% endfor %}
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Sujets en attente de validation -->
+        {% if sujets_en_attente %}
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-50 mb-8">
+            <div class="flex items-center justify-between p-6 border-b border-gray-50">
+                <h2 class="font-bold text-[#0B1C30]">Sujets en attente de validation</h2>
+                <span class="text-xs font-bold bg-red-50 text-red-600 px-2 py-1 rounded-full">{{ sujets_en_attente|length }} en attente</span>
+            </div>
+            <div class="divide-y divide-gray-50">
+                {% for sujet in sujets_en_attente %}
+                <div class="flex items-center justify-between p-4 hover:bg-gray-50 transition">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center text-xs font-bold">
+                            {{ sujet.filiere.code|first }}
+                        </div>
+                        <div>
+                            <p class="text-sm font-medium text-[#0B1C30]">{{ sujet.titre|truncatechars:50 }}</p>
+                            <p class="text-xs text-gray-400">{{ sujet.publie_par.username|default:"Inconnu" }} · {{ sujet.matiere.nom }} · {{ sujet.cree_le|timesince }}</p>
+                        </div>
+                    </div>
+                    <form method="post" class="flex items-center gap-2">
+                        {% csrf_token %}
+                        <input type="hidden" name="sujet_id" value="{{ sujet.id }}">
+                        <button type="submit" name="valider_sujet" value="1"
+                                class="bg-[#10B981] hover:bg-[#059669] text-white text-xs font-bold px-4 py-2 rounded-lg transition">
+                            ✅ Valider
+                        </button>
+                        <a href="{% url 'detail_sujet' sujet.id %}" class="text-xs text-[#0037B0] hover:underline">Voir</a>
+                    </form>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Actions rapides -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-50 p-6">
+            <h2 class="font-bold text-[#0B1C30] mb-4">Actions rapides</h2>
+            <div class="flex flex-wrap gap-3">
+                <a href="{% url 'ajouter_sujet' %}" class="inline-flex items-center bg-[#0037B0] text-white font-semibold px-5 py-2.5 rounded-lg hover:bg-[#002A8A] transition text-sm gap-2">
+                    ➕ Ajouter un sujet
+                </a>
+                <a href="/admin/" target="_blank" class="inline-flex items-center bg-white border border-gray-200 text-gray-600 font-semibold px-5 py-2.5 rounded-lg hover:border-[#0037B0] hover:text-[#0037B0] transition text-sm gap-2">
+                    ⚙️ Admin Django
+                </a>
+                <a href="{% url 'bibliotheque' %}" class="inline-flex items-center bg-white border border-gray-200 text-gray-600 font-semibold px-5 py-2.5 rounded-lg hover:border-[#0037B0] hover:text-[#0037B0] transition text-sm gap-2">
+                    📚 Bibliothèque
+                </a>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- ==================== FOOTER ==================== -->
+    <footer class="bg-[#0B1C30] mt-12">
+        <div class="max-w-7xl mx-auto px-6 py-12">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-10">
+                <div class="md:col-span-1">
+                    <h3 class="text-white font-black text-lg mb-3">UPGCExam</h3>
+                    <p class="text-gray-400 text-xs leading-relaxed">L'EXCELLENCE ACADÉMIQUE À PORTÉE DE MAIN.</p>
+                </div>
+                <div>
+                    <h4 class="text-white text-xs font-bold tracking-wider mb-4 uppercase">Plateforme</h4>
+                    <ul class="space-y-2.5">
+                        <li><a href="{% url 'accueil' %}" class="text-gray-400 hover:text-white text-xs transition">Accueil</a></li>
+                        <li><a href="{% url 'bibliotheque' %}" class="text-gray-400 hover:text-white text-xs transition">Sujets</a></li>
+                        <li><a href="{% url 'bibliotheque' %}" class="text-gray-400 hover:text-white text-xs transition">Bibliothèque</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-white text-xs font-bold tracking-wider mb-4 uppercase">Université</h4>
+                    <ul class="space-y-2.5">
+                        <li><a href="#" class="text-gray-400 hover:text-white text-xs transition">University Info</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white text-xs transition">Mentions Légales</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white text-xs transition">Contact</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-white text-xs font-bold tracking-wider mb-4 uppercase">Compte</h4>
+                    <ul class="space-y-2.5">
+                        <li><a href="{% url 'tableau_de_bord' %}" class="text-gray-400 hover:text-white text-xs transition">Tableau de bord</a></li>
+                        <li><a href="{% url 'parametres' %}" class="text-gray-400 hover:text-white text-xs transition">Paramètres</a></li>
+                        <li><a href="{% url 'deconnexion' %}" class="text-gray-400 hover:text-white text-xs transition">Déconnexion</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="border-t border-gray-800 pt-6">
+                <div class="flex flex-col md:flex-row items-center justify-between">
+                    <p class="text-gray-500 text-xs">© {% now "Y" %} UPGCExam — EXCELLENCE ACADÉMIQUE</p>
+                    <div class="flex space-x-4 mt-3 md:mt-0">
+                        <a href="#" class="text-gray-500 hover:text-gray-300 text-xs">Confidentialité</a>
+                        <a href="#" class="text-gray-500 hover:text-gray-300 text-xs">CGU</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        function toggleMenu() {
+            const menu = document.getElementById('dropdownMenu');
+            if (menu) menu.classList.toggle('hidden');
+        }
+        document.addEventListener('click', function(e) {
+            const menu = document.getElementById('profileMenu');
+            const dropdown = document.getElementById('dropdownMenu');
+            if (menu && dropdown && !menu.contains(e.target)) {
+                dropdown.classList.add('hidden');
+            }
+        });
+        document.addEventListener('DOMContentLoaded', function() {
+            const btn = document.getElementById('mobileMenuBtn');
+            const menu = document.getElementById('mobileMenu');
+            if (btn && menu) {
+                btn.addEventListener('click', function() { menu.classList.toggle('hidden'); });
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UPGCExam - Résultats pour "{{ query }}"</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        * { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-[#F5F7FA] min-h-screen">
+
+    <!-- ==================== HEADER ==================== -->
+    <header class="bg-white border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+            <a href="{% url 'accueil' %}" class="text-xl font-black text-[#0037B0] tracking-tight flex-shrink-0">UPGCExam</a>
+
+            <nav class="hidden md:flex items-center space-x-8">
+                <a href="{% url 'tableau_de_bord' %}" class="text-gray-500 hover:text-gray-800 font-medium text-sm">Accueil</a>
+                <a href="{% url 'bibliotheque' %}" class="text-gray-500 hover:text-gray-800 font-medium text-sm">Sujets</a>
+                <a href="{% url 'ajouter_sujet' %}" class="text-gray-500 hover:text-gray-800 font-medium text-sm">Ajouter un sujet</a>
+            </nav>
+
+            <div class="flex items-center space-x-3">
+                <div class="relative" id="profileMenu">
+                    <button onclick="toggleMenu()" class="w-9 h-9 bg-[#0037B0] rounded-full flex items-center justify-center text-white text-sm font-bold hover:bg-[#002A8A] transition cursor-pointer">
+                        {{ user.username|first|upper }}
+                    </button>
+                    <div id="dropdownMenu" class="hidden absolute right-0 mt-2 w-44 bg-white rounded-xl shadow-lg border border-gray-100 py-2 z-50">
+                        <div class="px-4 py-2 border-b border-gray-100">
+                            <p class="text-sm font-semibold text-gray-900">{{ user.username }}</p>
+                            <p class="text-xs text-gray-400">{{ user.email }}</p>
+                        </div>
+                        <a href="{% url 'parametres' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Paramètres</a>
+                        {% if user.is_staff %}
+                        <a href="{% url 'admin_dashboard' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Administration</a>
+                        {% endif %}
+                        <hr class="my-1 border-gray-100">
+                        <a href="{% url 'deconnexion' %}" class="block px-4 py-2 text-sm text-red-500 hover:bg-red-50">Déconnexion</a>
+                    </div>
+                </div>
+                <button id="mobileMenuBtn" class="md:hidden p-2 text-gray-500 hover:text-gray-800">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <div id="mobileMenu" class="hidden md:hidden border-t border-gray-100 px-6 py-4 bg-white">
+            <nav class="flex flex-col space-y-3">
+                <a href="{% url 'tableau_de_bord' %}" class="text-gray-500 hover:text-gray-800 font-medium text-sm">Accueil</a>
+                <a href="{% url 'bibliotheque' %}" class="text-gray-500 hover:text-gray-800 font-medium text-sm">Sujets</a>
+                <a href="{% url 'ajouter_sujet' %}" class="text-gray-500 hover:text-gray-800 font-medium text-sm">Ajouter un sujet</a>
+                <hr class="border-gray-100">
+                <a href="{% url 'parametres' %}" class="text-sm text-gray-700 font-medium">Paramètres</a>
+                <a href="{% url 'deconnexion' %}" class="text-sm text-red-500 font-medium">Déconnexion</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- ==================== SEARCH HEADER ==================== -->
+    <div class="bg-white border-b border-gray-100">
+        <div class="max-w-7xl mx-auto px-6 py-8">
+            <div class="flex items-center gap-2 mb-3">
+                <svg class="w-4 h-4 text-[#0037B0]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"/>
+                </svg>
+                <span class="text-xs font-bold tracking-[0.15em] text-[#0037B0] uppercase">Résultats de recherche</span>
+            </div>
+
+            <h1 class="text-3xl md:text-4xl font-extrabold text-[#0B1C30] mb-6 leading-tight">
+                Résultats pour '<em class="text-[#0037B0] italic">{% firstof query "" %}</em>'
+            </h1>
+
+            <div class="flex flex-wrap items-center gap-2.5">
+                <button class="bg-[#0037B0] text-white px-5 py-2 rounded-full text-sm font-semibold">Tout ({{ total_resultats }})</button>
+                <button class="bg-white border border-gray-200 text-gray-500 hover:text-gray-700 hover:border-gray-300 px-5 py-2 rounded-full text-sm font-medium transition">Examens</button>
+                <button class="bg-white border border-gray-200 text-gray-500 hover:text-gray-700 hover:border-gray-300 px-5 py-2 rounded-full text-sm font-medium transition">Cours</button>
+                <button class="bg-white border border-gray-200 text-gray-500 hover:text-gray-700 hover:border-gray-300 px-5 py-2 rounded-full text-sm font-medium transition">Auteurs</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== MAIN CONTENT ==================== -->
+    <div class="max-w-7xl mx-auto px-6 py-8">
+        <div class="flex flex-col lg:flex-row gap-7 items-start">
+
+            <!-- ---- LEFT COLUMN ---- -->
+            <div class="flex-1 min-w-0 w-full">
+
+                {% if resultats %}
+                <!-- Results list -->
+                <div class="space-y-4">
+                    {% for sujet in resultats %}
+                    <div class="bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition p-5">
+                        <div class="flex items-start justify-between mb-2">
+                            <span class="text-xs font-bold text-white bg-[#0037B0] px-2.5 py-0.5 rounded">{{ sujet.filiere.code }}</span>
+                            <span class="text-xs text-gray-400">{{ sujet.annee_academique }}</span>
+                        </div>
+                        <h3 class="font-bold text-sm text-[#0B1C30]">{{ sujet.titre }}</h3>
+                        <div class="flex items-center gap-3 text-xs text-gray-400 mt-1 mb-2">
+                            <span>📄 {{ sujet.matiere.nom }}</span>
+                            <span>🎓 {{ sujet.niveau.nom }}</span>
+                        </div>
+                        {% if sujet.auteur_nom %}
+                        <p class="text-xs text-gray-400 mb-2">👨‍🏫 {{ sujet.auteur_nom }}</p>
+                        {% endif %}
+                        <div class="flex items-center justify-between pt-3 border-t border-gray-50">
+                            <div class="flex items-center gap-3 text-xs text-gray-400">
+                                <span>👁️ {{ sujet.vues }}</span>
+                                <span>⬇️ {{ sujet.telechargements }}</span>
+                            </div>
+                            <a href="{% url 'detail_sujet' sujet.id %}" class="text-xs font-semibold text-[#0037B0] hover:underline">Consulter →</a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <!-- Empty state -->
+                <div class="bg-white rounded-2xl p-8 text-center">
+                    <div class="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-5">
+                        <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"/>
+                            <line x1="10" y1="8" x2="10" y2="14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                            <line x1="7" y1="11" x2="13" y2="11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                        </svg>
+                    </div>
+                    <h2 class="text-xl font-bold text-[#0B1C30] mb-3">Aucun résultat trouvé</h2>
+                    <p class="text-gray-500 text-sm leading-relaxed max-w-xs mx-auto">
+                        Nous n'avons trouvé aucun document correspondant exactement à "<strong class="text-gray-700">{{ query }}</strong>". Vérifiez l'orthographe ou essayez des termes plus généraux.
+                    </p>
+                </div>
+
+                <!-- Suggestions divider -->
+                <div class="flex items-center gap-4 my-8">
+                    <div class="flex-1 h-px bg-gray-200"></div>
+                    <span class="text-xs font-bold tracking-wider text-gray-400 uppercase whitespace-nowrap">Suggestions pour vous</span>
+                    <div class="flex-1 h-px bg-gray-200"></div>
+                </div>
+
+                <!-- Suggestions grid -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {% for sujet in suggestions %}
+                    <a href="{% url 'bibliotheque' %}?q={{ sujet.titre|urlencode }}" class="bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition p-4 block">
+                        <div class="flex items-start justify-between mb-3">
+                            <div class="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center">
+                                <svg class="w-5 h-5 text-[#0037B0]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+                                </svg>
+                            </div>
+                            <span class="text-xs font-bold bg-purple-100 text-purple-600 px-2 py-0.5 rounded-full">{{ sujet.niveau.nom }}</span>
+                        </div>
+                        <p class="text-sm font-semibold text-[#0B1C30] leading-snug mb-1">{{ sujet.titre|truncatechars:40 }}</p>
+                        <p class="text-xs text-gray-400">{{ sujet.matiere.nom }} · {{ sujet.annee_academique }}</p>
+                    </a>
+                    {% empty %}
+                    <p class="text-sm text-gray-400 col-span-2 text-center py-4">Aucune suggestion disponible</p>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                <!-- Documents Populaires -->
+                <div class="mt-10">
+                    <h2 class="text-lg font-bold text-[#0B1C30] mb-5">Documents Populaires en ce moment</h2>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                        {% for doc in docs_populaires %}
+                        <div class="relative rounded-2xl p-7 overflow-hidden {% cycle 'text-white' 'text-[#0B1C30]' %}" style="background:{% cycle 'linear-gradient(135deg,#0037B0,#2563EB)' '#EFF6FF' %};">
+                            <p class="text-xs font-bold tracking-wider uppercase mb-2 {% cycle 'text-blue-200' 'text-gray-400' %}">
+                                {% if forloop.first %}Plus consulté{% else %}Nouveau{% endif %}
+                            </p>
+                            <h3 class="text-2xl font-extrabold leading-tight mb-3 {{ forloop.counter|yesno:',text-white' }}">{{ doc.titre|truncatechars:30 }}</h3>
+                            <p class="text-sm {% cycle 'text-blue-100' 'text-gray-500' %} leading-relaxed mb-6">{{ doc.matiere.nom }} · {{ doc.annee_academique }}</p>
+                            <a href="#" class="inline-block {% cycle 'border border-white text-white hover:bg-white hover:text-[#0037B0]' 'text-white' %} text-sm font-semibold px-5 py-2.5 rounded-full transition-all" style="{% if not forloop.first %}background:#0037B0;{% endif %}">
+                                {% cycle 'Explorer le cours' 'Télécharger PDF' %}
+                            </a>
+                        </div>
+                        {% empty %}
+                        <p class="text-sm text-gray-400 col-span-2 text-center py-4">Aucun document populaire pour l'instant</p>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- ---- SIDEBAR ---- -->
+            <div class="w-full lg:w-72 xl:w-80 flex-shrink-0 space-y-5">
+                <div class="bg-white rounded-2xl p-6">
+                    <h3 class="font-bold text-[#0B1C30] text-base mb-5">Affiner la recherche</h3>
+                    <div class="mb-6">
+                        <p class="text-xs font-bold tracking-wider text-gray-400 uppercase mb-3">Filière</p>
+                        <div class="flex flex-wrap gap-2">
+                            {% for f in filieres %}
+                            <a href="{% url 'bibliotheque' %}?filiere={{ f.id }}" class="text-xs font-medium px-3 py-1.5 rounded-full border border-gray-200 text-gray-600 hover:border-[#0037B0] hover:text-[#0037B0] hover:bg-blue-50 transition">{{ f.nom }}</a>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <div>
+                        <p class="text-xs font-bold tracking-wider text-gray-400 uppercase mb-3">Année académique</p>
+                        {% for a in annees %}
+                        <label class="flex items-center gap-3 mb-3 cursor-pointer group">
+                            <input type="checkbox" class="accent-[#0037B0] w-4 h-4 rounded border-gray-300">
+                            <span class="text-sm text-gray-600 group-hover:text-gray-900">{{ a }}</span>
+                        </label>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div class="rounded-2xl overflow-hidden relative min-h-[260px]" style="background:linear-gradient(135deg,#0037B0 0%,#1a4ab0 60%,#2563EB 100%);">
+                    <div class="relative z-10 flex flex-col justify-end h-full p-6 min-h-[260px]">
+                        <div class="mt-auto">
+                            <h3 class="text-white font-bold text-xl mb-2">Besoin d'aide ?</h3>
+                            <p class="text-blue-100 text-sm leading-relaxed mb-4">Consultez nos guides méthodologiques pour réussir vos examens de fin d'année.</p>
+                            <a href="#" class="text-white text-sm font-semibold hover:text-blue-200 transition inline-flex items-center gap-1">
+                                Voir les guides
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+                                </svg>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== FOOTER ==================== -->
+    <footer class="bg-[#0B1C30] mt-12">
+        <div class="max-w-7xl mx-auto px-6 py-12">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-10">
+                <div class="md:col-span-1">
+                    <h3 class="text-white font-black text-lg mb-3">UPGCExam</h3>
+                    <p class="text-gray-400 text-xs leading-relaxed">L'EXCELLENCE ACADÉMIQUE À PORTÉE DE MAIN.</p>
+                </div>
+                <div>
+                    <h4 class="text-white text-xs font-bold tracking-wider mb-4 uppercase">Plateforme</h4>
+                    <ul class="space-y-2.5">
+                        <li><a href="{% url 'accueil' %}" class="text-gray-400 hover:text-white text-xs transition">Accueil</a></li>
+                        <li><a href="{% url 'bibliotheque' %}" class="text-gray-400 hover:text-white text-xs transition">Sujets</a></li>
+                        <li><a href="{% url 'bibliotheque' %}" class="text-gray-400 hover:text-white text-xs transition">Bibliothèque</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-white text-xs font-bold tracking-wider mb-4 uppercase">Université</h4>
+                    <ul class="space-y-2.5">
+                        <li><a href="#" class="text-gray-400 hover:text-white text-xs transition">University Info</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white text-xs transition">Mentions Légales</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white text-xs transition">Contact</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-white text-xs font-bold tracking-wider mb-4 uppercase">Compte</h4>
+                    <ul class="space-y-2.5">
+                        <li><a href="{% url 'tableau_de_bord' %}" class="text-gray-400 hover:text-white text-xs transition">Tableau de bord</a></li>
+                        <li><a href="{% url 'parametres' %}" class="text-gray-400 hover:text-white text-xs transition">Paramètres</a></li>
+                        <li><a href="{% url 'deconnexion' %}" class="text-gray-400 hover:text-white text-xs transition">Déconnexion</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="border-t border-gray-800 pt-6">
+                <div class="flex flex-col md:flex-row items-center justify-between">
+                    <p class="text-gray-500 text-xs">© {% now "Y" %} UPGCExam — EXCELLENCE ACADÉMIQUE</p>
+                    <div class="flex space-x-4 mt-3 md:mt-0">
+                        <a href="#" class="text-gray-500 hover:text-gray-300 text-xs">Confidentialité</a>
+                        <a href="#" class="text-gray-500 hover:text-gray-300 text-xs">CGU</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        function toggleMenu() {
+            const menu = document.getElementById('dropdownMenu');
+            if (menu) menu.classList.toggle('hidden');
+        }
+        document.addEventListener('click', function(e) {
+            const menu = document.getElementById('profileMenu');
+            const dropdown = document.getElementById('dropdownMenu');
+            if (menu && dropdown && !menu.contains(e.target)) {
+                dropdown.classList.add('hidden');
+            }
+        });
+        document.addEventListener('DOMContentLoaded', function() {
+            const btn = document.getElementById('mobileMenuBtn');
+            const menu = document.getElementById('mobileMenu');
+            if (btn && menu) {
+                btn.addEventListener('click', function() { menu.classList.toggle('hidden'); });
+            }
+        });
+    </script>
+</body>
+</html>

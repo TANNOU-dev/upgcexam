@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UPGCExam - Accueil</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        * { font-family: 'Inter', sans-serif; }
+        html { scroll-behavior: smooth; }
+    </style>
+</head>
+<body class="bg-white min-h-screen">
+
+    <!-- ==================== HEADER / NAVBAR ==================== -->
+    <header class="bg-white border-b border-gray-100">
+        <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+            <!-- Logo -->
+            <a href="{% url 'accueil' %}" class="text-xl font-black text-[#0037B0] tracking-tight flex-shrink-0">UPGCExam</a>
+
+            <!-- Nav links (desktop) -->
+            <nav class="hidden md:flex items-center space-x-8">
+                <a href="{% if user.is_authenticated %}{% url 'tableau_de_bord' %}{% else %}{% url 'accueil' %}{% endif %}" class="text-[#0037B0] font-semibold text-sm">Accueil</a>
+                <a href="{% url 'bibliotheque' %}" class="text-gray-500 hover:text-gray-800 font-medium text-sm">Sujets</a>
+                <a href="{% url 'ajouter_sujet' %}" class="text-gray-500 hover:text-gray-800 font-medium text-sm">Ajouter un sujet</a>
+            </nav>
+
+            <!-- Actions -->
+            <div class="flex items-center space-x-3">
+                {% if user.is_authenticated %}
+                <div class="relative" id="profileMenu">
+                    <button onclick="toggleMenu()" class="w-9 h-9 bg-[#0037B0] rounded-full flex items-center justify-center text-white text-sm font-bold hover:bg-[#002A8A] transition cursor-pointer">
+                        {{ user.username|first|upper }}
+                    </button>
+                    <div id="dropdownMenu" class="hidden absolute right-0 mt-2 w-44 bg-white rounded-xl shadow-lg border border-gray-100 py-2 z-50">
+                        <div class="px-4 py-2 border-b border-gray-100">
+                            <p class="text-sm font-semibold text-gray-900">{{ user.username }}</p>
+                            <p class="text-xs text-gray-400">{{ user.email }}</p>
+                        </div>
+                        <a href="{% url 'parametres' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Paramètres</a>
+                        <hr class="my-1 border-gray-100">
+                        <a href="{% url 'deconnexion' %}" class="block px-4 py-2 text-sm text-red-500 hover:bg-red-50">Déconnexion</a>
+                    </div>
+                </div>
+                {% else %}
+                <a href="{% url 'connexion' %}"
+                   class="hidden sm:inline-flex text-sm font-semibold text-gray-700 border border-gray-300 hover:border-gray-400 hover:bg-gray-50 px-4 py-2 rounded-lg transition">
+                    Connexion
+                </a>
+                <a href="{% url 'inscription' %}"
+                   class="text-sm font-bold text-white bg-[#0037B0] hover:bg-[#002A8A] px-4 py-2 rounded-lg transition shadow-sm">
+                    Inscription
+                </a>
+                {% endif %}
+                <!-- Mobile menu toggle -->
+                <button id="mobileMenuBtn" class="md:hidden p-2 text-gray-500 hover:text-gray-800">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Mobile nav -->
+        <div id="mobileMenu" class="hidden md:hidden border-t border-gray-100 px-6 py-4 bg-white">
+            <nav class="flex flex-col space-y-3">
+                <a href="{% if user.is_authenticated %}{% url 'tableau_de_bord' %}{% else %}{% url 'accueil' %}{% endif %}" class="text-[#0037B0] font-semibold text-sm">Accueil</a>
+                <a href="{% url 'bibliotheque' %}" class="text-gray-500 hover:text-gray-800 font-medium text-sm">Sujets</a>
+                <a href="{% url 'ajouter_sujet' %}" class="text-gray-500 hover:text-gray-800 font-medium text-sm">Ajouter un sujet</a>
+                <hr class="border-gray-100">
+                {% if user.is_authenticated %}
+                <a href="{% url 'parametres' %}" class="text-sm text-gray-700 font-medium">Paramètres</a>
+                <a href="{% url 'deconnexion' %}" class="text-sm text-red-500 font-medium">Déconnexion</a>
+                {% else %}
+                <a href="{% url 'connexion' %}" class="text-sm font-semibold text-gray-700">Connexion</a>
+                <a href="{% url 'inscription' %}" class="text-sm font-bold text-white bg-[#0037B0] hover:bg-[#002A8A] px-4 py-2 rounded-lg text-center transition">Inscription</a>
+                {% endif %}
+            </nav>
+        </div>
+    </header>
+
+    <!-- ==================== HERO SECTION ==================== -->
+    <section class="relative overflow-hidden">
+        <!-- Background gradient -->
+        <div class="absolute inset-0 bg-gradient-to-b from-[#E8EEFF] via-[#F4F7FF] to-white pointer-events-none"></div>
+        <div class="relative max-w-7xl mx-auto px-6 pt-20 pb-28 md:pt-28 md:pb-36 text-center">
+
+            <!-- Badge -->
+            <p class="text-xs font-bold text-[#0037B0] tracking-[0.2em] mb-4">RÉUSSISSEZ VOS EXAMENS</p>
+
+            <!-- Heading -->
+            <h1 class="text-4xl md:text-5xl lg:text-[56px] font-extrabold leading-tight text-[#0B1C30] mb-5">
+                Accédez aux sujets
+                <br>
+                <span class="text-[#0037B0] text-[85%]">d'examens de l'UPGC.</span>
+            </h1>
+
+            <!-- Subheading -->
+            <p class="text-base md:text-lg text-gray-500 max-w-2xl mx-auto mb-10 leading-relaxed">
+                La plus grande bibliothèque numérique d'archives académiques pour les étudiants de l'Université Péléforo Gon Coulibaly.
+            </p>
+
+            <!-- Search + Button row -->
+            <div class="flex flex-col sm:flex-row items-center justify-center gap-3 max-w-xl mx-auto mb-8">
+                <div class="relative w-full">
+                    <span class="absolute inset-y-0 left-0 pl-4 flex items-center text-gray-400">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                        </svg>
+                    </span>
+                    <input type="text" placeholder="Rechercher un sujet (ex : Algèbre Linéaire L1…)"
+                           class="w-full pl-11 pr-4 py-3 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#0037B0] focus:border-[#0037B0] shadow-sm">
+                </div>
+                <a href="#"
+                   class="flex-shrink-0 bg-[#0037B0] hover:bg-[#002A8A] text-white font-bold text-sm px-7 py-3 rounded-xl transition shadow-sm whitespace-nowrap">
+                    Explorer →
+                </a>
+            </div>
+
+            <!-- Popular tags -->
+            <div class="flex flex-wrap justify-center items-center gap-3 text-sm">
+                <span class="text-gray-400 font-medium">Populaires :</span>
+                <a href="#" class="bg-white border border-gray-200 hover:border-[#0037B0] hover:text-[#0037B0] text-gray-600 px-4 py-1.5 rounded-full text-sm transition shadow-sm">Maths</a>
+                <a href="#" class="bg-white border border-gray-200 hover:border-[#0037B0] hover:text-[#0037B0] text-gray-600 px-4 py-1.5 rounded-full text-sm transition shadow-sm">Droit</a>
+                <a href="#" class="bg-white border border-gray-200 hover:border-[#0037B0] hover:text-[#0037B0] text-gray-600 px-4 py-1.5 rounded-full text-sm transition shadow-sm">Informatique</a>
+                <a href="#" class="bg-white border border-gray-200 hover:border-[#0037B0] hover:text-[#0037B0] text-gray-600 px-4 py-1.5 rounded-full text-sm transition shadow-sm">Économie</a>
+                <a href="#" class="bg-white border border-gray-200 hover:border-[#0037B0] hover:text-[#0037B0] text-gray-600 px-4 py-1.5 rounded-full text-sm transition shadow-sm">Physique</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== STATS BANNER ==================== -->
+    <section class="py-10 md:py-14">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
+                <!-- Stat 1 -->
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-50 p-8 text-center hover:shadow-md transition" style="box-shadow: 0 2px 8px rgba(0,0,0,0.06);">
+                    <p class="text-5xl md:text-6xl font-black text-[#0037B0]">{{ total_sujets }}+</p>
+                    <p class="text-sm font-semibold text-gray-500 tracking-widest mt-2 uppercase">Sujets d'examens</p>
+                </div>
+                <!-- Stat 2 -->
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-50 p-8 text-center hover:shadow-md transition" style="box-shadow: 0 2px 8px rgba(0,0,0,0.06);">
+                    <p class="text-5xl md:text-6xl font-black text-[#0037B0]">{{ total_filieres }}</p>
+                    <p class="text-sm font-semibold text-gray-500 tracking-widest mt-2 uppercase">Filières disponibles</p>
+                </div>
+                <!-- Stat 3 -->
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-50 p-8 text-center hover:shadow-md transition" style="box-shadow: 0 2px 8px rgba(0,0,0,0.06);">
+                    <p class="text-5xl md:text-6xl font-black text-[#0037B0]">{{ annees_distinctes }}</p>
+                    <p class="text-sm font-semibold text-gray-500 tracking-widest mt-2 uppercase">Années d'archives</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== POURQUOI UPGCExam ? ==================== -->
+    <section class="py-10 md:py-14 bg-white">
+        <div class="max-w-7xl mx-auto px-6">
+            <!-- Section title -->
+            <div class="text-center mb-14">
+                <h2 class="text-3xl md:text-4xl font-black text-[#0B1C30] mb-3">Pourquoi utiliser UPGCExam ?</h2>
+                <div class="w-16 h-1 bg-[#0037B0] mx-auto rounded-full"></div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- Card 1 -->
+                <div class="bg-[#F8F9FF] rounded-2xl p-8 text-center hover:shadow-md transition">
+                    <div class="w-14 h-14 bg-[#0037B0]/10 rounded-xl flex items-center justify-center mx-auto mb-5">
+                        <svg class="w-7 h-7 text-[#0037B0]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"/>
+                        </svg>
+                    </div>
+                    <h3 class="text-lg font-bold text-[#0B1C30] mb-2">Toutes filières</h3>
+                    <p class="text-sm text-gray-500 leading-relaxed">
+                        Plus de 500 sujets couvrant l'ensemble des filières de l'UPGC. Des sciences aux lettres, trouvez ce qu'il vous faut.
+                    </p>
+                </div>
+
+                <!-- Card 2 -->
+                <div class="bg-[#F8F9FF] rounded-2xl p-8 text-center hover:shadow-md transition">
+                    <div class="w-14 h-14 bg-[#0037B0]/10 rounded-xl flex items-center justify-center mx-auto mb-5">
+                        <svg class="w-7 h-7 text-[#0037B0]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                        </svg>
+                    </div>
+                    <h3 class="text-lg font-bold text-[#0B1C30] mb-2">Recherche rapide</h3>
+                    <p class="text-sm text-gray-500 leading-relaxed">
+                        Recherche intelligente et filtres avancés pour trouver vos sujets en quelques secondes. Gagnez un temps précieux.
+                    </p>
+                </div>
+
+                <!-- Card 3 -->
+                <div class="bg-[#F8F9FF] rounded-2xl p-8 text-center hover:shadow-md transition">
+                    <div class="w-14 h-14 bg-[#0037B0]/10 rounded-xl flex items-center justify-center mx-auto mb-5">
+                        <svg class="w-7 h-7 text-[#0037B0]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                        </svg>
+                    </div>
+                    <h3 class="text-lg font-bold text-[#0B1C30] mb-2">Gratuité totale</h3>
+                    <p class="text-sm text-gray-500 leading-relaxed">
+                        Accédez à tout le contenu sans frais. Pas d'abonnement, pas de limite. L'excellence académique pour tous.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== COMMENT ÇA FONCTIONNE ? ==================== -->
+    <section class="py-10 md:py-14 bg-[#F8F9FF]">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="flex flex-col lg:flex-row items-center gap-12 lg:gap-16">
+                <!-- Left: Text content -->
+                <div class="flex-1 max-w-lg">
+                    <h2 class="text-3xl md:text-4xl font-black text-[#0B1C30] mb-2">Comment ça <span class="text-[#0037B0]">fonctionne</span> ?</h2>
+                    <div class="w-16 h-1 bg-[#0037B0] rounded-full mb-8"></div>
+
+                    <div class="space-y-8">
+                        <!-- Step 1 -->
+                        <div class="flex items-start gap-4">
+                            <div class="w-10 h-10 bg-[#0037B0] rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0">1</div>
+                            <div>
+                                <h4 class="text-base font-bold text-[#0B1C30]">Inscrivez-vous</h4>
+                                <p class="text-sm text-gray-500 mt-1">Créez votre compte étudiant gratuit en quelques clics.</p>
+                            </div>
+                        </div>
+                        <!-- Step 2 -->
+                        <div class="flex items-start gap-4">
+                            <div class="w-10 h-10 bg-[#0037B0] rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0">2</div>
+                            <div>
+                                <h4 class="text-base font-bold text-[#0B1C30]">Recherchez vos sujets</h4>
+                                <p class="text-sm text-gray-500 mt-1">Trouvez les examens passés qui correspondent à votre filière et niveau.</p>
+                            </div>
+                        </div>
+                        <!-- Step 3 -->
+                        <div class="flex items-start gap-4">
+                            <div class="w-10 h-10 bg-[#0037B0] rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0">3</div>
+                            <div>
+                                <h4 class="text-base font-bold text-[#0B1C30]">Étudiez et réussissez</h4>
+                                <p class="text-sm text-gray-500 mt-1">Téléchargez les PDFs, entraînez-vous et obtenez vos meilleures notes.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right: Image / illustration -->
+                <div class="flex-1 w-full">
+                    <div class="bg-gradient-to-br from-[#0037B0] to-[#4F8CFF] rounded-3xl p-8 md:p-10 text-white relative overflow-hidden">
+                        <!-- Decorative circles -->
+                        <div class="absolute -top-10 -right-10 w-40 h-40 bg-white/5 rounded-full"></div>
+                        <div class="absolute -bottom-6 -left-6 w-28 h-28 bg-white/5 rounded-full"></div>
+
+                        <div class="relative">
+                            <div class="flex items-center gap-4 mb-6">
+                                <div class="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center">
+                                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <p class="font-bold text-lg">Bibliothèque UPGCExam</p>
+                                    <p class="text-white/70 text-sm">Accès illimité 24h/24</p>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div class="bg-white/10 rounded-xl p-3">
+                                    <p class="text-xl font-black">500+</p>
+                                    <p class="text-xs text-white/70">Sujets</p>
+                                </div>
+                                <div class="bg-white/10 rounded-xl p-3">
+                                    <p class="text-xl font-black">12</p>
+                                    <p class="text-xs text-white/70">Filières</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== SUJETS POPULAIRES ==================== -->
+    <section class="py-10 md:py-14 bg-white">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="flex justify-between items-end mb-10">
+                <div>
+                    <h2 class="text-3xl md:text-4xl font-black text-[#0B1C30] mb-2">Sujets populaires</h2>
+                    <p class="text-gray-500 text-sm">Les sujets les plus consultés par les étudiants</p>
+                </div>
+                <a href="#" class="hidden sm:inline-flex text-sm font-semibold text-[#0037B0] hover:underline items-center gap-1">
+                    Voir tout →
+                </a>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                {% for sujet in sujets_populaires %}
+                <div class="group bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-lg transition overflow-hidden">
+                    <div class="h-40 bg-gradient-to-br {% cycle 'from-[#0037B0] to-[#4F8CFF]' 'from-[#8B5CF6] to-[#A78BFA]' 'from-[#10B981] to-[#34D399]' 'from-[#F59E0B] to-[#FBBF24]' %} relative flex items-center justify-center">
+                        <svg class="w-14 h-14 text-white/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                        </svg>
+                        <span class="absolute top-3 left-3 bg-white/20 backdrop-blur-sm text-white text-xs font-semibold px-2 py-0.5 rounded">{{ sujet.filiere_code }}</span>
+                    </div>
+                    <div class="p-4">
+                        <h3 class="font-bold text-sm text-[#0B1C30]">{{ sujet.titre }} - {{ sujet.annee }}</h3>
+                        <div class="flex items-center justify-between mt-2">
+                            <span class="text-xs text-gray-400">📄 {{ sujet.niveau }} {{ sujet.matiere }}</span>
+                            <span class="text-xs text-[#0037B0] font-semibold">{{ sujet.vues }} vues</span>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <p class="text-sm text-gray-400 col-span-4 text-center py-10">Aucun sujet pour l'instant</p>
+                {% endfor %}
+            </div>
+
+            <!-- Mobile "Voir tout" -->
+            <div class="mt-8 text-center sm:hidden">
+                <a href="#" class="inline-flex text-sm font-semibold text-[#0037B0] hover:underline items-center gap-1">
+                    Voir tous les sujets →
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== CTA SECTION ==================== -->
+    <section class="relative overflow-hidden">
+        <div class="max-w-7xl mx-auto px-6 py-10 md:py-14">
+            <div class="bg-gradient-to-r from-[#0037B0] to-[#2563EB] rounded-3xl p-10 md:p-16 text-center text-white relative overflow-hidden">
+                <!-- Decorative elements -->
+                <div class="absolute -top-20 -right-20 w-60 h-60 bg-white/5 rounded-full"></div>
+                <div class="absolute -bottom-16 -left-16 w-40 h-40 bg-white/5 rounded-full"></div>
+
+                <div class="relative max-w-2xl mx-auto">
+                    <h2 class="text-3xl md:text-4xl lg:text-5xl font-black mb-4">Prêt à exceller à vos examens ?</h2>
+                    <p class="text-white/80 text-base md:text-lg mb-8 max-w-lg mx-auto leading-relaxed">
+                        Rejoignez des milliers d'étudiants de l'UPGC et préparez votre avenir sereinement dès aujourd'hui.
+                    </p>
+                    <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+                        <a href="{% url 'inscription' %}"
+                           class="bg-white text-[#0037B0] font-bold px-8 py-3.5 rounded-xl hover:bg-gray-100 transition shadow-lg text-sm">
+                            Créer mon compte
+                        </a>
+                        <a href="#"
+                           class="border-2 border-white/30 text-white font-semibold px-8 py-3.5 rounded-xl hover:bg-white/10 transition text-sm">
+                            En savoir plus →
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== FOOTER ==================== -->
+    <footer class="bg-[#0B1C30]">
+        <div class="max-w-7xl mx-auto px-6 py-12">
+            <!-- Top row -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-10">
+                <!-- Brand -->
+                <div class="md:col-span-1">
+                    <h3 class="text-white font-black text-lg mb-3">UPGCExam</h3>
+                    <p class="text-gray-400 text-xs leading-relaxed">
+                        L'EXCELLENCE ACADÉMIQUE À PORTÉE DE MAIN.
+                    </p>
+                </div>
+                <!-- Links 1 -->
+                <div>
+                    <h4 class="text-white text-xs font-bold tracking-wider mb-4 uppercase">Plateforme</h4>
+                    <ul class="space-y-2.5">
+                        <li><a href="{% url 'accueil' %}" class="text-gray-400 hover:text-white text-xs transition">Accueil</a></li>
+                        <li><a href="{% url 'bibliotheque' %}" class="text-gray-400 hover:text-white text-xs transition">Sujets</a></li>
+                        <li><a href="{% url 'bibliotheque' %}" class="text-gray-400 hover:text-white text-xs transition">Bibliothèque</a></li>
+                    </ul>
+                </div>
+                <!-- Links 2 -->
+                <div>
+                    <h4 class="text-white text-xs font-bold tracking-wider mb-4 uppercase">Université</h4>
+                    <ul class="space-y-2.5">
+                        <li><a href="#" class="text-gray-400 hover:text-white text-xs transition">University Info</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white text-xs transition">Mentions Légales</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white text-xs transition">Contact</a></li>
+                    </ul>
+                </div>
+                <!-- Links 3 -->
+                <div>
+                    <h4 class="text-white text-xs font-bold tracking-wider mb-4 uppercase">Compte</h4>
+                    <ul class="space-y-2.5">
+                        <li><a href="{% url 'connexion' %}" class="text-gray-400 hover:text-white text-xs transition">Connexion</a></li>
+                        <li><a href="{% url 'inscription' %}" class="text-gray-400 hover:text-white text-xs transition">Inscription</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Divider -->
+            <div class="border-t border-gray-800 pt-6">
+                <div class="flex flex-col md:flex-row items-center justify-between">
+                    <p class="text-gray-500 text-xs">© {% now "Y" %} UPGCExam — EXCELLENCE ACADÉMIQUE</p>
+                    <div class="flex space-x-4 mt-3 md:mt-0">
+                        <a href="#" class="text-gray-500 hover:text-gray-300 text-xs">Confidentialité</a>
+                        <a href="#" class="text-gray-500 hover:text-gray-300 text-xs">CGU</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script>
+        function toggleMenu() {
+            const menu = document.getElementById('dropdownMenu');
+            if (menu) menu.classList.toggle('hidden');
+        }
+        document.addEventListener('click', function(e) {
+            const menu = document.getElementById('profileMenu');
+            const dropdown = document.getElementById('dropdownMenu');
+            if (menu && dropdown && !menu.contains(e.target)) {
+                dropdown.classList.add('hidden');
+            }
+        });
+        document.addEventListener('DOMContentLoaded', function() {
+            const btn = document.getElementById('mobileMenuBtn');
+            const menu = document.getElementById('mobileMenu');
+            if (btn && menu) {
+                btn.addEventListener('click', function() {
+                    menu.classList.toggle('hidden');
+                });
+            }
+        });
+    </script>
+</body>
+</html>

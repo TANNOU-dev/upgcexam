@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UPGCExam - Connexion</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        * { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="min-h-screen bg-[#F0F4FF] flex items-center justify-center px-4">
+    <div class="w-full max-w-md bg-white rounded-2xl shadow-sm p-8">
+        <div class="text-center mb-8">
+            <h1 class="text-3xl font-black text-[#0037B0]">UPGCExam</h1>
+            <p class="text-sm text-gray-500 mt-1">Excellence Académique &amp; Innovation</p>
+        </div>
+
+        <h2 class="text-2xl font-black text-gray-900 mb-1">Se connecter</h2>
+        <p class="text-sm text-gray-500 mb-6">Accédez à votre espace d'examen personnalisé.</p>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="mb-4 p-3 rounded-lg {% if message.tags == 'error' %}bg-red-50 text-red-600 border border-red-200{% else %}bg-green-50 text-green-600 border border-green-200{% endif %} text-sm">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <form method="post" class="space-y-4">
+            {% csrf_token %}
+            {% if next %}
+            <input type="hidden" name="next" value="{{ next }}">
+            {% endif %}
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-1">Nom d'utilisateur</label>
+                <div class="relative">
+                    <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                        </svg>
+                    </span>
+                    <input type="text" name="username" required
+                           class="w-full pl-10 pr-4 py-2.5 bg-[#F8F9FF] border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-blue-600 outline-none transition text-sm">
+                </div>
+            </div>
+            <div>
+                <div class="flex justify-between items-center mb-1">
+                    <label class="block text-sm font-semibold text-gray-700">Mot de passe</label>
+                    <a href="#" class="text-xs text-[#0037B0] font-medium hover:underline">Mot de passe oublié ?</a>
+                </div>
+                <div class="relative">
+                    <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                        </svg>
+                    </span>
+                    <input id="login_password" type="password" name="password" required
+                           class="w-full pl-10 pr-10 py-2.5 bg-[#F8F9FF] border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-blue-600 outline-none transition text-sm">
+                    <button type="button" onclick="togglePassword('login_password', this)"
+                            class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600">
+                        <svg class="w-5 h-5 eye-open" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                        </svg>
+                        <svg class="w-5 h-5 eye-closed hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            <button type="submit"
+                    class="w-full bg-[#0037B0] text-white py-2.5 rounded-lg font-bold hover:bg-[#002A8A] transition duration-200 text-sm">
+                Se connecter
+            </button>
+        </form>
+
+        <p class="text-center mt-6 text-sm text-gray-500">
+            Vous n'avez pas de compte ?
+            <a href="{% url 'inscription' %}" class="text-[#0037B0] font-bold hover:underline">Créer un compte</a>
+        </p>
+
+        <div class="mt-8 pt-4 border-t border-gray-100 text-center">
+            <div class="flex justify-center space-x-6">
+                <a href="#" class="text-xs text-gray-400 hover:text-gray-600">Aide</a>
+                <a href="#" class="text-xs text-gray-400 hover:text-gray-600">Confidentialité</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function togglePassword(fieldId, btn) {
+            const field = document.getElementById(fieldId);
+            const open = btn.querySelector('.eye-open');
+            const closed = btn.querySelector('.eye-closed');
+            if (field.type === 'password') {
+                field.type = 'text';
+                open.classList.add('hidden');
+                closed.classList.remove('hidden');
+            } else {
+                field.type = 'password';
+                open.classList.remove('hidden');
+                closed.classList.add('hidden');
+            }
+        }
+    </script>
+</body>
+</html>
