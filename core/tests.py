@@ -27,7 +27,7 @@ class CoreViewsTests(TestCase):
             "tableau_de_bord": "/connexion/?next=/tableau-de-bord/",
             "parametres": "/connexion/?next=/parametres/",
             "deconnexion": "/connexion/?next=/deconnexion/",
-            "ajouter_sujet": "/connexion/?next=/ajouter-un-sujet/",
+            "ajouter_sujet": "/connexion/?next=/sujets/ajouter/",
         }
 
         for name, location in expected.items():
@@ -107,7 +107,7 @@ class CoreViewsTests(TestCase):
         user = User.objects.create_user(username="etudiant", password="Motdepasse12345")
         filiere = Filiere.objects.create(nom="Mathématiques-Informatique", code="MI")
         matiere = Matiere.objects.create(nom="Calcul Différentiel", filiere=filiere)
-        Niveau.objects.create(nom="L1")
+        niveau = Niveau.objects.create(nom="L1")
         self.client.force_login(user)
         pdf = SimpleUploadedFile(
             "sujet.pdf",
@@ -121,6 +121,7 @@ class CoreViewsTests(TestCase):
                 "titre": "Algèbre Linéaire - Examen Final",
                 "filiere": str(filiere.id),
                 "matiere": str(matiere.id),
+                "niveau": str(niveau.id),
                 "annee_academique": "2025-2026",
                 "fichier_pdf": pdf,
             },
@@ -128,3 +129,55 @@ class CoreViewsTests(TestCase):
 
         self.assertRedirects(response, reverse("bibliotheque"))
         self.assertTrue(Sujet.objects.filter(titre="Algèbre Linéaire - Examen Final").exists())
+
+    def _create_sujet(self, owner):
+        """Helper : crée un sujet actif appartenant à owner."""
+        filiere = Filiere.objects.create(nom="Informatique", code="INF")
+        matiere = Matiere.objects.create(nom="Algo", filiere=filiere)
+        niveau = Niveau.objects.create(nom="L2")
+        pdf = SimpleUploadedFile("s.pdf", b"%PDF-1.4", content_type="application/pdf")
+        return Sujet.objects.create(
+            titre="Test Sujet",
+            filiere=filiere,
+            matiere=matiere,
+            niveau=niveau,
+            annee_academique="2024-2025",
+            fichier_pdf=pdf,
+            publie_par=owner,
+            statut='actif',
+        )
+
+    def test_owner_can_access_modify_page(self):
+        owner = User.objects.create_user(username="proprio", password="Pass12345")
+        sujet = self._create_sujet(owner)
+        self.client.force_login(owner)
+
+        response = self.client.get(reverse("modifier_sujet", args=[sujet.id]))
+        self.assertEqual(response.status_code, 200)
+
+    def test_other_user_cannot_modify_sujet(self):
+        owner = User.objects.create_user(username="proprio", password="Pass12345")
+        intrus = User.objects.create_user(username="intrus", password="Pass12345")
+        sujet = self._create_sujet(owner)
+        self.client.force_login(intrus)
+
+        response = self.client.get(reverse("modifier_sujet", args=[sujet.id]))
+        self.assertRedirects(response, reverse("bibliotheque"))
+
+    def test_other_user_cannot_delete_sujet(self):
+        owner = User.objects.create_user(username="proprio", password="Pass12345")
+        intrus = User.objects.create_user(username="intrus", password="Pass12345")
+        sujet = self._create_sujet(owner)
+        self.client.force_login(intrus)
+
+        response = self.client.get(reverse("supprimer_sujet", args=[sujet.id]))
+        self.assertRedirects(response, reverse("bibliotheque"))
+
+    def test_staff_can_modify_any_sujet(self):
+        owner = User.objects.create_user(username="proprio", password="Pass12345")
+        admin = User.objects.create_user(username="admin", password="Pass12345", is_staff=True)
+        sujet = self._create_sujet(owner)
+        self.client.force_login(admin)
+
+        response = self.client.get(reverse("modifier_sujet", args=[sujet.id]))
+        self.assertEqual(response.status_code, 200)

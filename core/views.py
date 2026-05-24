@@ -2,11 +2,14 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.models import User
 from django.contrib import messages
-from django.contrib.auth.decorators import login_required, user_passes_test
-from django.utils.http import url_has_allowed_host_and_scheme
+from django.contrib.auth.decorators import login_required
+from django.core.paginator import Paginator
+from django.db.models import Q
+from django.db.models.functions import ExtractWeekDay
+from django.db.models import Count
 from .models import Verification, Activite, Telechargement, Matiere, Filiere, Sujet, Utilisateur, Niveau
 from django.utils import timezone
-from datetime import timedelta, datetime
+from datetime import timedelta
 import random
 
 
@@ -48,8 +51,6 @@ def accueil(request):
 
 
 def bibliotheque(request):
-    from django.core.paginator import Paginator
-
     query = request.GET.get('q', '')
     filiere_id = request.GET.get('filiere', '')
     matiere_id = request.GET.get('matiere', '')
@@ -86,6 +87,20 @@ def bibliotheque(request):
     })
 
 
+# ─────────────────────────────────────────────────────────────────────────────
+# FIX 1 — Open Redirect : valider que next_url est un chemin interne
+# ─────────────────────────────────────────────────────────────────────────────
+def _safe_next_url(next_url, fallback='tableau_de_bord'):
+    """
+    Retourne next_url uniquement s'il s'agit d'un chemin relatif interne
+    (commence par '/') afin d'empêcher les redirections vers des sites externes.
+    Sinon retourne le nom de vue fallback.
+    """
+    if next_url and next_url.startswith('/') and not next_url.startswith('//'):
+        return next_url
+    return fallback
+
+
 def connexion(request):
     if request.method == 'POST':
         username_input = request.POST.get('username')
@@ -93,15 +108,14 @@ def connexion(request):
         user = authenticate(request, username=username_input, password=password)
         if user:
             login(request, user)
-            next_url = request.POST.get('next') or request.GET.get('next') or 'tableau_de_bord'
-            if not url_has_allowed_host_and_scheme(next_url, allowed_hosts=None):
-                next_url = 'tableau_de_bord'
+            raw_next = request.POST.get('next') or request.GET.get('next') or ''
+            next_url = _safe_next_url(raw_next)
+            if not next_url.startswith('/'):
+                return redirect(next_url)
             return redirect(next_url)
         else:
             messages.error(request, "Nom d'utilisateur ou mot de passe incorrect")
     next_url = request.GET.get('next', '')
-    if next_url and not url_has_allowed_host_and_scheme(next_url, allowed_hosts=None):
-        next_url = ''
     return render(request, 'core/login.html', {'next': next_url})
 
 
@@ -149,12 +163,10 @@ def verification(request):
                 verif.utilise = True
                 verif.save()
                 request.session.pop('email_a_verifier', None)
-                # Connecter l'utilisateur correspondant
                 try:
                     user = User.objects.get(email=email)
                     user.backend = 'django.contrib.auth.backends.ModelBackend'
                     login(request, user)
-                    # Créer/mettre à jour le profil Utilisateur
                     profil, created = Utilisateur.objects.get_or_create(user=user)
                     profil.email_verifie = True
                     profil.save()
@@ -175,39 +187,14 @@ def deconnexion(request):
 
 
 @login_required
-def telecharger_sujet(request, sujet_id):
-    from django.http import FileResponse, Http404
-    try:
-        sujet = Sujet.objects.select_related('filiere', 'matiere').get(id=sujet_id, statut='actif')
-    except Sujet.DoesNotExist:
-        raise Http404('Sujet introuvable')
-
-    # Incrémenter le compteur
-    sujet.telechargements += 1
-    sujet.save(update_fields=['telechargements'])
-
-    # Logger le téléchargement
-    Telechargement.objects.create(utilisateur=request.user, sujet=sujet)
-
-    # Enregistrer l'activité
-    Activite.objects.create(
-        utilisateur=request.user,
-        type='telechargement',
-        sujet=sujet,
-        description=f"Téléchargement de {sujet.titre}"
-    )
-
-    return FileResponse(sujet.fichier_pdf.open('rb'), as_attachment=True, filename=f"{sujet.titre}.pdf")
-
-@login_required
 def parametres(request):
     if request.method == 'POST':
         user = request.user
         nouveau_username = request.POST.get('username')
         nouvel_email = request.POST.get('email')
-        ancien_mdp = request.POST.get('ancien_mot_de_passe')
-        nouveau_mdp = request.POST.get('nouveau_mot_de_passe')
-        
+        ancien_mdp = request.POST.get('ancien_mot_de_passe', '')
+        nouveau_mdp = request.POST.get('nouveau_mot_de_passe', '')
+
         if not user.check_password(ancien_mdp):
             messages.error(request, "Ancien mot de passe incorrect")
         else:
@@ -240,16 +227,12 @@ def recherche(request):
 
     resultats = Sujet.objects.none()
     if query:
-        from django.db.models import Q
         resultats = Sujet.objects.filter(
             Q(statut='actif'),
             Q(titre__icontains=query) | Q(description__icontains=query) | Q(auteur_nom__icontains=query) | Q(matiere__nom__icontains=query)
         ).select_related('filiere', 'matiere', 'niveau').order_by('-vues')
 
-    # Suggestions depuis la BD (sujets les plus vus, 4 max)
     suggestions = Sujet.objects.filter(statut='actif').select_related('filiere', 'matiere', 'niveau').order_by('-vues')[:4]
-
-    # Documents populaires (top 2 vus)
     docs_populaires = Sujet.objects.filter(statut='actif').select_related('filiere', 'matiere', 'niveau').order_by('-vues')[:2]
 
     return render(request, 'core/recherche.html', {
@@ -280,7 +263,7 @@ def ajouter_sujet(request):
 
         if not all([titre, filiere_id, matiere_id, niveau_id, annee_academique, fichier]):
             messages.error(request, 'Tous les champs sont obligatoires.')
-        elif not fichier.name.endswith('.pdf'):
+        elif fichier.content_type != 'application/pdf':
             messages.error(request, 'Seuls les fichiers PDF sont acceptés.')
         else:
             Sujet.objects.create(
@@ -310,6 +293,9 @@ def ajouter_sujet(request):
     })
 
 
+# ─────────────────────────────────────────────────────────────────────────────
+# FIX 2 — modifier_sujet : vérifier propriété ou staff
+# ─────────────────────────────────────────────────────────────────────────────
 @login_required
 def modifier_sujet(request, sujet_id):
     try:
@@ -317,8 +303,9 @@ def modifier_sujet(request, sujet_id):
     except Sujet.DoesNotExist:
         messages.error(request, 'Sujet introuvable.')
         return redirect('bibliotheque')
-    if not request.user.is_staff and sujet.publie_par != request.user:
-        messages.error(request, "Vous n'avez pas les droits pour modifier ce sujet.")
+
+    if sujet.publie_par != request.user and not request.user.is_staff:
+        messages.error(request, "Vous n'avez pas la permission de modifier ce sujet.")
         return redirect('bibliotheque')
 
     filieres = Filiere.objects.all()
@@ -360,6 +347,9 @@ def modifier_sujet(request, sujet_id):
     })
 
 
+# ─────────────────────────────────────────────────────────────────────────────
+# FIX 3 — supprimer_sujet : vérifier propriété ou staff + filtre statut
+# ─────────────────────────────────────────────────────────────────────────────
 @login_required
 def supprimer_sujet(request, sujet_id):
     try:
@@ -367,18 +357,43 @@ def supprimer_sujet(request, sujet_id):
     except Sujet.DoesNotExist:
         messages.error(request, 'Sujet introuvable.')
         return redirect('bibliotheque')
-    if not request.user.is_staff and sujet.publie_par != request.user:
-        messages.error(request, "Vous n'avez pas les droits pour supprimer ce sujet.")
+
+    if sujet.publie_par != request.user and not request.user.is_staff:
+        messages.error(request, "Vous n'avez pas la permission de supprimer ce sujet.")
         return redirect('bibliotheque')
 
     if request.method == 'POST' and 'confirmer' in request.POST:
+        titre = sujet.titre
         sujet.delete()
-        messages.success(request, f"Sujet « {sujet.titre} » supprimé définitivement.")
+        messages.success(request, f"Sujet « {titre} » supprimé définitivement.")
         return redirect('bibliotheque')
 
     return render(request, 'core/supprimer_sujet.html', {
         'sujet': sujet,
     })
+
+
+@login_required
+def telecharger_sujet(request, sujet_id):
+    from django.http import FileResponse, Http404
+    try:
+        sujet = Sujet.objects.select_related('filiere', 'matiere').get(id=sujet_id, statut='actif')
+    except Sujet.DoesNotExist:
+        raise Http404('Sujet introuvable')
+
+    sujet.telechargements += 1
+    sujet.save(update_fields=['telechargements'])
+
+    Telechargement.objects.create(utilisateur=request.user, sujet=sujet)
+
+    Activite.objects.create(
+        utilisateur=request.user,
+        type='telechargement',
+        sujet=sujet,
+        description=f"Téléchargement de {sujet.titre}"
+    )
+
+    return FileResponse(sujet.fichier_pdf.open('rb'), as_attachment=True, filename=f"{sujet.titre}.pdf")
 
 
 @login_required
@@ -389,14 +404,11 @@ def detail_sujet(request, sujet_id):
         messages.error(request, 'Sujet introuvable.')
         return redirect('bibliotheque')
 
-    # Incrémenter les vues
     sujet.vues += 1
     sujet.save(update_fields=['vues'])
 
-    # Enregistrer l'activité
     Activite.objects.create(utilisateur=request.user, type='consultation', sujet=sujet, description=f"Consultation de {sujet.titre}")
 
-    # Sujets similaires (même filière, excluant le sujet actuel)
     similaires = Sujet.objects.filter(statut='actif', filiere=sujet.filiere).exclude(id=sujet.id).select_related('filiere', 'matiere').order_by('-vues')[:3]
 
     return render(request, 'core/detail_sujet.html', {
@@ -465,24 +477,23 @@ def tableau_de_bord(request):
         else:
             pct = 0
         progressions.append({'nom': filiere.nom, 'pourcentage': pct, 'couleur': couleurs[i % len(couleurs)]})
+
     jours = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim']
     activite_hebdo = Activite.objects.filter(utilisateur_id=user_id)
     if activite_hebdo.exists():
-        from django.db.models.functions import ExtractWeekDay
-        from django.db.models import Count
         jours_act = activite_hebdo.annotate(jour_sem=ExtractWeekDay('cree_le')).values('jour_sem').annotate(count=Count('id'))
-        mapping = {2:0, 3:1, 4:2, 5:3, 6:4, 7:5, 1:6}
-        valeurs = [0]*7
+        mapping = {2: 0, 3: 1, 4: 2, 5: 3, 6: 4, 7: 5, 1: 6}
+        valeurs = [0] * 7
         for j in jours_act:
             valeurs[mapping[j['jour_sem']]] = min(j['count'] * 10, 100)
         activite = list(zip(jours, valeurs))
     else:
-        activite = list(zip(jours, [0]*7))
+        activite = list(zip(jours, [0] * 7))
+
     sujets_recommandes = []
     for sujet in Sujet.objects.filter(statut='actif').order_by('-vues')[:3]:
         sujets_recommandes.append({'titre': sujet.titre, 'annee': sujet.annee_academique})
-    
-    # Activités récentes
+
     activites_recentes = []
     for act in Activite.objects.filter(utilisateur_id=user_id).order_by('-cree_le')[:5]:
         depuis = timezone.now() - act.cree_le
@@ -496,10 +507,10 @@ def tableau_de_bord(request):
             temps = f"Il y a {int(depuis.total_seconds() // 86400)} jours"
         activites_recentes.append({
             'type': act.type,
-            'description': act.description or f"{dict(Activite.TYPE_CHOICES).get(act.type, act.type)} de sujet" ,
+            'description': act.description or f"{dict(Activite.TYPE_CHOICES).get(act.type, act.type)} de sujet",
             'temps': temps,
         })
-    
+
     return render(request, 'core/tableau_de_bord.html', {
         'stats': stats, 'progressions': progressions,
         'activite': activite, 'sujets_recommandes': sujets_recommandes,
