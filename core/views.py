@@ -775,3 +775,54 @@ def admin_voir_sujet_pdf(request, sujet_id):
         raise Http404('Sujet introuvable')
 
     return FileResponse(sujet.fichier_pdf.open('rb'), filename=f"{sujet.titre}.pdf")
+
+
+@login_required
+def admin_verifications(request):
+    """Gestion des codes de vérification email."""
+    if not request.user.is_staff:
+        messages.error(request, 'Accès réservé aux administrateurs.')
+        return redirect('tableau_de_bord')
+
+    if request.method == 'POST':
+        action = request.POST.get('action')
+
+        if action == 'renvoyer':
+            email = request.POST.get('email', '').strip()
+            if email and User.objects.filter(email=email).exists():
+                user = User.objects.get(email=email)
+                # Générer un nouveau code
+                code = str(random.randint(100000, 999999))
+                Verification.objects.create(
+                    email=email, code=code,
+                    expire_le=timezone.now() + timedelta(minutes=10)
+                )
+                if hasattr(user, 'profil'):
+                    user.profil.email_verifie = False
+                    user.profil.save()
+                messages.success(request, f'Nouveau code {code} envoyé à {email} (copié ci-dessus pour test).')
+            else:
+                messages.error(request, 'Email invalide ou inconnu.')
+
+        elif action == 'forcer_verification':
+            user_id = request.POST.get('user_id')
+            if user_id:
+                user = User.objects.get(id=user_id)
+                profil, created = Utilisateur.objects.get_or_create(user=user)
+                profil.email_verifie = True
+                profil.save()
+                messages.success(request, f'Email de {user.username} vérifié forcé.')
+
+        return redirect('admin_verifications')
+
+    # Lister les utilisateurs non vérifiés + les codes en cours
+    codes = Verification.objects.filter(utilise=False, expire_le__gte=timezone.now()).order_by('-expire_le')
+    non_verifies = User.objects.filter(
+        profil__email_verifie=False
+    ).select_related('profil') | User.objects.filter(profil=None)
+    non_verifies = non_verifies.order_by('-date_joined')
+
+    return render(request, 'core/admin/verifications.html', {
+        'codes': codes,
+        'non_verifies': non_verifies,
+    })

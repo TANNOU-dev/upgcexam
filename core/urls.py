@@ -24,4 +24,5 @@ urlpatterns = [
     path('administration/logs/', views.admin_logs, name='admin_logs'),
     path('administration/sujets/', views.admin_sujets, name='admin_sujets'),
     path('administration/sujets/voir-pdf/<int:sujet_id>/', views.admin_voir_sujet_pdf, name='admin_voir_sujet_pdf'),
+    path('administration/verifications/', views.admin_verifications, name='admin_verifications'),
 ]
