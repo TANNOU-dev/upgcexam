@@ -103,7 +103,7 @@
                     <h2 class="text-4xl font-black text-[#0B1C30] mt-1">{{ salutation }}, {{ request.user.username }}</h2>
                     <p class="text-gray-500 mt-1">Prêt pour votre session de révision aujourd'hui ?</p>
                 </div>
-                <a href="#" class="inline-flex items-center bg-[#0037B0] text-white px-5 py-2.5 rounded-lg font-bold text-sm hover:bg-[#002A8A] transition shadow-sm whitespace-nowrap">
+                <a href="{% url 'ajouter_sujet' %}" class="inline-flex items-center bg-[#0037B0] text-white px-5 py-2.5 rounded-lg font-bold text-sm hover:bg-[#002A8A] transition shadow-sm whitespace-nowrap">
                     <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/>
                     </svg>
@@ -179,7 +179,7 @@
             <div class="bg-white rounded-xl shadow-sm p-6">
                 <div class="flex justify-between items-center mb-4">
                     <h3 class="text-sm font-bold text-[#0B1C30]">Progression par filière</h3>
-                    <a href="#" class="text-xs text-[#0037B0] font-semibold hover:underline">Voir tout</a>
+                    <a href="{% url 'bibliotheque' %}" class="text-xs text-[#0037B0] font-semibold hover:underline">Voir tout</a>
                 </div>
                 <div class="space-y-4">
                     {% for prog in progressions %}
@@ -204,7 +204,7 @@
             <div class="bg-white rounded-xl shadow-sm p-6">
                 <div class="flex justify-between items-center mb-5">
                     <h3 class="text-sm font-bold text-[#0B1C30]">Sujets recommandés</h3>
-                    <a href="#" class="text-xs text-[#0037B0] font-semibold hover:underline">Voir tout</a>
+                    <a href="{% url 'bibliotheque' %}" class="text-xs text-[#0037B0] font-semibold hover:underline">Voir tout</a>
                 </div>
                 <div class="space-y-4">
                     {% for sujet in sujets_recommandes %}
@@ -230,7 +230,7 @@
             <div class="bg-white rounded-xl shadow-sm p-6">
                 <div class="flex justify-between items-center mb-5">
                     <h3 class="text-sm font-bold text-[#0B1C30]">Activités récentes</h3>
-                    <a href="#" class="text-xs text-[#0037B0] font-semibold hover:underline">Voir tout</a>
+                    <a href="{% url 'bibliotheque' %}" class="text-xs text-[#0037B0] font-semibold hover:underline">Voir tout</a>
                 </div>
                 <div class="space-y-4">
                     {% for act in activites_recentes %}
