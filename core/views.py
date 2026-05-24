@@ -101,11 +101,13 @@ def connexion(request):
 
 
 def inscription(request):
+    filieres = Filiere.objects.all()
     if request.method == 'POST':
         username = request.POST['username']
         email = request.POST['email']
         password = request.POST['password']
         password2 = request.POST['password2']
+        filiere_id = request.POST.get('filiere', '')
         if password != password2:
             messages.error(request, "Les mots de passe ne correspondent pas")
         elif User.objects.filter(email=email).exists():
@@ -114,8 +116,13 @@ def inscription(request):
             messages.error(request, "Ce nom d'utilisateur est déjà pris")
         else:
             user = User.objects.create_user(username=username, email=email, password=password)
-            # Créer le profil Utilisateur associé
-            Utilisateur.objects.create(user=user)
+            profil = Utilisateur.objects.create(user=user)
+            if filiere_id:
+                try:
+                    profil.filiere = Filiere.objects.get(id=filiere_id)
+                    profil.save()
+                except Filiere.DoesNotExist:
+                    pass
             code = str(random.randint(100000, 999999))
             Verification.objects.create(
                 email=email, code=code,
@@ -123,7 +130,7 @@ def inscription(request):
             )
             request.session['email_a_verifier'] = email
             return redirect(f'/verification/?code={code}')
-    return render(request, 'core/inscription.html')
+    return render(request, 'core/inscription.html', {'filieres': filieres})
 
 
 def verification(request):

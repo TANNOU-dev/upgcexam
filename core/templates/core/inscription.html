@@ -3,195 +3,402 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UPGCExam - Inscription</title>
+    <title>Inscription — UPGCExam</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
     <style>
         * { font-family: 'Inter', sans-serif; }
+        html, body { height: 100%; margin: 0; }
+
+        /* ---- LEFT PANEL ---- */
+        .left-panel {
+            background: linear-gradient(155deg, #2952d9 0%, #1a35c4 40%, #1328a8 100%);
+            position: relative;
+            overflow: hidden;
+        }
+        .left-panel::before {
+            content: '';
+            position: absolute;
+            top: -80px; right: -80px;
+            width: 320px; height: 320px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.055);
+            pointer-events: none;
+        }
+        .left-panel::after {
+            content: '';
+            position: absolute;
+            bottom: -60px; left: -60px;
+            width: 260px; height: 260px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.04);
+            pointer-events: none;
+        }
+
+        .badge-elite {
+            display: inline-block;
+            border: 1.5px solid rgba(255,255,255,0.35);
+            color: rgba(255,255,255,0.9);
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+            padding: 6px 16px;
+            border-radius: 999px;
+        }
+
+        .left-body {
+            color: rgba(255,255,255,0.28);
+            font-size: 13px;
+            line-height: 1.65;
+        }
+
+        .feature-item {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+        .feature-icon {
+            width: 40px; height: 40px;
+            border-radius: 10px;
+            background: rgba(255,255,255,0.13);
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+        }
+        .feature-text {
+            color: rgba(255,255,255,0.88);
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        /* ---- RIGHT PANEL ---- */
+        .right-panel { background: #ffffff; }
+
+        .form-label {
+            display: block;
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: #374151;
+            margin-bottom: 8px;
+        }
+        .label-optional {
+            font-weight: 600;
+            letter-spacing: 0.09em;
+            color: #9ca3af;
+            text-transform: uppercase;
+            font-size: 10px;
+            margin-left: 4px;
+        }
+
+        .input-wrap {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+        .input-icon {
+            position: absolute;
+            left: 14px;
+            color: #9ca3af;
+            width: 18px; height: 18px;
+            flex-shrink: 0;
+            pointer-events: none;
+        }
+        .form-input {
+            width: 100%;
+            padding: 13px 16px 13px 42px;
+            background: #f1f4fb;
+            border: 1.5px solid transparent;
+            border-radius: 10px;
+            font-size: 14px;
+            color: #111827;
+            outline: none;
+            transition: border-color 0.15s, background 0.15s;
+            font-family: 'Inter', sans-serif;
+        }
+        .form-input::placeholder { color: #9ca3af; }
+        .form-input:focus {
+            background: #fff;
+            border-color: #1d3fa8;
+            box-shadow: 0 0 0 3px rgba(29,63,168,0.08);
+        }
+
+        .form-select-wrap { position: relative; }
+        .select-icon {
+            position: absolute;
+            left: 14px; top: 50%;
+            transform: translateY(-50%);
+            color: #9ca3af;
+            width: 18px; height: 18px;
+            pointer-events: none;
+        }
+        .select-chevron {
+            position: absolute;
+            right: 14px; top: 50%;
+            transform: translateY(-50%);
+            color: #6b7280;
+            width: 18px; height: 18px;
+            pointer-events: none;
+        }
+        .form-select {
+            width: 100%;
+            padding: 13px 40px 13px 42px;
+            background: #f1f4fb;
+            border: 1.5px solid transparent;
+            border-radius: 10px;
+            font-size: 14px;
+            color: #6b7280;
+            appearance: none;
+            -webkit-appearance: none;
+            outline: none;
+            cursor: pointer;
+            font-family: 'Inter', sans-serif;
+            transition: border-color 0.15s;
+        }
+        .form-select:focus {
+            background: #fff;
+            border-color: #1d3fa8;
+            box-shadow: 0 0 0 3px rgba(29,63,168,0.08);
+        }
+        .form-select option {
+            color: #111827;
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 16px;
+            background: #1d3fa8;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            letter-spacing: 0.01em;
+            transition: background 0.15s, box-shadow 0.15s;
+        }
+        .btn-submit:hover {
+            background: #162e87;
+            box-shadow: 0 4px 20px rgba(29,63,168,0.3);
+        }
+
+        .eye-btn {
+            position: absolute;
+            right: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #9ca3af;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 4px;
+        }
+        .eye-btn:hover { color: #6b7280; }
+        .eye-btn svg {
+            width: 18px; height: 18px;
+        }
     </style>
 </head>
-<body class="min-h-screen flex flex-col lg:flex-row">
-    <!-- Partie gauche bleue -->
-    <div class="lg:w-1/2 flex flex-col items-center justify-center px-12 py-16" style="background: linear-gradient(180deg, #0037B0 0%, #001F66 100%);">
-        <div class="text-center max-w-md">
-            <!-- Logo UPGCExam -->
-            <h1 class="text-4xl font-black text-white mb-3">UPGCExam</h1>
-            <!-- Slogan -->
-            <p class="text-base text-blue-200 font-medium leading-relaxed">Préparez votre avenir<br>académique avec rigueur.</p>
-            <!-- Avantages -->
-            <div class="mt-12 space-y-6 text-left inline-block">
-                <div class="flex items-center space-x-4">
-                    <div class="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center flex-shrink-0">
-                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                        </svg>
-                    </div>
-                    <div>
-                        <p class="text-white font-semibold text-sm">Certification Officielle UPGC</p>
-                        <p class="text-blue-300 text-xs">Reconnue par l'université</p>
-                    </div>
-                </div>
-                <div class="flex items-center space-x-4">
-                    <div class="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center flex-shrink-0">
-                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
-                        </svg>
-                    </div>
-                    <div>
-                        <p class="text-white font-semibold text-sm">Plus de 500 annales</p>
-                        <p class="text-blue-300 text-xs">Sujets d'examens disponibles</p>
-                    </div>
-                </div>
-            </div>
-            <p class="mt-12 text-blue-300 text-xs">Université Peleforo Gon Coulibaly</p>
-        </div>
-    </div>
+<body>
+    <div class="flex min-h-screen">
 
-    <!-- Partie droite blanche -->
-    <div class="lg:w-1/2 flex flex-col justify-center px-8 py-12 bg-white">
-        <div class="w-full max-w-md mx-auto">
-            <div class="mb-6">
-                <h2 class="text-2xl font-black text-gray-900 mb-1">Créer un compte.</h2>
-                <p class="text-sm text-gray-500">Remplissez les informations ci-dessous</p>
+        <!-- ============ LEFT PANEL ============ -->
+        <div class="left-panel w-[49%] hidden lg:flex flex-col justify-center px-14 py-16 relative z-10">
+
+            <div class="mb-8">
+                <span class="badge-elite">Rejoignez l'élite</span>
             </div>
 
-            {% if messages %}
-                {% for message in messages %}
-                    <div class="mb-4 p-3 rounded-lg {% if message.tags == 'error' %}bg-red-50 text-red-600 border border-red-200{% else %}bg-green-50 text-green-600 border border-green-200{% endif %} text-sm">
-                        {{ message }}
-                    </div>
-                {% endfor %}
-            {% endif %}
+            <h1 class="text-5xl font-black text-white leading-[1.1] mb-7">
+                Préparez votre<br>avenir académique<br>avec rigueur.
+            </h1>
 
-            <form method="post" class="space-y-4">
-                {% csrf_token %}
-                <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-1">Nom d'utilisateur</label>
-                    <div class="relative">
-                        <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
-                            </svg>
-                        </span>
-                        <input type="text" name="username" required
-                               class="w-full pl-10 pr-4 py-2.5 bg-[#F8F9FF] border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-blue-600 outline-none transition text-sm">
-                    </div>
-                </div>
-                <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-1">Email</label>
-                    <div class="relative">
-                        <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
-                            </svg>
-                        </span>
-                        <input type="email" name="email" required
-                               class="w-full pl-10 pr-4 py-2.5 bg-[#F8F9FF] border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-blue-600 outline-none transition text-sm">
-                    </div>
-                </div>
-                <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-1">Filière (optionnel)</label>
-                    <div class="relative">
-                        <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
-                            <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5z"/>
-                            </svg>
-                        </span>
-                        <select name="filiere"
-                                class="w-full pl-10 pr-4 py-2.5 bg-[#F8F9FF] border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-blue-600 outline-none transition text-sm appearance-none text-gray-500">
-                            <option value="">Sélectionnez votre filière</option>
-                        </select>
-                        <span class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-gray-400">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-                            </svg>
-                        </span>
-                    </div>
-                </div>
-                <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-1">Mot de passe</label>
-                    <div class="relative">
-                        <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
-                            </svg>
-                        </span>
-                        <input id="insc_password" type="password" name="password" required
-                               class="w-full pl-10 pr-10 py-2.5 bg-[#F8F9FF] border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-blue-600 outline-none transition text-sm">
-                        <button type="button" onclick="togglePassword('insc_password', this)"
-                                class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600">
-                            <svg class="w-5 h-5 eye-open" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-                            </svg>
-                            <svg class="w-5 h-5 eye-closed hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/>
-                            </svg>
-                        </button>
-                    </div>
-                </div>
-                <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-1">Confirmer le mot de passe</label>
-                    <div class="relative">
-                        <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
-                            </svg>
-                        </span>
-                        <input id="insc_password2" type="password" name="password2" required
-                               class="w-full pl-10 pr-10 py-2.5 bg-[#F8F9FF] border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-blue-600 outline-none transition text-sm">
-                        <button type="button" onclick="togglePassword('insc_password2', this)"
-                                class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600">
-                            <svg class="w-5 h-5 eye-open" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-                            </svg>
-                            <svg class="w-5 h-5 eye-closed hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/>
-                            </svg>
-                        </button>
-                    </div>
-                </div>
-                <p class="text-xs text-gray-500 bg-blue-50 p-3 rounded-lg">Un code de vérification sera envoyé par e-mail pour valider votre inscription.</p>
-                <button type="submit"
-                        class="w-full bg-[#0037B0] text-white py-2.5 rounded-lg font-bold hover:bg-[#002A8A] transition duration-200 text-sm">
-                    S'inscrire
-                </button>
-            </form>
-
-            <p class="text-center mt-6 text-sm text-gray-500">
-                Vous avez déjà un compte ?
-                <a href="{% url 'connexion' %}" class="text-[#0037B0] font-bold hover:underline">Se connecter</a>
+            <p class="left-body mb-10">
+                Accédez à la bibliothèque d'examens la plus<br>
+                complète et suivez votre progression en temps réel<br>
+                au sein de l'Université Péléforo Gon Coulibaly.
             </p>
 
-            <!-- Footer -->
-            <div class="mt-8 pt-4 border-t border-gray-100">
-                <div class="flex justify-center space-x-6">
-                    <a href="#" class="text-xs text-gray-400 hover:text-gray-600">Accueil</a>
-                    <a href="#" class="text-xs text-gray-400 hover:text-gray-600">Bibliothèque</a>
-                    <a href="#" class="text-xs text-gray-400 hover:text-gray-600">University Info</a>
-                    <a href="#" class="text-xs text-gray-400 hover:text-gray-600">Contact</a>
+            <div class="space-y-4">
+                <div class="feature-item">
+                    <div class="feature-icon">
+                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                        </svg>
+                    </div>
+                    <span class="feature-text">Certification Officielle UPGC</span>
                 </div>
-                <div class="flex justify-center space-x-6 mt-2">
-                    <a href="#" class="text-xs text-gray-400 hover:text-gray-600">Mentions Légales</a>
-                    <a href="#" class="text-xs text-gray-400 hover:text-gray-600">Politique de confidentialité</a>
+
+                <div class="feature-item">
+                    <div class="feature-icon">
+                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+                        </svg>
+                    </div>
+                    <span class="feature-text">Plus de 500 annales disponibles</span>
                 </div>
             </div>
-        </div>
+
+        </div><!-- end left panel -->
+
+        <!-- ============ RIGHT PANEL ============ -->
+        <div class="right-panel flex-1 flex flex-col justify-center px-8 lg:px-16 py-14">
+
+            <div class="w-full max-w-md mx-auto">
+
+                <!-- Titre -->
+                <div class="mb-8">
+                    <h2 class="text-3xl font-extrabold text-gray-900 mb-2">Créer un compte</h2>
+                    <p class="text-sm text-gray-400 leading-relaxed">
+                        Inscrivez-vous pour commencer votre parcours<br class="hidden sm:block"> d'excellence.
+                    </p>
+                </div>
+
+                <!-- Messages Django -->
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="mb-5 p-3 rounded-lg text-sm {% if message.tags == 'error' %}bg-red-50 text-red-600 border border-red-200{% else %}bg-green-50 text-green-600 border border-green-200{% endif %}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+
+                <!-- Formulaire -->
+                <form method="post" class="space-y-5">
+                    {% csrf_token %}
+
+                    <!-- Nom d'utilisateur -->
+                    <div>
+                        <label class="form-label">Nom d'utilisateur</label>
+                        <div class="input-wrap">
+                            <svg class="input-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                            </svg>
+                            <input type="text" name="username" class="form-input" placeholder="ex: Jean.Kouame" autocomplete="username" required />
+                        </div>
+                    </div>
+
+                    <!-- Email -->
+                    <div>
+                        <label class="form-label">Email</label>
+                        <div class="input-wrap">
+                            <svg class="input-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                            </svg>
+                            <input type="email" name="email" class="form-input" placeholder="votre.email@institution.ci" autocomplete="email" required />
+                        </div>
+                    </div>
+
+                    <!-- Filière (optionnel) -->
+                    <div>
+                        <label class="form-label">
+                            Filière
+                            <span class="label-optional">(Optionnel)</span>
+                        </label>
+                        <div class="form-select-wrap">
+                            <svg class="select-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422A12.083 12.083 0 0121 13c0 5.523-4.477 10-10 10S2 18.523 2 13c0-.85.097-1.679.28-2.476L12 14z"/>
+                            </svg>
+                            <svg class="select-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/>
+                            </svg>
+                            <select name="filiere" class="form-select">
+                                <option value="" disabled selected>Sélectionnez votre parcours</option>
+                                {% for f in filieres %}
+                                    <option value="{{ f.id }}">{{ f.nom }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Mot de passe + Confirmer -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="form-label">Mot de passe</label>
+                            <div class="input-wrap">
+                                <svg class="input-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                                </svg>
+                                <input id="insc_password" type="password" name="password" class="form-input" placeholder="••••••••" autocomplete="new-password" required />
+                                <button type="button" class="eye-btn" onclick="togglePassword('insc_password', this)" tabindex="-1">
+                                    <svg class="eye-open" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                                    </svg>
+                                    <svg class="eye-closed hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="form-label">Confirmer</label>
+                            <div class="input-wrap">
+                                <svg class="input-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                                </svg>
+                                <input id="insc_password2" type="password" name="password2" class="form-input" placeholder="••••••••" autocomplete="new-password" required />
+                                <button type="button" class="eye-btn" onclick="togglePassword('insc_password2', this)" tabindex="-1">
+                                    <svg class="eye-open" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                                    </svg>
+                                    <svg class="eye-closed hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Bouton submit -->
+                    <button type="submit" class="btn-submit mt-1">
+                        S'inscrire
+                    </button>
+
+                    <!-- Notice vérification -->
+                    <div class="flex items-start gap-3 pt-1">
+                        <div class="flex-shrink-0 mt-0.5">
+                            <div class="w-5 h-5 rounded-full border-2 flex items-center justify-center" style="border-color:#1d3fa8;">
+                                <span class="text-[10px] font-black leading-none" style="color:#1d3fa8;">i</span>
+                            </div>
+                        </div>
+                        <p class="text-sm leading-relaxed" style="color:#1d3fa8;">
+                            Un code de vérification sera envoyé par email pour valider votre inscription.
+                        </p>
+                    </div>
+
+                </form>
+
+                <!-- Déjà un compte -->
+                <p class="mt-8 text-sm text-gray-500 text-center">
+                    Déjà un compte ?
+                    <a href="{% url 'connexion' %}" class="font-semibold hover:underline transition-colors" style="color:#1d3fa8;">
+                        Connectez-vous
+                    </a>
+                </p>
+
+            </div>
+        </div><!-- end right panel -->
+
     </div>
+
     <script>
         function togglePassword(fieldId, btn) {
             const field = document.getElementById(fieldId);
-            const open = btn.querySelector('.eye-open');
-            const closed = btn.querySelector('.eye-closed');
+            const openIcon = btn.querySelector('.eye-open');
+            const closedIcon = btn.querySelector('.eye-closed');
             if (field.type === 'password') {
                 field.type = 'text';
-                open.classList.add('hidden');
-                closed.classList.remove('hidden');
+                openIcon.classList.add('hidden');
+                closedIcon.classList.remove('hidden');
             } else {
                 field.type = 'password';
-                open.classList.remove('hidden');
-                closed.classList.add('hidden');
+                openIcon.classList.remove('hidden');
+                closedIcon.classList.add('hidden');
             }
         }
     </script>
