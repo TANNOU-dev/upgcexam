@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UPGCExam - Sujets</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>* { font-family: 'Inter', sans-serif; } body { background: #f5f7fa; }</style>
+</head>
+<body>
+    {% include 'core/includes/admin_header.html' %}
+
+    <main class="max-w-7xl mx-auto px-6 py-8">
+        <div class="flex items-center justify-between mb-8">
+            <div>
+                <h1 class="text-3xl font-black text-[#0B1C30]">📄 Gestion des sujets</h1>
+                <p class="text-gray-500 mt-1">{{ stats.total }} sujets · {{ stats.actifs }} actifs · {{ stats.archives }} en attente</p>
+            </div>
+        </div>
+
+        {% if messages %}
+        <div class="mb-6 space-y-2">
+            {% for message in messages %}
+            <div class="p-3 rounded-lg text-sm {% if message.tags == 'error' %}bg-red-50 text-red-600 border border-red-200{% else %}bg-green-50 text-green-600 border border-green-200{% endif %}">{{ message }}</div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Stats -->
+        <div class="grid grid-cols-3 gap-4 mb-6">
+            <div class="bg-white rounded-xl shadow-sm p-5 text-center">
+                <p class="text-3xl font-black text-[#0037B0]">{{ stats.total }}</p>
+                <p class="text-sm text-gray-400">Total</p>
+            </div>
+            <div class="bg-white rounded-xl shadow-sm p-5 text-center">
+                <p class="text-3xl font-black text-[#10B981]">{{ stats.actifs }}</p>
+                <p class="text-sm text-gray-400">Actifs (publiés)</p>
+            </div>
+            <div class="bg-white rounded-xl shadow-sm p-5 text-center">
+                <p class="text-3xl font-black text-[#F59E0B]">{{ stats.archives }}</p>
+                <p class="text-sm text-gray-400">En attente de validation</p>
+            </div>
+        </div>
+
+        <!-- Filtres -->
+        <div class="bg-white rounded-xl shadow-sm p-4 mb-6">
+            <form method="get" class="flex flex-wrap gap-3 items-end">
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">Statut</label>
+                    <select name="statut" class="px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-blue-600">
+                        <option value="">Tous</option>
+                        <option value="actif" {% if filtre_statut == 'actif' %}selected{% endif %}>Actif</option>
+                        <option value="archive" {% if filtre_statut == 'archive' %}selected{% endif %}>En attente</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">Filière</label>
+                    <select name="filiere" class="px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-blue-600">
+                        <option value="">Toutes</option>
+                        {% for f in filieres %}
+                        <option value="{{ f.id }}" {% if filtre_filiere|stringformat:'s' == f.id|stringformat:'s' %}selected{% endif %}>{{ f.code }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">Année</label>
+                    <select name="annee" class="px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-blue-600">
+                        <option value="">Toutes</option>
+                        {% for a in annees %}
+                        <option value="{{ a }}" {% if filtre_annee == a %}selected{% endif %}>{{ a }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <button type="submit" class="bg-[#0037B0] text-white px-4 py-2 rounded-lg font-bold text-sm hover:bg-[#002A8A] transition">Filtrer</button>
+                <a href="{% url 'admin_sujets' %}" class="text-sm text-gray-500 hover:text-gray-700 px-3 py-2">Réinitialiser</a>
+            </form>
+        </div>
+
+        <!-- Tableau -->
+        <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead>
+                        <tr class="bg-gray-50 text-left text-xs font-bold uppercase tracking-wider text-gray-500">
+                            <th class="px-4 py-3">Titre</th>
+                            <th class="px-4 py-3">Auteur</th>
+                            <th class="px-4 py-3">Filière</th>
+                            <th class="px-4 py-3">Matière</th>
+                            <th class="px-4 py-3">Année</th>
+                            <th class="px-4 py-3 text-center">Statut</th>
+                            <th class="px-4 py-3 text-center">Vues</th>
+                            <th class="px-4 py-3 text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100">
+                        {% for s in sujets %}
+                        <tr class="hover:bg-gray-50/50">
+                            <td class="px-4 py-3 font-medium text-gray-900 max-w-[200px] truncate">{{ s.titre }}</td>
+                            <td class="px-4 py-3 text-gray-500">{{ s.publie_par.username|default:'—' }}</td>
+                            <td class="px-4 py-3"><span class="text-xs font-bold text-[#0037B0] bg-blue-50 px-2 py-0.5 rounded">{{ s.filiere.code }}</span></td>
+                            <td class="px-4 py-3 text-gray-500 text-xs">{{ s.matiere.nom|truncatechars:20 }}</td>
+                            <td class="px-4 py-3 text-gray-500 text-xs">{{ s.annee_academique }}</td>
+                            <td class="px-4 py-3 text-center">
+                                {% if s.statut == 'actif' %}
+                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-green-100 text-green-700">Publié</span>
+                                {% else %}
+                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-yellow-100 text-yellow-700">En attente</span>
+                                {% endif %}
+                            </td>
+                            <td class="px-4 py-3 text-center text-gray-500">{{ s.vues }}</td>
+                            <td class="px-4 py-3 text-right">
+                                <div class="inline-flex items-center gap-1">
+                                    <!-- Voir le PDF (même en attente) -->
+                                    <a href="{% url 'admin_voir_sujet_pdf' s.id %}" target="_blank"
+                                       class="text-xs px-2 py-1 rounded bg-gray-100 text-gray-600 hover:bg-gray-200 font-medium">
+                                        👁 Voir
+                                    </a>
+                                    {% if s.statut == 'archive' %}
+                                    <form method="post" class="inline">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="sujet_id" value="{{ s.id }}">
+                                        <button type="submit" name="action" value="valider"
+                                                class="text-xs px-2 py-1 rounded bg-green-50 text-green-600 hover:bg-green-100 font-medium">
+                                            ✅ Valider
+                                        </button>
+                                    </form>
+                                    {% endif %}
+                                    {% if s.statut == 'actif' %}
+                                    <form method="post" class="inline">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="sujet_id" value="{{ s.id }}">
+                                        <button type="submit" name="action" value="archiver"
+                                                class="text-xs px-2 py-1 rounded bg-orange-50 text-orange-600 hover:bg-orange-100 font-medium">
+                                            📦 Archiver
+                                        </button>
+                                    </form>
+                                    {% endif %}
+                                    <form method="post" class="inline">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="sujet_id" value="{{ s.id }}">
+                                        <button type="submit" name="action" value="supprimer"
+                                                class="text-xs px-2 py-1 rounded bg-red-50 text-red-600 hover:bg-red-100 font-medium"
+                                                onclick="return confirm('Supprimer définitivement « {{ s.titre }} » ?')">
+                                            🗑 Supprimer
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="8" class="px-4 py-10 text-center text-gray-400">Aucun sujet trouvé.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Pagination -->
+        {% if sujets.paginator.num_pages > 1 %}
+        <div class="flex justify-center mt-6 gap-2">
+            {% if sujets.has_previous %}
+            <a href="?page={{ sujets.previous_page_number }}&statut={{ filtre_statut }}&filiere={{ filtre_filiere }}&annee={{ filtre_annee }}"
+               class="px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-sm hover:bg-gray-50">← Précédent</a>
+            {% endif %}
+            <span class="px-3 py-1.5 text-sm text-gray-500">Page {{ sujets.number }}/{{ sujets.paginator.num_pages }}</span>
+            {% if sujets.has_next %}
+            <a href="?page={{ sujets.next_page_number }}&statut={{ filtre_statut }}&filiere={{ filtre_filiere }}&annee={{ filtre_annee }}"
+               class="px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-sm hover:bg-gray-50">Suivant →</a>
+            {% endif %}
+        </div>
+        {% endif %}
+    </main>
+</body>
+</html>

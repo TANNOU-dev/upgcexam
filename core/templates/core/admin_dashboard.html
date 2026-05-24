@@ -126,6 +126,10 @@
                 <span class="text-2xl">🎓</span>
                 <p class="text-sm font-semibold text-gray-700 group-hover:text-[#0037B0] mt-2">Niveaux</p>
             </a>
+            <a href="{% url 'admin_sujets' %}" class="bg-white rounded-xl shadow-sm p-5 text-center hover:shadow-md hover:-translate-y-0.5 transition-all group">
+                <span class="text-2xl">📄</span>
+                <p class="text-sm font-semibold text-gray-700 group-hover:text-[#0037B0] mt-2">Sujets</p>
+            </a>
             <a href="{% url 'admin_logs' %}" class="bg-white rounded-xl shadow-sm p-5 text-center hover:shadow-md hover:-translate-y-0.5 transition-all group">
                 <span class="text-2xl">📊</span>
                 <p class="text-sm font-semibold text-gray-700 group-hover:text-[#0037B0] mt-2">Logs</p>
@@ -227,7 +231,10 @@
                                 class="bg-[#10B981] hover:bg-[#059669] text-white text-xs font-bold px-4 py-2 rounded-lg transition">
                             ✅ Valider
                         </button>
-                        <a href="{% url 'detail_sujet' sujet.id %}" class="text-xs text-[#0037B0] hover:underline">Voir</a>
+                        <a href="{% url 'admin_voir_sujet_pdf' sujet.id %}" target="_blank" class="inline-flex items-center bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold px-3 py-1.5 rounded-lg transition gap-1">
+                            👁 Voir PDF
+                        </a>
+                        <a href="{% url 'detail_sujet' sujet.id %}" class="text-xs text-[#0037B0] hover:underline">Détails</a>
                     </form>
                 </div>
                 {% endfor %}

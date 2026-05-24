@@ -358,8 +358,9 @@ def supprimer_sujet(request, sujet_id):
         messages.error(request, 'Sujet introuvable.')
         return redirect('bibliotheque')
 
-    if sujet.publie_par != request.user and not request.user.is_staff:
-        messages.error(request, "Vous n'avez pas la permission de supprimer ce sujet.")
+    # Seul un admin (staff) peut supprimer un sujet
+    if not request.user.is_staff:
+        messages.error(request, "Seuls les administrateurs peuvent supprimer des sujets.")
         return redirect('bibliotheque')
 
     if request.method == 'POST' and 'confirmer' in request.POST:
@@ -693,3 +694,84 @@ def admin_logs(request):
         'activites': activites,
         'telechargements': telechargements,
     })
+
+
+@login_required
+def admin_sujets(request):
+    """Gestion complète des sujets dans l'admin."""
+    if not request.user.is_staff:
+        messages.error(request, 'Accès réservé aux administrateurs.')
+        return redirect('tableau_de_bord')
+
+    from django.http import FileResponse, Http404
+
+    # Actions POST
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        sujet_id = request.POST.get('sujet_id')
+
+        if action == 'valider' and sujet_id:
+            Sujet.objects.filter(id=sujet_id, statut='archive').update(statut='actif')
+            messages.success(request, 'Sujet validé et publié.')
+
+        elif action == 'archiver' and sujet_id:
+            Sujet.objects.filter(id=sujet_id, statut='actif').update(statut='archive')
+            messages.success(request, 'Sujet archivé.')
+
+        elif action == 'supprimer' and sujet_id:
+            Sujet.objects.filter(id=sujet_id).delete()
+            messages.success(request, 'Sujet supprimé définitivement.')
+
+        return redirect('admin_sujets')
+
+    # Filtres
+    filtre_statut = request.GET.get('statut', '')
+    filtre_filiere = request.GET.get('filiere', '')
+    filtre_annee = request.GET.get('annee', '')
+
+    sujets = Sujet.objects.select_related('filiere', 'matiere', 'niveau', 'publie_par').order_by('-cree_le')
+
+    if filtre_statut:
+        sujets = sujets.filter(statut=filtre_statut)
+    if filtre_filiere:
+        sujets = sujets.filter(filiere_id=filtre_filiere)
+    if filtre_annee:
+        sujets = sujets.filter(annee_academique=filtre_annee)
+
+    paginator = Paginator(sujets, 25)
+    page = request.GET.get('page', 1)
+    sujets_page = paginator.get_page(page)
+
+    filieres = Filiere.objects.all()
+    annees = Sujet.objects.values_list('annee_academique', flat=True).distinct().order_by('-annee_academique')
+
+    stats = {
+        'total': Sujet.objects.count(),
+        'actifs': Sujet.objects.filter(statut='actif').count(),
+        'archives': Sujet.objects.filter(statut='archive').count(),
+    }
+
+    return render(request, 'core/admin/sujets.html', {
+        'sujets': sujets_page,
+        'filieres': filieres,
+        'annees': annees,
+        'filtre_statut': filtre_statut,
+        'filtre_filiere': filtre_filiere,
+        'filtre_annee': filtre_annee,
+        'stats': stats,
+    })
+
+
+@login_required
+def admin_voir_sujet_pdf(request, sujet_id):
+    """Permet à l'admin de visualiser le PDF d'un sujet (même archivé)."""
+    if not request.user.is_staff:
+        raise Http404()
+
+    from django.http import FileResponse
+    try:
+        sujet = Sujet.objects.get(id=sujet_id)
+    except Sujet.DoesNotExist:
+        raise Http404('Sujet introuvable')
+
+    return FileResponse(sujet.fichier_pdf.open('rb'), filename=f"{sujet.titre}.pdf")
