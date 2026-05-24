@@ -108,6 +108,30 @@
             </div>
         </div>
 
+        <!-- Navigation rapide vers les pages admin -->
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
+            <a href="{% url 'admin_utilisateurs' %}" class="bg-white rounded-xl shadow-sm p-5 text-center hover:shadow-md hover:-translate-y-0.5 transition-all group">
+                <span class="text-2xl">👥</span>
+                <p class="text-sm font-semibold text-gray-700 group-hover:text-[#0037B0] mt-2">Utilisateurs</p>
+            </a>
+            <a href="{% url 'admin_filieres' %}" class="bg-white rounded-xl shadow-sm p-5 text-center hover:shadow-md hover:-translate-y-0.5 transition-all group">
+                <span class="text-2xl">📚</span>
+                <p class="text-sm font-semibold text-gray-700 group-hover:text-[#0037B0] mt-2">Filières</p>
+            </a>
+            <a href="{% url 'admin_matieres' %}" class="bg-white rounded-xl shadow-sm p-5 text-center hover:shadow-md hover:-translate-y-0.5 transition-all group">
+                <span class="text-2xl">📖</span>
+                <p class="text-sm font-semibold text-gray-700 group-hover:text-[#0037B0] mt-2">Matières</p>
+            </a>
+            <a href="{% url 'admin_niveaux' %}" class="bg-white rounded-xl shadow-sm p-5 text-center hover:shadow-md hover:-translate-y-0.5 transition-all group">
+                <span class="text-2xl">🎓</span>
+                <p class="text-sm font-semibold text-gray-700 group-hover:text-[#0037B0] mt-2">Niveaux</p>
+            </a>
+            <a href="{% url 'admin_logs' %}" class="bg-white rounded-xl shadow-sm p-5 text-center hover:shadow-md hover:-translate-y-0.5 transition-all group">
+                <span class="text-2xl">📊</span>
+                <p class="text-sm font-semibold text-gray-700 group-hover:text-[#0037B0] mt-2">Logs</p>
+            </a>
+        </div>
+
         <!-- Grille : Sujets récents + Utilisateurs récents -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
 

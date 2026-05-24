@@ -17,4 +17,9 @@ urlpatterns = [
     path('verification/', views.verification, name='verification'),
     path('deconnexion/', views.deconnexion, name='deconnexion'),
     path('parametres/', views.parametres, name='parametres'),
+    path('administration/utilisateurs/', views.admin_utilisateurs, name='admin_utilisateurs'),
+    path('administration/filieres/', views.admin_filieres, name='admin_filieres'),
+    path('administration/matieres/', views.admin_matieres, name='admin_matieres'),
+    path('administration/niveaux/', views.admin_niveaux, name='admin_niveaux'),
+    path('administration/logs/', views.admin_logs, name='admin_logs'),
 ]

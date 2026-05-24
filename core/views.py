@@ -517,3 +517,179 @@ def tableau_de_bord(request):
         'activites_recentes': activites_recentes,
         'salutation': salutation(),
     })
+
+
+# ====================================================================
+# VUES ADMIN PERSONNALISÉES
+# ====================================================================
+
+
+@login_required
+def admin_utilisateurs(request):
+    """Liste et gestion des utilisateurs."""
+    if not request.user.is_staff:
+        messages.error(request, 'Accès réservé aux administrateurs.')
+        return redirect('tableau_de_bord')
+
+    # Actions POST
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        user_id = request.POST.get('user_id')
+
+        if action == 'toggle_staff' and user_id:
+            target = User.objects.get(id=user_id)
+            if target != request.user:  # Empêcher de se désactiver soi-même
+                target.is_staff = not target.is_staff
+                target.save()
+                messages.success(request, f"Rôle de {target.username} mis à jour.")
+            else:
+                messages.error(request, "Vous ne pouvez pas modifier votre propre rôle.")
+
+        elif action == 'toggle_active' and user_id:
+            target = User.objects.get(id=user_id)
+            if target != request.user:
+                target.is_active = not target.is_active
+                target.save()
+                status = 'activé' if target.is_active else 'désactivé'
+                messages.success(request, f"Compte de {target.username} {status}.")
+            else:
+                messages.error(request, "Vous ne pouvez pas désactiver votre propre compte.")
+
+        elif action == 'delete_user' and user_id:
+            target = User.objects.get(id=user_id)
+            if target != request.user and not target.is_superuser:
+                target.delete()
+                messages.success(request, f"Utilisateur {target.username} supprimé.")
+            else:
+                messages.error(request, "Impossible de supprimer cet utilisateur.")
+
+        return redirect('admin_utilisateurs')
+
+    utilisateurs = User.objects.select_related('profil').order_by('-date_joined')
+
+    # Stats
+    total = utilisateurs.count()
+    actifs = utilisateurs.filter(is_active=True).count()
+    staff = utilisateurs.filter(is_staff=True).count()
+
+    return render(request, 'core/admin/utilisateurs.html', {
+        'utilisateurs': utilisateurs,
+        'total': total,
+        'actifs': actifs,
+        'staff': staff,
+    })
+
+
+@login_required
+def admin_filieres(request):
+    """Gestion CRUD des filières."""
+    if not request.user.is_staff:
+        messages.error(request, 'Accès réservé aux administrateurs.')
+        return redirect('tableau_de_bord')
+
+    if request.method == 'POST':
+        action = request.POST.get('action')
+
+        if action == 'ajouter':
+            nom = request.POST.get('nom', '').strip()
+            code = request.POST.get('code', '').strip().upper()
+            if nom and code:
+                Filiere.objects.create(nom=nom, code=code)
+                messages.success(request, f'Filière {code} - {nom} ajoutée.')
+            else:
+                messages.error(request, 'Nom et code requis.')
+
+        elif action == 'modifier':
+            fid = request.POST.get('filiere_id')
+            nom = request.POST.get('nom', '').strip()
+            code = request.POST.get('code', '').strip().upper()
+            if fid and nom and code:
+                Filiere.objects.filter(id=fid).update(nom=nom, code=code)
+                messages.success(request, 'Filière modifiée.')
+
+        elif action == 'supprimer':
+            fid = request.POST.get('filiere_id')
+            if fid:
+                Filiere.objects.filter(id=fid).delete()
+                messages.success(request, 'Filière supprimée.')
+
+        return redirect('admin_filieres')
+
+    filieres = Filiere.objects.annotate(nb_sujets=Count('sujets'), nb_etudiants=Count('etudiants')).order_by('code')
+    return render(request, 'core/admin/filieres.html', {'filieres': filieres})
+
+
+@login_required
+def admin_matieres(request):
+    """Gestion CRUD des matières."""
+    if not request.user.is_staff:
+        messages.error(request, 'Accès réservé aux administrateurs.')
+        return redirect('tableau_de_bord')
+
+    if request.method == 'POST':
+        action = request.POST.get('action')
+
+        if action == 'ajouter':
+            nom = request.POST.get('nom', '').strip()
+            filiere_id = request.POST.get('filiere_id')
+            if nom and filiere_id:
+                Matiere.objects.create(nom=nom, filiere_id=filiere_id)
+                messages.success(request, f'Matière {nom} ajoutée.')
+            else:
+                messages.error(request, 'Nom et filière requis.')
+
+        elif action == 'supprimer':
+            mid = request.POST.get('matiere_id')
+            if mid:
+                Matiere.objects.filter(id=mid).delete()
+                messages.success(request, 'Matière supprimée.')
+
+        return redirect('admin_matieres')
+
+    matieres = Matiere.objects.select_related('filiere').annotate(nb_sujets=Count('sujets')).order_by('filiere__code', 'nom')
+    filieres = Filiere.objects.all()
+    return render(request, 'core/admin/matieres.html', {'matieres': matieres, 'filieres': filieres})
+
+
+@login_required
+def admin_niveaux(request):
+    """Gestion CRUD des niveaux."""
+    if not request.user.is_staff:
+        messages.error(request, 'Accès réservé aux administrateurs.')
+        return redirect('tableau_de_bord')
+
+    if request.method == 'POST':
+        action = request.POST.get('action')
+
+        if action == 'ajouter':
+            nom = request.POST.get('nom', '').strip()
+            if nom:
+                Niveau.objects.create(nom=nom)
+                messages.success(request, f'Niveau {nom} ajouté.')
+
+        elif action == 'supprimer':
+            nid = request.POST.get('niveau_id')
+            if nid:
+                Niveau.objects.filter(id=nid).delete()
+                messages.success(request, 'Niveau supprimé.')
+
+        return redirect('admin_niveaux')
+
+    niveaux = Niveau.objects.annotate(nb_sujets=Count('sujets')).order_by('nom')
+    return render(request, 'core/admin/niveaux.html', {'niveaux': niveaux})
+
+
+@login_required
+def admin_logs(request):
+    """Logs d'activité et téléchargements."""
+    if not request.user.is_staff:
+        messages.error(request, 'Accès réservé aux administrateurs.')
+        return redirect('tableau_de_bord')
+
+    activites = Activite.objects.select_related('utilisateur', 'sujet').order_by('-cree_le')[:100]
+    telechargements = Telechargement.objects.select_related('utilisateur', 'sujet').order_by('-telecharge_le')[:100]
+
+    return render(request, 'core/admin/logs.html', {
+        'activites': activites,
+        'telechargements': telechargements,
+    })

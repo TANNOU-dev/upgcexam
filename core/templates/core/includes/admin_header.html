@@ -1,0 +1,19 @@
+<header class="bg-white border-b border-gray-200">
+    <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+        <a href="{% url 'admin_dashboard' %}" class="text-xl font-black text-[#0037B0] tracking-tight flex-shrink-0">UPGCExam</a>
+        <nav class="hidden md:flex items-center space-x-6">
+            <a href="{% url 'admin_dashboard' %}" class="text-gray-500 hover:text-gray-800 font-medium text-sm">Dashboard</a>
+            <a href="{% url 'admin_utilisateurs' %}" class="text-gray-500 hover:text-gray-800 font-medium text-sm">👥 Utilisateurs</a>
+            <a href="{% url 'admin_filieres' %}" class="text-gray-500 hover:text-gray-800 font-medium text-sm">📚 Filières</a>
+            <a href="{% url 'admin_matieres' %}" class="text-gray-500 hover:text-gray-800 font-medium text-sm">📖 Matières</a>
+            <a href="{% url 'admin_niveaux' %}" class="text-gray-500 hover:text-gray-800 font-medium text-sm">🎓 Niveaux</a>
+            <a href="{% url 'admin_logs' %}" class="text-gray-500 hover:text-gray-800 font-medium text-sm">📊 Logs</a>
+        </nav>
+        <div class="flex items-center space-x-3">
+            <a href="{% url 'tableau_de_bord' %}" class="text-sm text-gray-500 hover:text-gray-800">← Accueil</a>
+            <div class="w-8 h-8 bg-[#0037B0] rounded-full flex items-center justify-center text-white text-xs font-bold">
+                {{ request.user.username|first|upper }}
+            </div>
+        </div>
+    </div>
+</header>
