@@ -2,7 +2,8 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.models import User
 from django.contrib import messages
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
+from django.utils.http import url_has_allowed_host_and_scheme
 from .models import Verification, Activite, Telechargement, Matiere, Filiere, Sujet, Utilisateur, Niveau
 from django.utils import timezone
 from datetime import timedelta, datetime
@@ -93,10 +94,14 @@ def connexion(request):
         if user:
             login(request, user)
             next_url = request.POST.get('next') or request.GET.get('next') or 'tableau_de_bord'
+            if not url_has_allowed_host_and_scheme(next_url, allowed_hosts=None):
+                next_url = 'tableau_de_bord'
             return redirect(next_url)
         else:
             messages.error(request, "Nom d'utilisateur ou mot de passe incorrect")
     next_url = request.GET.get('next', '')
+    if next_url and not url_has_allowed_host_and_scheme(next_url, allowed_hosts=None):
+        next_url = ''
     return render(request, 'core/login.html', {'next': next_url})
 
 
@@ -168,6 +173,31 @@ def deconnexion(request):
     logout(request)
     return redirect('accueil')
 
+
+@login_required
+def telecharger_sujet(request, sujet_id):
+    from django.http import FileResponse, Http404
+    try:
+        sujet = Sujet.objects.select_related('filiere', 'matiere').get(id=sujet_id, statut='actif')
+    except Sujet.DoesNotExist:
+        raise Http404('Sujet introuvable')
+
+    # Incrémenter le compteur
+    sujet.telechargements += 1
+    sujet.save(update_fields=['telechargements'])
+
+    # Logger le téléchargement
+    Telechargement.objects.create(utilisateur=request.user, sujet=sujet)
+
+    # Enregistrer l'activité
+    Activite.objects.create(
+        utilisateur=request.user,
+        type='telechargement',
+        sujet=sujet,
+        description=f"Téléchargement de {sujet.titre}"
+    )
+
+    return FileResponse(sujet.fichier_pdf.open('rb'), as_attachment=True, filename=f"{sujet.titre}.pdf")
 
 @login_required
 def parametres(request):
@@ -287,6 +317,9 @@ def modifier_sujet(request, sujet_id):
     except Sujet.DoesNotExist:
         messages.error(request, 'Sujet introuvable.')
         return redirect('bibliotheque')
+    if not request.user.is_staff and sujet.publie_par != request.user:
+        messages.error(request, "Vous n'avez pas les droits pour modifier ce sujet.")
+        return redirect('bibliotheque')
 
     filieres = Filiere.objects.all()
     annees = Sujet.objects.filter(statut='actif').values_list('annee_academique', flat=True).distinct().order_by('-annee_academique')
@@ -330,9 +363,12 @@ def modifier_sujet(request, sujet_id):
 @login_required
 def supprimer_sujet(request, sujet_id):
     try:
-        sujet = Sujet.objects.get(id=sujet_id)
+        sujet = Sujet.objects.get(id=sujet_id, statut='actif')
     except Sujet.DoesNotExist:
         messages.error(request, 'Sujet introuvable.')
+        return redirect('bibliotheque')
+    if not request.user.is_staff and sujet.publie_par != request.user:
+        messages.error(request, "Vous n'avez pas les droits pour supprimer ce sujet.")
         return redirect('bibliotheque')
 
     if request.method == 'POST' and 'confirmer' in request.POST:

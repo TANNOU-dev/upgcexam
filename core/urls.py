@@ -8,6 +8,7 @@ urlpatterns = [
     path('sujets/ajouter/', views.ajouter_sujet, name='ajouter_sujet'),
     path('sujets/modifier/<int:sujet_id>/', views.modifier_sujet, name='modifier_sujet'),
     path('sujets/<int:sujet_id>/', views.detail_sujet, name='detail_sujet'),
+    path('sujets/telecharger/<int:sujet_id>/', views.telecharger_sujet, name='telecharger_sujet'),
     path('administration/', views.admin_dashboard, name='admin_dashboard'),
     path('sujets/supprimer/<int:sujet_id>/', views.supprimer_sujet, name='supprimer_sujet'),
     path('connexion/', views.connexion, name='connexion'),
