@@ -26,15 +26,7 @@
                 </nav>
             </div>
             <div class="flex items-center space-x-3">
-                <div class="hidden sm:block relative">
-                    <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-                        </svg>
-                    </span>
-                    <input type="text" placeholder="Rechercher..."
-                           class="pl-9 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-600 w-48">
-                </div>
+    
                 <div class="relative" id="profileMenu">
                     <button onclick="toggleMenu()" class="w-9 h-9 bg-[#0037B0] rounded-full flex items-center justify-center text-white text-sm font-bold hover:bg-[#002A8A] transition cursor-pointer">
                         {{ request.user.username|first|upper }}
