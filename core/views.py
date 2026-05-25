@@ -910,7 +910,11 @@ def admin_sujets(request):
         elif action == "archiver" and sujet_id:
             Sujet.objects.filter(id=sujet_id, statut="actif").update(statut="archive")
             messages.success(request, "Sujet archivé.")
+        elif action == "reactiver" and sujet_id:
+            Sujet.objects.filter(id=sujet_id, statut="archive").update(statut="actif")
+            messages.success(request, "Sujet réactivé et visible par tous.")
         elif action == "supprimer" and sujet_id:
+        
             Sujet.objects.filter(id=sujet_id).delete()
             messages.success(request, "Sujet supprimé définitivement.")
         return redirect("admin_sujets")
