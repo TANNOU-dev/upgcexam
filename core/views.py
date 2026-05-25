@@ -518,7 +518,6 @@ def supprimer_sujet(request, sujet_id):
     return render(request, "core/supprimer_sujet.html", {"sujet": sujet, **retour})
 
 
-@login_required
 def detail_sujet(request, sujet_id):
     try:
         sujet = (
@@ -532,12 +531,13 @@ def detail_sujet(request, sujet_id):
 
     sujet.vues += 1
     sujet.save(update_fields=["vues"])
-    Activite.objects.create(
-        utilisateur=request.user,
-        type="consultation",
-        sujet=sujet,
-        description=f"Consultation de {sujet.titre}",
-    )
+    if request.user.is_authenticated:
+        Activite.objects.create(
+            utilisateur=request.user,
+            type="consultation",
+            sujet=sujet,
+            description=f"Consultation de {sujet.titre}",
+        )
 
     similaires = (
         _sujets_accessibles(request)
@@ -567,6 +567,7 @@ def detail_sujet(request, sujet_id):
     )
 
 
+@login_required
 @email_verifie_required
 def telecharger_sujet(request, sujet_id):
     try:
