@@ -1,0 +1,6 @@
+<form method="post" action="{% url 'deconnexion' %}" class="{{ form_class|default:'inline' }}">
+    {% csrf_token %}
+    <button type="submit" class="{{ button_class|default:'text-sm text-red-500 font-medium hover:underline bg-transparent border-0 cursor-pointer p-0' }}">
+        {{ label|default:"Déconnexion" }}
+    </button>
+</form>

@@ -1,6 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import User
 
+from .utils import formater_taille_pdf
+
 
 class Filiere(models.Model):
     nom = models.CharField(max_length=100)
@@ -39,11 +41,15 @@ class Matiere(models.Model):
 
 
 class Utilisateur(models.Model):
-    ROLE_CHOICES = [('etudiant', 'Étudiant'), ('admin', 'Administrateur')]
+    ROLE_CHOICES = [("etudiant", "Étudiant"), ("admin", "Administrateur")]
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="profil")
-    filiere = models.ForeignKey(Filiere, on_delete=models.SET_NULL, null=True, blank=True, related_name="etudiants")
-    niveau = models.ForeignKey(Niveau, on_delete=models.SET_NULL, null=True, blank=True, related_name="etudiants")
-    role = models.CharField(max_length=10, choices=ROLE_CHOICES, default='etudiant')
+    filiere = models.ForeignKey(
+        Filiere, on_delete=models.SET_NULL, null=True, blank=True, related_name="etudiants"
+    )
+    niveau = models.ForeignKey(
+        Niveau, on_delete=models.SET_NULL, null=True, blank=True, related_name="etudiants"
+    )
+    role = models.CharField(max_length=10, choices=ROLE_CHOICES, default="etudiant")
     email_verifie = models.BooleanField(default=False)
     avatar = models.URLField(blank=True, null=True)
 
@@ -56,8 +62,12 @@ class Utilisateur(models.Model):
 
 
 class Sujet(models.Model):
-    STATUT_CHOICES = [('actif', 'Actif'), ('archive', 'Archivé')]
-    VISIBILITE_CHOICES = [('visible', 'Visible'), ('restreint', 'Restreint')]
+    STATUT_CHOICES = [
+        ("actif", "Actif"),
+        ("en_attente", "En attente de validation"),
+        ("archive", "Archivé"),
+    ]
+    VISIBILITE_CHOICES = [("visible", "Visible"), ("restreint", "Restreint")]
     titre = models.CharField(max_length=200)
     description = models.TextField(blank=True, null=True)
     filiere = models.ForeignKey(Filiere, on_delete=models.CASCADE, related_name="sujets")
@@ -67,9 +77,11 @@ class Sujet(models.Model):
     fichier_pdf = models.FileField(upload_to="sujets/")
     taille_pdf = models.CharField(max_length=10, blank=True, null=True)
     auteur_nom = models.CharField(max_length=100, blank=True, null=True)
-    publie_par = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name="sujets_publies")
-    statut = models.CharField(max_length=10, choices=STATUT_CHOICES, default='actif')
-    visibilite = models.CharField(max_length=10, choices=VISIBILITE_CHOICES, default='visible')
+    publie_par = models.ForeignKey(
+        User, on_delete=models.SET_NULL, null=True, blank=True, related_name="sujets_publies"
+    )
+    statut = models.CharField(max_length=12, choices=STATUT_CHOICES, default="actif")
+    visibilite = models.CharField(max_length=10, choices=VISIBILITE_CHOICES, default="visible")
     date_publication = models.DateField(auto_now_add=True)
     vues = models.IntegerField(default=0)
     telechargements = models.IntegerField(default=0)
@@ -82,6 +94,16 @@ class Sujet(models.Model):
 
     def __str__(self):
         return f"{self.titre} - {self.matiere.nom} ({self.annee_academique})"
+
+    def save(self, *args, **kwargs):
+        if self.fichier_pdf:
+            try:
+                size = self.fichier_pdf.size
+            except (OSError, ValueError):
+                size = None
+            if size is not None:
+                self.taille_pdf = formater_taille_pdf(size)
+        super().save(*args, **kwargs)
 
 
 class Telechargement(models.Model):
@@ -98,26 +120,33 @@ class Telechargement(models.Model):
 
 
 class Activite(models.Model):
-    TYPE_CHOICES = [('telechargement', 'Téléchargement'), ('consultation', 'Consultation'), ('profil_modifie', 'Profil modifié')]
+    TYPE_CHOICES = [
+        ("telechargement", "Téléchargement"),
+        ("consultation", "Consultation"),
+        ("publication", "Publication"),
+        ("profil_modifie", "Profil modifié"),
+    ]
     utilisateur = models.ForeignKey(User, on_delete=models.CASCADE, related_name="activites")
     type = models.CharField(max_length=20, choices=TYPE_CHOICES)
-    sujet = models.ForeignKey(Sujet, on_delete=models.SET_NULL, null=True, blank=True, related_name="activites")
+    sujet = models.ForeignKey(
+        Sujet, on_delete=models.SET_NULL, null=True, blank=True, related_name="activites"
+    )
     description = models.TextField(blank=True, null=True)
     cree_le = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         verbose_name = "Activité"
         verbose_name_plural = "Activités"
-        ordering = ['-cree_le']
+        ordering = ["-cree_le"]
 
     def __str__(self):
         return f"{self.utilisateur.username} - {self.type}"
 
 
 class Verification(models.Model):
-    email = models.EmailField()
+    email = models.EmailField(db_index=True)
     code = models.CharField(max_length=6)
-    expire_le = models.DateTimeField()
+    expire_le = models.DateTimeField(db_index=True)
     utilise = models.BooleanField(default=False)
 
     class Meta:

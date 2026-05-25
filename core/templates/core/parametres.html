@@ -36,7 +36,7 @@
                         <a href="{% url 'admin_dashboard' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Administration</a>
                         {% endif %}
                         <hr class="my-1 border-gray-100">
-                        <a href="{% url 'deconnexion' %}" class="block px-4 py-2 text-sm text-red-500 hover:bg-red-50">Déconnexion</a>
+                        {% include "core/includes/logout_form.html" with form_class="block" button_class="w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-red-50 bg-transparent border-0 cursor-pointer" %}
                     </div>
                 </div>
                 <button id="mobileMenuBtn" class="md:hidden p-2 text-gray-500 hover:text-gray-800">
@@ -56,7 +56,7 @@
                 {% if request.user.is_staff %}
                 <a href="{% url 'admin_dashboard' %}" class="text-sm text-orange-500 font-medium">Administration</a>
                 {% endif %}
-                <a href="{% url 'deconnexion' %}" class="text-sm text-red-500 font-medium">Déconnexion</a>
+                {% include "core/includes/logout_form.html" %}
             </nav>
         </div>
     </header>
@@ -91,7 +91,8 @@
                            class="w-full px-4 py-2.5 bg-[#F8F9FF] border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-blue-600 outline-none transition text-sm">
                 </div>
                 <hr class="border-gray-100">
-                <p class="text-sm font-semibold text-gray-700">Changer le mot de passe</p>
+                <p class="text-sm text-gray-500">Vous pouvez modifier votre nom ou email sans changer le mot de passe. L'ancien mot de passe n'est requis que si vous définissez un nouveau.</p>
+                <p class="text-sm font-semibold text-gray-700">Changer le mot de passe (optionnel)</p>
                 <div>
                     <label class="block text-sm font-semibold text-gray-700 mb-1">Ancien mot de passe</label>
                     <input type="password" name="ancien_mot_de_passe"
@@ -110,7 +111,7 @@
 
             <div class="mt-6 flex justify-between items-center">
                 <a href="{% url 'tableau_de_bord' %}" class="text-sm text-gray-400 hover:text-gray-600">← Retour au tableau de bord</a>
-                <a href="{% url 'deconnexion' %}" class="text-sm font-semibold text-red-500 hover:text-red-700 hover:underline">Déconnexion</a>
+                {% include "core/includes/logout_form.html" with button_class="text-sm font-semibold text-red-500 hover:text-red-700 hover:underline bg-transparent border-0 cursor-pointer p-0" %}
             </div>
         </div>
     </main>
@@ -144,7 +145,7 @@
                     <ul class="space-y-2.5">
                         <li><a href="{% url 'tableau_de_bord' %}" class="text-gray-400 hover:text-white text-xs transition">Tableau de bord</a></li>
                         <li><a href="{% url 'parametres' %}" class="text-gray-400 hover:text-white text-xs transition">Paramètres</a></li>
-                        <li><a href="{% url 'deconnexion' %}" class="text-gray-400 hover:text-white text-xs transition">Déconnexion</a></li>
+                        <li>{% include "core/includes/logout_form.html" with button_class="text-gray-400 hover:text-white text-xs transition bg-transparent border-0 cursor-pointer p-0" %}</li>
                     </ul>
                 </div>
             </div>

@@ -26,7 +26,6 @@ class CoreViewsTests(TestCase):
         expected = {
             "tableau_de_bord": "/connexion/?next=/tableau-de-bord/",
             "parametres": "/connexion/?next=/parametres/",
-            "deconnexion": "/connexion/?next=/deconnexion/",
             "ajouter_sujet": "/connexion/?next=/sujets/ajouter/",
         }
 
@@ -35,8 +34,21 @@ class CoreViewsTests(TestCase):
             self.assertEqual(response.status_code, 302)
             self.assertEqual(response["Location"], location)
 
+    def test_deconnexion_requires_post(self):
+        user = User.objects.create_user(username="etudiant", password="Motdepasse12345")
+        self.client.force_login(user)
+        get_response = self.client.get(reverse("deconnexion"))
+        self.assertEqual(get_response.status_code, 405)
+        post_response = self.client.post(reverse("deconnexion"))
+        self.assertRedirects(post_response, reverse("accueil"))
+
+    def _login_user(self, username="etudiant", password="Motdepasse12345"):
+        user = User.objects.create_user(username=username, password=password)
+        Utilisateur.objects.create(user=user, email_verifie=True)
+        return user
+
     def test_login_uses_safe_next_url(self):
-        User.objects.create_user(username="etudiant", password="Motdepasse12345")
+        self._login_user()
 
         response = self.client.post(
             f"{reverse('connexion')}?next={reverse('bibliotheque')}",
@@ -46,7 +58,7 @@ class CoreViewsTests(TestCase):
         self.assertRedirects(response, reverse("bibliotheque"))
 
     def test_login_ignores_external_next_url(self):
-        User.objects.create_user(username="etudiant", password="Motdepasse12345")
+        self._login_user()
 
         response = self.client.post(
             f"{reverse('connexion')}?next=https://example.com",
@@ -67,6 +79,7 @@ class CoreViewsTests(TestCase):
         )
 
         self.assertEqual(response.status_code, 302)
+        self.assertEqual(response["Location"], reverse("verification"))
         user = User.objects.get(username="nouveau")
         self.assertTrue(Utilisateur.objects.filter(user=user).exists())
         self.assertTrue(Verification.objects.filter(email="nouveau@example.com").exists())
@@ -95,16 +108,20 @@ class CoreViewsTests(TestCase):
         self.assertTrue(Verification.objects.get(email=user.email).utilise)
         self.assertEqual(int(self.client.session["_auth_user_id"]), user.id)
 
-    def test_add_subject_page_is_accessible_to_authenticated_users(self):
+    def test_add_subject_page_requires_verified_email(self):
         user = User.objects.create_user(username="etudiant", password="Motdepasse12345")
+        Utilisateur.objects.create(user=user, email_verifie=False)
         self.client.force_login(user)
 
         response = self.client.get(reverse("ajouter_sujet"))
 
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 302)
+        self.assertIn(reverse("verification"), response["Location"])
+        self.assertIn("next=", response["Location"])
 
     def test_add_subject_creates_subject_with_existing_data(self):
         user = User.objects.create_user(username="etudiant", password="Motdepasse12345")
+        Utilisateur.objects.create(user=user, email_verifie=True)
         filiere = Filiere.objects.create(nom="Mathématiques-Informatique", code="MI")
         matiere = Matiere.objects.create(nom="Calcul Différentiel", filiere=filiere)
         niveau = Niveau.objects.create(nom="L1")
@@ -128,10 +145,10 @@ class CoreViewsTests(TestCase):
         )
 
         self.assertRedirects(response, reverse("bibliotheque"))
-        self.assertTrue(Sujet.objects.filter(titre="Algèbre Linéaire - Examen Final").exists())
+        sujet = Sujet.objects.get(titre="Algèbre Linéaire - Examen Final")
+        self.assertEqual(sujet.statut, "en_attente")
 
     def _create_sujet(self, owner):
-        """Helper : crée un sujet actif appartenant à owner."""
         filiere = Filiere.objects.create(nom="Informatique", code="INF")
         matiere = Matiere.objects.create(nom="Algo", filiere=filiere)
         niveau = Niveau.objects.create(nom="L2")
@@ -144,40 +161,101 @@ class CoreViewsTests(TestCase):
             annee_academique="2024-2025",
             fichier_pdf=pdf,
             publie_par=owner,
-            statut='actif',
+            statut="actif",
         )
 
     def test_owner_can_access_modify_page(self):
         owner = User.objects.create_user(username="proprio", password="Pass12345")
+        Utilisateur.objects.create(user=owner, email_verifie=True)
         sujet = self._create_sujet(owner)
         self.client.force_login(owner)
 
         response = self.client.get(reverse("modifier_sujet", args=[sujet.id]))
+
         self.assertEqual(response.status_code, 200)
 
     def test_other_user_cannot_modify_sujet(self):
         owner = User.objects.create_user(username="proprio", password="Pass12345")
         intrus = User.objects.create_user(username="intrus", password="Pass12345")
+        Utilisateur.objects.create(user=owner, email_verifie=True)
+        Utilisateur.objects.create(user=intrus, email_verifie=True)
         sujet = self._create_sujet(owner)
         self.client.force_login(intrus)
 
         response = self.client.get(reverse("modifier_sujet", args=[sujet.id]))
-        self.assertRedirects(response, reverse("bibliotheque"))
 
-    def test_other_user_cannot_delete_sujet(self):
+        self.assertEqual(response.status_code, 404)
+
+    def test_non_staff_cannot_delete_sujet(self):
         owner = User.objects.create_user(username="proprio", password="Pass12345")
-        intrus = User.objects.create_user(username="intrus", password="Pass12345")
+        Utilisateur.objects.create(user=owner, email_verifie=True)
         sujet = self._create_sujet(owner)
-        self.client.force_login(intrus)
+        self.client.force_login(owner)
 
         response = self.client.get(reverse("supprimer_sujet", args=[sujet.id]))
+
         self.assertRedirects(response, reverse("bibliotheque"))
+
+    def test_staff_can_delete_sujet(self):
+        owner = User.objects.create_user(username="proprio", password="Pass12345")
+        admin = User.objects.create_user(username="admin", password="Pass12345", is_staff=True)
+        Utilisateur.objects.create(user=owner, email_verifie=True)
+        sujet = self._create_sujet(owner)
+        self.client.force_login(admin)
+
+        response = self.client.get(reverse("supprimer_sujet", args=[sujet.id]))
+
+        self.assertEqual(response.status_code, 200)
 
     def test_staff_can_modify_any_sujet(self):
         owner = User.objects.create_user(username="proprio", password="Pass12345")
         admin = User.objects.create_user(username="admin", password="Pass12345", is_staff=True)
+        Utilisateur.objects.create(user=owner, email_verifie=True)
         sujet = self._create_sujet(owner)
         self.client.force_login(admin)
 
         response = self.client.get(reverse("modifier_sujet", args=[sujet.id]))
+
         self.assertEqual(response.status_code, 200)
+
+    def test_admin_voir_pdf_returns_404_for_non_staff(self):
+        owner = User.objects.create_user(username="proprio", password="Pass12345")
+        sujet = self._create_sujet(owner)
+        self.client.force_login(owner)
+
+        response = self.client.get(reverse("admin_voir_sujet_pdf", args=[sujet.id]))
+
+        self.assertEqual(response.status_code, 404)
+
+    def test_detail_sujet_requires_login(self):
+        owner = User.objects.create_user(username="proprio", password="Pass12345")
+        sujet = self._create_sujet(owner)
+
+        response = self.client.get(reverse("detail_sujet", args=[sujet.id]))
+
+        self.assertEqual(response.status_code, 302)
+        self.assertIn(reverse("connexion"), response["Location"])
+        self.assertIn(f"/sujets/{sujet.id}/", response["Location"])
+
+    def test_detail_sujet_accessible_when_logged_in(self):
+        owner = User.objects.create_user(username="proprio", password="Pass12345")
+        Utilisateur.objects.create(user=owner, email_verifie=True)
+        sujet = self._create_sujet(owner)
+        self.client.force_login(owner)
+
+        response = self.client.get(reverse("detail_sujet", args=[sujet.id]))
+
+        self.assertEqual(response.status_code, 200)
+
+    def test_login_after_search_returns_to_detail(self):
+        user = self._login_user()
+        sujet = self._create_sujet(user)
+        detail_url = reverse("detail_sujet", args=[sujet.id])
+
+        self.client.logout()
+        response = self.client.post(
+            f"{reverse('connexion')}?next={detail_url}",
+            {"username": "etudiant", "password": "Motdepasse12345"},
+        )
+
+        self.assertRedirects(response, detail_url)

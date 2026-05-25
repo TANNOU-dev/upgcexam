@@ -15,7 +15,7 @@
         <div class="flex items-center justify-between mb-8">
             <div>
                 <h1 class="text-3xl font-black text-[#0B1C30]">📄 Gestion des sujets</h1>
-                <p class="text-gray-500 mt-1">{{ stats.total }} sujets · {{ stats.actifs }} actifs · {{ stats.archives }} en attente</p>
+                <p class="text-gray-500 mt-1">{{ stats.total }} sujets · {{ stats.actifs }} actifs · {{ stats.en_attente }} en attente</p>
             </div>
         </div>
 
@@ -38,7 +38,7 @@
                 <p class="text-sm text-gray-400">Actifs (publiés)</p>
             </div>
             <div class="bg-white rounded-xl shadow-sm p-5 text-center">
-                <p class="text-3xl font-black text-[#F59E0B]">{{ stats.archives }}</p>
+                <p class="text-3xl font-black text-[#F59E0B]">{{ stats.en_attente }}</p>
                 <p class="text-sm text-gray-400">En attente de validation</p>
             </div>
         </div>
@@ -51,7 +51,8 @@
                     <select name="statut" class="px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-blue-600">
                         <option value="">Tous</option>
                         <option value="actif" {% if filtre_statut == 'actif' %}selected{% endif %}>Actif</option>
-                        <option value="archive" {% if filtre_statut == 'archive' %}selected{% endif %}>En attente</option>
+                        <option value="en_attente" {% if filtre_statut == 'en_attente' %}selected{% endif %}>En attente</option>
+                        <option value="archive" {% if filtre_statut == 'archive' %}selected{% endif %}>Archivé</option>
                     </select>
                 </div>
                 <div>
@@ -104,8 +105,10 @@
                             <td class="px-4 py-3 text-center">
                                 {% if s.statut == 'actif' %}
                                 <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-green-100 text-green-700">Publié</span>
-                                {% else %}
+                                {% elif s.statut == 'en_attente' %}
                                 <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-yellow-100 text-yellow-700">En attente</span>
+                                {% else %}
+                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-gray-100 text-gray-600">Archivé</span>
                                 {% endif %}
                             </td>
                             <td class="px-4 py-3 text-center text-gray-500">{{ s.vues }}</td>
@@ -116,7 +119,7 @@
                                        class="text-xs px-2 py-1 rounded bg-gray-100 text-gray-600 hover:bg-gray-200 font-medium">
                                         👁 Voir
                                     </a>
-                                    {% if s.statut == 'archive' %}
+                                    {% if s.statut == 'en_attente' %}
                                     <form method="post" class="inline">
                                         {% csrf_token %}
                                         <input type="hidden" name="sujet_id" value="{{ s.id }}">
