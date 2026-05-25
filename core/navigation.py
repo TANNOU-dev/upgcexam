@@ -47,7 +47,11 @@ def redirect_apres_sujet(request, sujet=None, defaut="bibliotheque"):
     """Redirection après création / modification / suppression d'un sujet."""
     next_url = (request.POST.get("next") or request.GET.get("next") or "").strip()
     if next_url:
-        return redirect(safe_next_url(next_url, reverse(defaut)))
+        if defaut in ("detail", "detail_sujet") and sujet is not None:
+            fallback = reverse("detail_sujet", args=[sujet.id])
+        else:
+            fallback = reverse(defaut)
+        return redirect(safe_next_url(next_url, fallback))
 
     if sujet is not None and defaut in ("detail", "detail_sujet"):
         return redirect(reverse("detail_sujet", args=[sujet.id]))
