@@ -11,6 +11,7 @@ urlpatterns = [
     path('sujets/telecharger/<int:sujet_id>/', views.telecharger_sujet, name='telecharger_sujet'),
     path('administration/', views.admin_dashboard, name='admin_dashboard'),
     path('sujets/supprimer/<int:sujet_id>/', views.supprimer_sujet, name='supprimer_sujet'),
+    path('sujets/basculer-visibilite/<int:sujet_id>/', views.basculer_visibilite, name='basculer_visibilite'),
     path('connexion/', views.connexion, name='connexion'),
     path('inscription/', views.inscription, name='inscription'),
     path('tableau-de-bord/', views.tableau_de_bord, name='tableau_de_bord'),

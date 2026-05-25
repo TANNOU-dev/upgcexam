@@ -167,6 +167,20 @@
                         🗑️ Supprimer
                     </a>
                     {% endif %}
+                    {% if user.is_staff %}
+                    <form method="post" action="{% url 'basculer_visibilite' sujet.id %}" style="display:inline">
+                        {% csrf_token %}
+                        {% if sujet.visibilite == 'restreint' %}
+                        <button type="submit" class="inline-flex items-center bg-green-500 hover:bg-green-600 text-white font-semibold px-5 py-3 rounded-xl transition text-sm cursor-pointer">
+                            🌍 Rendre visible
+                        </button>
+                        {% else %}
+                        <button type="submit" class="inline-flex items-center bg-amber-500 hover:bg-amber-600 text-white font-semibold px-5 py-3 rounded-xl transition text-sm cursor-pointer">
+                            🔒 Passer en restreint
+                        </button>
+                        {% endif %}
+                    </form>
+                    {% endif %}
                 </div>
             </div>
         </div>

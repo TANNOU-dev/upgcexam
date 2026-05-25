@@ -1008,3 +1008,23 @@ def admin_verifications(request):
         "core/admin/verifications.html",
         {"codes": codes, "non_verifies": non_verifies},
     )
+
+
+@require_POST
+@login_required
+def basculer_visibilite(request, sujet_id):
+    """Bascule la visibilité d'un sujet (restreint ↔ visible) — admin uniquement."""
+    if not request.user.is_staff:
+        messages.error(request, "Action réservée aux administrateurs.")
+        return redirect("bibliotheque")
+
+    sujet = get_object_or_404(Sujet, id=sujet_id)
+    if sujet.visibilite == "restreint":
+        sujet.visibilite = "visible"
+        msg = "Sujet désormais visible par tous."
+    else:
+        sujet.visibilite = "restreint"
+        msg = "Sujet passé en accès restreint."
+    sujet.save(update_fields=["visibilite"])
+    messages.success(request, msg)
+    return redirect("detail_sujet", sujet_id=sujet.id)
