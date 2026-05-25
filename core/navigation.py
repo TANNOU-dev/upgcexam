@@ -49,7 +49,7 @@ def redirect_apres_sujet(request, sujet=None, defaut="bibliotheque"):
     if next_url:
         return redirect(safe_next_url(next_url, reverse(defaut)))
 
-    if sujet is not None and defaut == "detail":
+    if sujet is not None and defaut in ("detail", "detail_sujet"):
         return redirect(reverse("detail_sujet", args=[sujet.id]))
 
     return redirect(reverse("bibliotheque") + query_bibliotheque(request))

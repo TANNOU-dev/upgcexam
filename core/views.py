@@ -481,7 +481,7 @@ def modifier_sujet(request, sujet_id):
             sujet.fichier_pdf = fichier
         sujet.save()
         messages.success(request, "Sujet mis à jour avec succès.")
-        return redirect_apres_sujet(request, sujet=sujet, defaut="detail")
+        return redirect_apres_sujet(request, sujet=sujet, defaut="detail_sujet")
 
     retour = ctx_retour(request)
     if not request.GET.get("next"):
