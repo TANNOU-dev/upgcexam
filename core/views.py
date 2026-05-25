@@ -47,9 +47,9 @@ def salutation():
 
 
 def _sujets_accessibles(request):
-    """Sujets actifs visibles publiquement ou accessibles aux utilisateurs connectés."""
+    """Sujets actifs — les sujets 'restreint' ne sont visibles que par les administrateurs."""
     qs = Sujet.objects.filter(statut="actif").select_related("filiere", "matiere", "niveau")
-    if not request.user.is_authenticated:
+    if not request.user.is_staff:
         qs = qs.filter(visibilite="visible")
     return qs
 
