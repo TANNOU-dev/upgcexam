@@ -484,14 +484,23 @@ def modifier_sujet(request, sujet_id):
         if annee_academique:
             sujet.annee_academique = annee_academique
         sujet.description = description
-        sujet.visibilite = visibilite
         if fichier:
             if not est_fichier_pdf(fichier):
                 messages.error(request, "Seuls les fichiers PDF valides sont acceptés.")
                 return redirect("modifier_sujet", sujet_id=sujet.id)
             sujet.fichier_pdf = fichier
-        sujet.save()
-        messages.success(request, "Sujet mis à jour avec succès.")
+
+        # Seuls les admins peuvent changer la visibilite
+        # Les modifs d'un non-admin replacent le sujet en attente de validation
+        if request.user.is_staff:
+            sujet.visibilite = visibilite
+            sujet.save()
+            messages.success(request, "Sujet modifié avec succès.")
+        else:
+            sujet.statut = "archive"
+            sujet.save()
+            messages.success(request, "Sujet modifié avec succès. Un administrateur doit valider les changements.")
+
         return redirect_apres_sujet(request, sujet=sujet, defaut="detail_sujet")
 
     retour = ctx_retour(request)

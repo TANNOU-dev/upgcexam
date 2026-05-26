@@ -183,6 +183,7 @@
                 <div class="bg-white rounded-2xl p-6 shadow-sm">
                     <h2 class="text-base font-bold text-[#0B1C30] mb-5">Paramètres</h2>
 
+                    {% if user.is_staff %}
                     <div class="mb-6">
                         <label class="block text-xs font-bold tracking-wider uppercase text-gray-500 mb-2">Visibilité</label>
                         <select name="visibilite" class="w-full px-4 py-3 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#0037B0] focus:border-[#0037B0] appearance-none">
@@ -190,6 +191,7 @@
                             <option value="restreint" {% if sujet.visibilite == 'restreint' %}selected{% endif %}>Accès restreint</option>
                         </select>
                     </div>
+                    {% endif %}
 
                     <div>
                         <label class="block text-xs font-bold tracking-wider uppercase text-gray-500 mb-2">Date de publication</label>
