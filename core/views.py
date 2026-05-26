@@ -501,7 +501,7 @@ def modifier_sujet(request, sujet_id):
         else:
             sujet.statut = "archive"
             sujet.save()
-            messages.success(request, "Sujet modifié avec succès. Un administrateur doit valider les changements.")
+            messages.success(request, "✅ Modifications enregistrées. En attente de validation.")
             # Rediriger vers la bibliotheque (le sujet n'est plus visible)
             return redirect(reverse("bibliotheque") + query_bibliotheque(request))
 
