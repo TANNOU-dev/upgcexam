@@ -430,12 +430,13 @@ def ajouter_sujet(request):
 
 
 def _get_sujet_modifiable(request, sujet_id):
+    """Retourne le sujet modifiable — les admins peuvent tout modifier,
+    les etudiants ne peuvent modifier que leurs propres sujets (actifs ou archivés)."""
     if request.user.is_staff:
         return get_object_or_404(Sujet, id=sujet_id)
     return get_object_or_404(
         Sujet,
         id=sujet_id,
-        statut="actif",
         publie_par=request.user,
     )
 
@@ -496,12 +497,13 @@ def modifier_sujet(request, sujet_id):
             sujet.visibilite = visibilite
             sujet.save()
             messages.success(request, "Sujet modifié avec succès.")
+            return redirect_apres_sujet(request, sujet=sujet, defaut="detail_sujet")
         else:
             sujet.statut = "archive"
             sujet.save()
             messages.success(request, "Sujet modifié avec succès. Un administrateur doit valider les changements.")
-
-        return redirect_apres_sujet(request, sujet=sujet, defaut="detail_sujet")
+            # Rediriger vers la bibliotheque (le sujet n'est plus visible)
+            return redirect(reverse("bibliotheque") + query_bibliotheque(request))
 
     retour = ctx_retour(request)
     if not request.GET.get("next"):
