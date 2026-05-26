@@ -95,16 +95,37 @@
             </form>
         </div>
 
-        <!-- Barre d'actions groupées intelligente -->
-        <div id="bulkBar" class="bg-[#0B1C30] text-white rounded-xl shadow-lg p-3 mb-4 hidden sm:flex items-center justify-between">
-            <span class="text-sm font-medium"><span id="bulkCount">0</span> sujet(s)</span>
+        <!-- Barre d'actions groupées -->
+        <div id="bulkBar" class="hidden flex-col sm:flex-row items-start sm:items-center justify-between bg-blue-50 border border-blue-200 rounded-xl p-4 mb-4 gap-3">
+            <div class="flex items-center gap-2">
+                <span class="w-7 h-7 rounded-full bg-[#0037B0] text-white flex items-center justify-center text-xs font-bold" id="bulkCount">0</span>
+                <span class="text-sm font-semibold text-[#0B1C30]">sujet(s) sélectionné(s)</span>
+            </div>
             <div class="flex flex-wrap gap-2">
-                <button id="bulkValider" onclick="bulkAction('valider')" class="hidden text-xs px-3 py-1.5 rounded bg-green-500 hover:bg-green-600 font-bold">✅ Valider</button>
-                <button id="bulkArchiver" onclick="bulkAction('archiver')" class="hidden text-xs px-3 py-1.5 rounded bg-orange-500 hover:bg-orange-600 font-bold">📦 Archiver</button>
-                <button id="bulkReactiver" onclick="bulkAction('reactiver')" class="hidden text-xs px-3 py-1.5 rounded bg-blue-500 hover:bg-blue-600 font-bold">🔄 Réactiver</button>
-                <button id="bulkRendreVisible" onclick="bulkAction('rendre_visible')" class="hidden text-xs px-3 py-1.5 rounded bg-yellow-500 hover:bg-yellow-600 font-bold">🔓 Rendre visible</button>
-                <button id="bulkRestreindre" onclick="bulkAction('restreindre')" class="hidden text-xs px-3 py-1.5 rounded bg-purple-500 hover:bg-purple-600 font-bold">🔒 Restreindre</button>
-                <button onclick="bulkAction('supprimer')" class="text-xs px-3 py-1.5 rounded bg-red-500 hover:bg-red-600 font-bold">🗑 Supprimer</button>
+                <button id="bulkValider" onclick="bulkAction('valider')"
+                    class="hidden items-center gap-1 text-xs px-4 py-2 rounded-lg bg-green-600 text-white hover:bg-green-700 font-semibold transition shadow-sm">
+                    ✅ Publier ces sujets
+                </button>
+                <button id="bulkArchiver" onclick="bulkAction('archiver')"
+                    class="hidden items-center gap-1 text-xs px-4 py-2 rounded-lg bg-orange-500 text-white hover:bg-orange-600 font-semibold transition shadow-sm">
+                    📦 Archiver ces sujets
+                </button>
+                <button id="bulkReactiver" onclick="bulkAction('reactiver')"
+                    class="hidden items-center gap-1 text-xs px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 font-semibold transition shadow-sm">
+                    🔄 Réactiver ces sujets
+                </button>
+                <button id="bulkRendreVisible" onclick="bulkAction('rendre_visible')"
+                    class="hidden items-center gap-1 text-xs px-4 py-2 rounded-lg bg-yellow-500 text-white hover:bg-yellow-600 font-semibold transition shadow-sm">
+                    🔓 Rendre visibles à tous
+                </button>
+                <button id="bulkRestreindre" onclick="bulkAction('restreindre')"
+                    class="hidden items-center gap-1 text-xs px-4 py-2 rounded-lg bg-purple-600 text-white hover:bg-purple-700 font-semibold transition shadow-sm">
+                    🔒 Passer en accès restreint
+                </button>
+                <button onclick="bulkAction('supprimer')"
+                    class="items-center gap-1 text-xs px-4 py-2 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 font-semibold transition border border-red-200">
+                    🗑 Supprimer définitivement
+                </button>
             </div>
         </div>
 
