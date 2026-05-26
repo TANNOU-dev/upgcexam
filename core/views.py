@@ -499,7 +499,7 @@ def modifier_sujet(request, sujet_id):
             messages.success(request, "Sujet modifié avec succès.")
             return redirect_apres_sujet(request, sujet=sujet, defaut="detail_sujet")
         else:
-            sujet.statut = "archive"
+            sujet.statut = "en_attente"
             sujet.save()
             messages.success(request, "✅ Modifications enregistrées. En attente.")
             # Rediriger vers la bibliotheque (le sujet n'est plus visible)
