@@ -125,6 +125,8 @@ class Activite(models.Model):
         ("consultation", "Consultation"),
         ("publication", "Publication"),
         ("profil_modifie", "Profil modifié"),
+        ("validation", "Validation admin"),
+        ("archivage", "Archivage admin"),
     ]
     utilisateur = models.ForeignKey(User, on_delete=models.CASCADE, related_name="activites")
     type = models.CharField(max_length=20, choices=TYPE_CHOICES)

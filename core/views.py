@@ -971,40 +971,104 @@ def admin_sujets(request):
     if request.method == "POST":
         action = request.POST.get("action")
         sujet_id = request.POST.get("sujet_id")
+        sujets_ids = request.POST.getlist("sujets_ids") or []
 
-        if action == "valider" and sujet_id:
-            updated = Sujet.objects.filter(id=sujet_id, statut="en_attente").update(statut="actif")
-            if updated:
-                messages.success(request, "Sujet validé et publié.")
-            else:
-                messages.error(request, "Sujet introuvable ou déjà traité.")
-        elif action == "archiver" and sujet_id:
-            Sujet.objects.filter(id=sujet_id, statut="actif").update(statut="archive")
-            messages.success(request, "Sujet archivé.")
-        elif action == "reactiver" and sujet_id:
-            Sujet.objects.filter(id=sujet_id, statut="archive").update(statut="actif")
-            messages.success(request, "Sujet réactivé et visible par tous.")
-        elif action == "visibilite" and sujet_id:
-            sujet = get_object_or_404(Sujet, id=sujet_id)
-            if sujet.visibilite == "restreint":
-                Sujet.objects.filter(id=sujet_id).update(visibilite="visible")
-                messages.success(request, "Sujet désormais visible par tous.")
-            else:
-                Sujet.objects.filter(id=sujet_id).update(visibilite="restreint")
-                messages.success(request, "Sujet passé en accès restreint.")
-        elif action == "supprimer" and sujet_id:
-        
-            Sujet.objects.filter(id=sujet_id).delete()
-            messages.success(request, "Sujet supprimé définitivement.")
+        if action in ("valider", "archiver", "reactiver", "supprimer", "rendre_visible", "restreindre"):
+            if not sujets_ids and not sujet_id:
+                messages.error(request, "Aucun sujet sélectionné.")
+                return redirect("admin_sujets")
+
+            ids_list = sujets_ids or [sujet_id]
+            ids_list = [int(x) for x in ids_list if x]
+
+            if action == "valider":
+                updated = Sujet.objects.filter(id__in=ids_list, statut="en_attente").update(statut="actif")
+                for sid in ids_list:
+                    Activite.objects.create(
+                        utilisateur=request.user,
+                        type="validation",
+                        sujet_id=sid,
+                        description=f"Validation du sujet #{sid}",
+                    )
+                messages.success(request, f"{updated} sujet(s) validé(s) et publié(s).")
+            elif action == "archiver":
+                updated = Sujet.objects.filter(id__in=ids_list, statut="actif").update(statut="archive")
+                for sid in ids_list:
+                    Activite.objects.create(
+                        utilisateur=request.user,
+                        type="archivage",
+                        sujet_id=sid,
+                        description=f"Archivage du sujet #{sid}",
+                    )
+                messages.success(request, f"{updated} sujet(s) archivé(s).")
+            elif action == "reactiver":
+                updated = Sujet.objects.filter(id__in=ids_list, statut="archive").update(statut="actif")
+                for sid in ids_list:
+                    Activite.objects.create(
+                        utilisateur=request.user,
+                        type="validation",
+                        sujet_id=sid,
+                        description=f"Réactivation du sujet #{sid}",
+                    )
+                messages.success(request, f"{updated} sujet(s) réactivé(s).")
+            elif action == "rendre_visible":
+                updated = Sujet.objects.filter(id__in=ids_list, visibilite="restreint").update(visibilite="visible")
+                for sid in ids_list:
+                    Activite.objects.create(
+                        utilisateur=request.user,
+                        type="validation",
+                        sujet_id=sid,
+                        description=f"Visibilité activée sur le sujet #{sid}",
+                    )
+                messages.success(request, f"{updated} sujet(s) désormais visible(s) par tous.")
+            elif action == "restreindre":
+                updated = Sujet.objects.filter(id__in=ids_list, visibilite="visible").update(visibilite="restreint")
+                for sid in ids_list:
+                    Activite.objects.create(
+                        utilisateur=request.user,
+                        type="archivage",
+                        sujet_id=sid,
+                        description=f"Visibilité restreinte sur le sujet #{sid}",
+                    )
+                messages.success(request, f"{updated} sujet(s) passé(s) en accès restreint.")
+            elif action == "supprimer":
+                n = len(ids_list)
+                for sid in ids_list:
+                    Activite.objects.create(
+                        utilisateur=request.user,
+                        type="archivage",
+                        description=f"Suppression du sujet #{sid}",
+                    )
+                Sujet.objects.filter(id__in=ids_list).delete()
+                messages.success(request, f"{n} sujet(s) supprimé(s) définitivement.")
+        else:
+            # Actions individuelles (visibilite toggle)
+            if sujet_id:
+                sujet = get_object_or_404(Sujet, id=sujet_id)
+                if sujet.visibilite == "restreint":
+                    Sujet.objects.filter(id=sujet_id).update(visibilite="visible")
+                    messages.success(request, "Sujet désormais visible par tous.")
+                else:
+                    Sujet.objects.filter(id=sujet_id).update(visibilite="restreint")
+                    messages.success(request, "Sujet passé en accès restreint.")
+
         return redirect("admin_sujets")
 
     filtre_statut = request.GET.get("statut", "")
     filtre_filiere = request.GET.get("filiere", "")
     filtre_annee = request.GET.get("annee", "")
+    recherche = request.GET.get("q", "").strip()
 
     sujets = Sujet.objects.select_related("filiere", "matiere", "niveau", "publie_par").order_by(
         "-cree_le"
     )
+    if recherche:
+        sujets = sujets.filter(
+            Q(titre__icontains=recherche)
+            | Q(matiere__nom__icontains=recherche)
+            | Q(publie_par__username__icontains=recherche)
+            | Q(publie_par__email__icontains=recherche)
+        )
     if filtre_statut:
         sujets = sujets.filter(statut=filtre_statut)
     if filtre_filiere:
@@ -1026,6 +1090,7 @@ def admin_sujets(request):
             "filtre_statut": filtre_statut,
             "filtre_filiere": filtre_filiere,
             "filtre_annee": filtre_annee,
+            "recherche": recherche,
             "stats": {
                 "total": Sujet.objects.count(),
                 "actifs": Sujet.objects.filter(statut="actif").count(),
