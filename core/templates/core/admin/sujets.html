@@ -28,8 +28,7 @@
         </div>
         {% endif %}
 
-        <!-- Alertes : actions recommandées -->
-        {% if stats.en_attente > 0 or stats.restreints > 0 %}
+        <!-- Alertes : toutes les actions recommandées -->
         <div class="space-y-2 mb-4">
             {% if stats.en_attente > 0 %}
             <a href="?statut=en_attente"
@@ -37,7 +36,7 @@
                 <span class="w-10 h-10 rounded-full bg-yellow-100 flex items-center justify-center text-lg">⏳</span>
                 <div class="flex-1">
                     <p class="font-bold text-yellow-800 text-sm">{{ stats.en_attente }} sujet(s) en attente de validation</p>
-                    <p class="text-xs text-yellow-600">Cliquez pour les filtrer et les publier en un clic</p>
+                    <p class="text-xs text-yellow-600">Cliquez pour les filtrer → cocher tout → publier</p>
                 </div>
                 <span class="text-yellow-500 text-sm font-bold group-hover:translate-x-1 transition">→</span>
             </a>
@@ -47,14 +46,25 @@
                class="flex items-center gap-3 bg-red-50 border border-red-200 rounded-xl px-4 py-3 hover:bg-red-100 transition group">
                 <span class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center text-lg">🔒</span>
                 <div class="flex-1">
-                    <p class="font-bold text-red-800 text-sm">{{ stats.restreints }} sujet(s) à rendre publics</p>
-                    <p class="text-xs text-red-600">Cliquez pour les filtrer et les rendre visibles à tous</p>
+                    <p class="font-bold text-red-800 text-sm">{{ stats.restreints }} sujet(s) restreints à rendre publics</p>
+                    <p class="text-xs text-red-600">Cliquez pour les filtrer → cocher tout → rendre visibles</p>
                 </div>
                 <span class="text-red-500 text-sm font-bold group-hover:translate-x-1 transition">→</span>
             </a>
             {% endif %}
+            {% if stats.archives > 0 %}
+            <a href="?statut=archive"
+               class="flex items-center gap-3 bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 hover:bg-gray-100 transition group">
+                <span class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-lg">📦</span>
+                <div class="flex-1">
+                    <p class="font-bold text-gray-800 text-sm">{{ stats.archives }} sujet(s) archivés à réactiver</p>
+                    <p class="text-xs text-gray-500">Cliquez pour les filtrer → cocher tout → réactiver</p>
+                </div>
+                <span class="text-gray-400 text-sm font-bold group-hover:translate-x-1 transition">→</span>
+            </a>
+            {% endif %}
+
         </div>
-        {% endif %}
 
         <!-- Stats -->
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-6">
