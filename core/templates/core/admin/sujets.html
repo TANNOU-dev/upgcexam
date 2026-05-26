@@ -95,15 +95,15 @@
             </form>
         </div>
 
-        <!-- Barre d'actions groupées -->
+        <!-- Barre d'actions groupées intelligente -->
         <div id="bulkBar" class="bg-[#0B1C30] text-white rounded-xl shadow-lg p-3 mb-4 hidden sm:flex items-center justify-between">
             <span class="text-sm font-medium"><span id="bulkCount">0</span> sujet(s)</span>
             <div class="flex flex-wrap gap-2">
-                <button onclick="bulkAction('valider')" class="text-xs px-3 py-1.5 rounded bg-green-500 hover:bg-green-600 font-bold">✅ Valider</button>
-                <button onclick="bulkAction('archiver')" class="text-xs px-3 py-1.5 rounded bg-orange-500 hover:bg-orange-600 font-bold">📦 Archiver</button>
-                <button onclick="bulkAction('reactiver')" class="text-xs px-3 py-1.5 rounded bg-blue-500 hover:bg-blue-600 font-bold">🔄 Réactiver</button>
-                <button onclick="bulkAction('rendre_visible')" class="text-xs px-3 py-1.5 rounded bg-yellow-500 hover:bg-yellow-600 font-bold">🔓 Visible</button>
-                <button onclick="bulkAction('restreindre')" class="text-xs px-3 py-1.5 rounded bg-purple-500 hover:bg-purple-600 font-bold">🔒 Restreindre</button>
+                <button id="bulkValider" onclick="bulkAction('valider')" class="hidden text-xs px-3 py-1.5 rounded bg-green-500 hover:bg-green-600 font-bold">✅ Valider</button>
+                <button id="bulkArchiver" onclick="bulkAction('archiver')" class="hidden text-xs px-3 py-1.5 rounded bg-orange-500 hover:bg-orange-600 font-bold">📦 Archiver</button>
+                <button id="bulkReactiver" onclick="bulkAction('reactiver')" class="hidden text-xs px-3 py-1.5 rounded bg-blue-500 hover:bg-blue-600 font-bold">🔄 Réactiver</button>
+                <button id="bulkRendreVisible" onclick="bulkAction('rendre_visible')" class="hidden text-xs px-3 py-1.5 rounded bg-yellow-500 hover:bg-yellow-600 font-bold">🔓 Rendre visible</button>
+                <button id="bulkRestreindre" onclick="bulkAction('restreindre')" class="hidden text-xs px-3 py-1.5 rounded bg-purple-500 hover:bg-purple-600 font-bold">🔒 Restreindre</button>
                 <button onclick="bulkAction('supprimer')" class="text-xs px-3 py-1.5 rounded bg-red-500 hover:bg-red-600 font-bold">🗑 Supprimer</button>
             </div>
         </div>
@@ -134,7 +134,7 @@
                         {% for s in sujets %}
                         <tr class="hover:bg-gray-50/50">
                             <td class="px-2 sm:px-3 py-3">
-                                <input type="checkbox" name="sujets_ids" value="{{ s.id }}" class="row-checkbox rounded border-gray-300" onchange="updateBulkBar()">
+                                <input type="checkbox" name="sujets_ids" value="{{ s.id }}" class="row-checkbox rounded border-gray-300" data-statut="{{ s.statut }}" data-visibilite="{{ s.visibilite }}" onchange="updateBulkBar()">
                             </td>
                             <td class="px-2 sm:px-3 py-3 font-medium text-gray-900 max-w-[140px] sm:max-w-[180px] truncate text-xs sm:text-sm">{{ s.titre }}</td>
                             <td class="px-2 sm:px-3 py-3 text-gray-500 text-xs hidden sm:table-cell">{{ s.publie_par.username|default:'—' }}</td>
@@ -236,14 +236,50 @@
         var checked = document.querySelectorAll('.row-checkbox:checked');
         var bar = document.getElementById('bulkBar');
         var count = document.getElementById('bulkCount');
-        if (checked.length > 0) {
-            bar.classList.remove('hidden');
-            bar.classList.add('flex');
-            count.textContent = checked.length;
-        } else {
+        count.textContent = checked.length;
+
+        if (checked.length === 0) {
             bar.classList.add('hidden');
             bar.classList.remove('flex');
+            return;
         }
+        bar.classList.remove('hidden');
+        bar.classList.add('flex');
+
+        // Analyser les statuts des sujets sélectionnés
+        var ids = [];
+        var statuts = {};
+        var visibilites = {};
+        checked.forEach(function(cb) {
+            var s = cb.dataset.statut;
+            var v = cb.dataset.visibilite;
+            ids.push(cb.value);
+            statuts[s] = (statuts[s] || 0) + 1;
+            visibilites[v] = (visibilites[v] || 0) + 1;
+        });
+
+        // Boutons visibles seulement si TOUS les sujets cochés sont concernés
+        // Valider : que des sujets en_attente
+        document.getElementById('bulkValider').classList.toggle('hidden',
+            !(statuts['en_attente'] && Object.keys(statuts).length === 1));
+
+        // Archiver : que des sujets actifs
+        document.getElementById('bulkArchiver').classList.toggle('hidden',
+            !(statuts['actif'] && Object.keys(statuts).length === 1));
+
+        // Réactiver : que des sujets archivés
+        document.getElementById('bulkReactiver').classList.toggle('hidden',
+            !(statuts['archive'] && Object.keys(statuts).length === 1));
+
+        // Rendre visible : que des sujets restreints (actifs)
+        document.getElementById('bulkRendreVisible').classList.toggle('hidden',
+            !(statuts['actif'] && visibilites['restreint'] && Object.keys(statuts).length === 1 && Object.keys(visibilites).length === 1));
+
+        // Restreindre : que des sujets visibles (actifs)
+        document.getElementById('bulkRestreindre').classList.toggle('hidden',
+            !(statuts['actif'] && visibilites['visible'] && Object.keys(statuts).length === 1 && Object.keys(visibilites).length === 1));
+
+        // Supprimer : toujours visible
     }
     function bulkAction(action) {
         var checked = document.querySelectorAll('.row-checkbox:checked');
