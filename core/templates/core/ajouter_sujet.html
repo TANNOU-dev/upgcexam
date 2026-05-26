@@ -242,6 +242,29 @@
                 dropdown.classList.add('hidden');
             }
         });
+        // Filtrage des matieres par filiere
+        function filtrerMatieres(prefix) {
+            const filiere = document.getElementById(prefix + '_filiere');
+            const matiere = document.getElementById(prefix + '_matiere');
+            const filiereId = filiere.value;
+
+            // Reinitialiser
+            matiere.value = '';
+
+            if (!filiereId) {
+                matiere.innerHTML = '<option value="">D\'abord sélectionner une filière</option>';
+                return;
+            }
+
+            let html = '<option value="">Sélectionner une matière</option>';
+            {% for m in matieres %}
+            if ('{{ m.filiere_id }}' === filiereId) {
+                html += '<option value="{{ m.id }}">{{ m.nom|escapejs }}</option>';
+            }
+            {% endfor %}
+            matiere.innerHTML = html;
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
             const btn = document.getElementById('mobileMenuBtn');
             const menu = document.getElementById('mobileMenu');

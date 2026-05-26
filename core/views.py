@@ -445,6 +445,8 @@ def modifier_sujet(request, sujet_id):
     sujet = _get_sujet_modifiable(request, sujet_id)
 
     filieres = Filiere.objects.all()
+    matieres = Matiere.objects.all()
+    niveaux = Niveau.objects.all()
     annees = (
         Sujet.objects.filter(statut="actif")
         .values_list("annee_academique", flat=True)
@@ -454,6 +456,9 @@ def modifier_sujet(request, sujet_id):
 
     if request.method == "POST":
         if "archiver" in request.POST:
+            if not request.user.is_staff:
+                messages.error(request, "Seuls les administrateurs peuvent archiver un sujet.")
+                return redirect_apres_sujet(request)
             sujet.statut = "archive"
             sujet.save()
             messages.success(request, "Sujet archivé avec succès.")
@@ -461,6 +466,8 @@ def modifier_sujet(request, sujet_id):
 
         titre = request.POST.get("titre", "").strip()
         filiere_id = request.POST.get("filiere")
+        matiere_id = request.POST.get("matiere")
+        niveau_id = request.POST.get("niveau")
         annee_academique = request.POST.get("annee_academique", "").strip()
         description = request.POST.get("description", "")
         fichier = request.FILES.get("fichier_pdf")
@@ -470,6 +477,10 @@ def modifier_sujet(request, sujet_id):
             sujet.titre = titre
         if filiere_id:
             sujet.filiere_id = filiere_id
+        if matiere_id:
+            sujet.matiere_id = matiere_id
+        if niveau_id:
+            sujet.niveau_id = niveau_id
         if annee_academique:
             sujet.annee_academique = annee_academique
         sujet.description = description
@@ -490,7 +501,14 @@ def modifier_sujet(request, sujet_id):
     return render(
         request,
         "core/modifier_sujet.html",
-        {"sujet": sujet, "filieres": filieres, "annees": annees, **retour},
+        {
+            "sujet": sujet,
+            "filieres": filieres,
+            "matieres": matieres,
+            "niveaux": niveaux,
+            "annees": annees,
+            **retour,
+        },
     )
 
 

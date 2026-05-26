@@ -64,12 +64,14 @@
         <!-- Badge + titre + retour -->
         <div class="flex items-start justify-between mb-6">
             <div>
+                {% if user.is_staff %}
                 <span class="inline-flex items-center gap-1.5 bg-purple-100 text-purple-700 text-xs font-bold tracking-widest uppercase px-3 py-1.5 rounded-full mb-5">
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
                     </svg>
                     Admin
                 </span>
+                {% endif %}
                 <h1 class="text-4xl md:text-5xl font-black leading-tight mb-3 text-[#0B1C30]">Modifier le sujet</h1>
                 <p class="text-gray-500 text-sm leading-relaxed max-w-md">Mise à jour des paramètres académiques et des ressources associées pour la session en cours.</p>
             </div>
@@ -109,11 +111,33 @@
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-6">
                         <div>
-                            <label class="block text-xs font-bold tracking-wider uppercase text-gray-500 mb-2">Filière / Niveau</label>
-                            <select name="filiere" required
-                                    class="w-full px-4 py-3 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#0037B0] focus:border-[#0037B0] appearance-none">
+                            <label class="block text-xs font-bold tracking-wider uppercase text-gray-500 mb-2">Filière</label>
+                            <select name="filiere" id="modif_filiere" required
+                                    class="w-full px-4 py-3 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#0037B0] focus:border-[#0037B0] appearance-none"
+                                    onchange="filtrerMatieres('modif')">
                                 {% for f in filieres %}
                                 <option value="{{ f.id }}" {% if sujet.filiere_id == f.id %}selected{% endif %}>{{ f.nom }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold tracking-wider uppercase text-gray-500 mb-2">Matière</label>
+                            <select name="matiere" id="modif_matiere" required
+                                    class="w-full px-4 py-3 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#0037B0] focus:border-[#0037B0] appearance-none">
+                                <option value="">Sélectionner une matière</option>
+                                {% for m in matieres %}
+                                <option value="{{ m.id }}" data-filiere="{{ m.filiere_id }}" {% if sujet.matiere_id == m.id %}selected{% endif %}>{{ m.nom }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-6">
+                        <div>
+                            <label class="block text-xs font-bold tracking-wider uppercase text-gray-500 mb-2">Niveau</label>
+                            <select name="niveau" required
+                                    class="w-full px-4 py-3 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#0037B0] focus:border-[#0037B0] appearance-none">
+                                {% for n in niveaux %}
+                                <option value="{{ n.id }}" {% if sujet.niveau_id == n.id %}selected{% endif %}>{{ n.nom }}</option>
                                 {% endfor %}
                             </select>
                         </div>
@@ -188,7 +212,8 @@
                     </a>
                 </div>
 
-                <!-- Zone de danger -->
+                {% if user.is_staff %}
+                <!-- Zone de danger (admin uniquement) -->
                 <div class="bg-white border border-red-200 rounded-2xl p-5 flex items-center justify-between">
                     <div>
                         <p class="text-sm font-bold text-red-600 mb-0.5">Zone de danger</p>
@@ -198,6 +223,7 @@
                         Archiver
                     </button>
                 </div>
+                {% endif %}
 
             </div>
 
@@ -268,6 +294,34 @@
             const menu = document.getElementById('mobileMenu');
             if (btn && menu) {
                 btn.addEventListener('click', function() { menu.classList.toggle('hidden'); });
+            }
+        });
+
+        // Filtrage des matieres par filiere
+        function filtrerMatieres(prefix) {
+            const filiere = document.getElementById(prefix + '_filiere');
+            const matiere = document.getElementById(prefix + '_matiere');
+            const selected = matiere.value;
+            const filiereId = filiere.value;
+
+            for (let opt of matiere.options) {
+                if (!opt.value) continue;
+                const fId = opt.getAttribute('data-filiere');
+                opt.style.display = (fId === filiereId) ? 'block' : 'none';
+                opt.disabled = (fId !== filiereId);
+            }
+
+            // Si l'option courante n'est plus dans la filiere, reinitialiser
+            const currentOpt = matiere.options[matiere.selectedIndex];
+            if (currentOpt && currentOpt.disabled) {
+                matiere.value = '';
+            }
+        }
+
+        // Declencher le filtrage au chargement
+        document.addEventListener('DOMContentLoaded', function() {
+            if (document.getElementById('modif_filiere')) {
+                filtrerMatieres('modif');
             }
         });
     </script>
