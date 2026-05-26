@@ -1057,6 +1057,7 @@ def admin_sujets(request):
     filtre_statut = request.GET.get("statut", "")
     filtre_filiere = request.GET.get("filiere", "")
     filtre_annee = request.GET.get("annee", "")
+    filtre_visibilite = request.GET.get("visibilite", "")
     recherche = request.GET.get("q", "").strip()
 
     sujets = Sujet.objects.select_related("filiere", "matiere", "niveau", "publie_par").order_by(
@@ -1075,6 +1076,8 @@ def admin_sujets(request):
         sujets = sujets.filter(filiere_id=filtre_filiere)
     if filtre_annee:
         sujets = sujets.filter(annee_academique=filtre_annee)
+    if filtre_visibilite:
+        sujets = sujets.filter(visibilite=filtre_visibilite)
 
     sujets_page = Paginator(sujets, 25).get_page(request.GET.get("page", 1))
 
@@ -1090,6 +1093,7 @@ def admin_sujets(request):
             "filtre_statut": filtre_statut,
             "filtre_filiere": filtre_filiere,
             "filtre_annee": filtre_annee,
+            "filtre_visibilite": filtre_visibilite,
             "recherche": recherche,
             "stats": {
                 "total": Sujet.objects.count(),

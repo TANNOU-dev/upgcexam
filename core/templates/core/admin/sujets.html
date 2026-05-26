@@ -42,7 +42,7 @@
             </a>
             {% endif %}
             {% if stats.restreints > 0 %}
-            <a href="?statut=actif"
+            <a href="?statut=actif&amp;visibilite=restreint"
                class="flex items-center gap-3 bg-red-50 border border-red-200 rounded-xl px-4 py-3 hover:bg-red-100 transition group">
                 <span class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center text-lg">🔒</span>
                 <div class="flex-1">
@@ -128,6 +128,7 @@
                             {% endfor %}
                         </select>
                     </div>
+                    <input type="hidden" name="visibilite" value="{{ filtre_visibilite }}">
                     <a href="{% url 'admin_sujets' %}" class="text-sm text-gray-500 hover:text-gray-700 px-3 py-2">Réinitialiser</a>
                 </div>
             </form>
@@ -274,12 +275,12 @@
         {% if sujets.paginator.num_pages > 1 %}
         <div class="flex flex-wrap justify-center mt-6 gap-2">
             {% if sujets.has_previous %}
-            <a href="?page={{ sujets.previous_page_number }}&statut={{ filtre_statut }}&filiere={{ filtre_filiere }}&annee={{ filtre_annee }}&q={{ recherche|urlencode }}"
+            <a href="?page={{ sujets.previous_page_number }}&statut={{ filtre_statut }}&filiere={{ filtre_filiere }}&annee={{ filtre_annee }}&visibilite={{ filtre_visibilite }}&q={{ recherche|urlencode }}"
                class="px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-sm hover:bg-gray-50">← Précédent</a>
             {% endif %}
             <span class="px-3 py-1.5 text-sm text-gray-500">Page {{ sujets.number }}/{{ sujets.paginator.num_pages }}</span>
             {% if sujets.has_next %}
-            <a href="?page={{ sujets.next_page_number }}&statut={{ filtre_statut }}&filiere={{ filtre_filiere }}&annee={{ filtre_annee }}&q={{ recherche|urlencode }}"
+            <a href="?page={{ sujets.next_page_number }}&statut={{ filtre_statut }}&filiere={{ filtre_filiere }}&annee={{ filtre_annee }}&visibilite={{ filtre_visibilite }}&q={{ recherche|urlencode }}"
                class="px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-sm hover:bg-gray-50">Suivant →</a>
             {% endif %}
         </div>
