@@ -21,6 +21,7 @@ from .models import (
     Filiere,
     Matiere,
     Niveau,
+    PresenceSession,
     Sujet,
     Telechargement,
     Utilisateur,
@@ -699,24 +700,38 @@ def tableau_de_bord(request):
         )
 
     jours = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"]
-    activite_hebdo = Activite.objects.filter(utilisateur_id=user_id)
-    if activite_hebdo.exists():
-        jours_act = (
-            activite_hebdo.annotate(jour_sem=ExtractWeekDay("cree_le"))
-            .values("jour_sem")
-            .annotate(count=Count("id"))
-        )
-        mapping = {2: 0, 3: 1, 4: 2, 5: 3, 6: 4, 7: 5, 1: 6}
-        valeurs = [0] * 7
-        for j in jours_act:
-            valeurs[mapping[j["jour_sem"]]] = j["count"]
-        max_val = max(valeurs) if max(valeurs) > 0 else 1
-        # Échelle dynamique : le jour le + actif = 100px, les autres proportionnels
-        # Minimum 8px pour qu'un jour avec activité soit visible
-        valeurs = [max(round(v / max_val * 100), 8 if v > 0 else 0) for v in valeurs]
-        activite = list(zip(jours, valeurs))
-    else:
-        activite = list(zip(jours, [0] * 7))
+    mapping = {2: 0, 3: 1, 4: 2, 5: 3, 6: 4, 7: 5, 1: 6}
+
+    # Temps réel passé (en secondes) depuis PresenceSession
+    cette_semaine = timezone.now() - timezone.timedelta(days=7)
+    sessions_semaine = PresenceSession.objects.filter(
+        utilisateur_id=user_id, debut__gte=cette_semaine
+    ).annotate(jour_sem=ExtractWeekDay("debut"))
+
+    valeurs = [0] * 7
+    if sessions_semaine.exists():
+        for s in sessions_semaine:
+            idx = mapping.get(s.jour_sem, 0)
+            valeurs[idx] += s.secondes
+
+    max_val = max(valeurs) if max(valeurs) > 0 else 1
+    # Convertir en hauteur de barre (max = 100px)
+    # On affiche aussi les heures dans la tooltip (voir template)
+    valeurs_px = [
+        max(round(v / max_val * 100), 8 if v > 0 else 0) for v in valeurs
+    ]
+    # Temps formaté pour l'affichage dans le tooltip
+    temps_format = []
+    for v in valeurs:
+        heures = v // 3600
+        minutes = (v % 3600) // 60
+        if heures > 0:
+            temps_format.append(f"{heures}h {minutes:02d}min")
+        elif minutes > 0:
+            temps_format.append(f"{minutes} min")
+        else:
+            temps_format.append(f"{v} sec")
+    activite = list(zip(jours, valeurs_px, temps_format))
 
     sujets_recommandes = []
     for sujet in _sujets_accessibles(request).order_by("-vues")[:3]:

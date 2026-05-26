@@ -143,6 +143,21 @@ class Activite(models.Model):
         return f"{self.utilisateur.username} - {self.type}"
 
 
+class PresenceSession(models.Model):
+    utilisateur = models.ForeignKey(User, on_delete=models.CASCADE, related_name="presences")
+    debut = models.DateTimeField(auto_now_add=True)
+    fin = models.DateTimeField(null=True, blank=True)
+    secondes = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        verbose_name = "Session de présence"
+        verbose_name_plural = "Sessions de présence"
+        ordering = ["-debut"]
+
+    def __str__(self):
+        return f"{self.utilisateur.username} - {self.secondes}s"
+
+
 class Verification(models.Model):
     email = models.EmailField(db_index=True)
     code = models.CharField(max_length=6)
