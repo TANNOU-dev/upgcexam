@@ -709,7 +709,11 @@ def tableau_de_bord(request):
         mapping = {2: 0, 3: 1, 4: 2, 5: 3, 6: 4, 7: 5, 1: 6}
         valeurs = [0] * 7
         for j in jours_act:
-            valeurs[mapping[j["jour_sem"]]] = min(j["count"] * 10, 100)
+            valeurs[mapping[j["jour_sem"]]] = j["count"]
+        max_val = max(valeurs) if max(valeurs) > 0 else 1
+        # Échelle dynamique : le jour le + actif = 100px, les autres proportionnels
+        # Minimum 8px pour qu'un jour avec activité soit visible
+        valeurs = [max(round(v / max_val * 100), 8 if v > 0 else 0) for v in valeurs]
         activite = list(zip(jours, valeurs))
     else:
         activite = list(zip(jours, [0] * 7))
