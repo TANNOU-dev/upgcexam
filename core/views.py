@@ -419,7 +419,6 @@ def ajouter_sujet(request):
             "filieres": filieres,
             "niveaux": niveaux,
             "annees": annees,
-            "matieres_par_filiere": _matieres_par_filiere(),
             **ctx_retour(request),
         },
     )
