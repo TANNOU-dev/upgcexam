@@ -125,10 +125,10 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-6">
                         <div>
                             <label class="block text-sm font-bold text-gray-700 mb-2 uppercase tracking-wider">Matière</label>
-                            <select name="matiere" id="matiere-select" required disabled
-                                    class="w-full px-4 py-3 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#0037B0] focus:border-[#0037B0] appearance-none">
-                                <option value="">Sélectionnez d'abord une filière</option>
-                            </select>
+                            <input type="text" name="matiere" required
+                                   placeholder="Ex: Programmation Java"
+                                   class="w-full px-4 py-3 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#0037B0] focus:border-[#0037B0]">
+                            <p class="text-xs text-gray-400 mt-1">Saisissez le nom de la matière. Si elle n'existe pas, elle sera créée automatiquement.</p>
                         </div>
                         <div>
                             <label class="block text-sm font-bold text-gray-700 mb-2 uppercase tracking-wider">Année académique</label>
@@ -242,29 +242,6 @@
                 dropdown.classList.add('hidden');
             }
         });
-        // Filtrage des matieres par filiere
-        function filtrerMatieres(prefix) {
-            const filiere = document.getElementById(prefix + '_filiere');
-            const matiere = document.getElementById(prefix + '_matiere');
-            const filiereId = filiere.value;
-
-            // Reinitialiser
-            matiere.value = '';
-
-            if (!filiereId) {
-                matiere.innerHTML = '<option value="">D\'abord sélectionner une filière</option>';
-                return;
-            }
-
-            let html = '<option value="">Sélectionner une matière</option>';
-            {% for m in matieres %}
-            if ('{{ m.filiere_id }}' === filiereId) {
-                html += '<option value="{{ m.id }}">{{ m.nom|escapejs }}</option>';
-            }
-            {% endfor %}
-            matiere.innerHTML = html;
-        }
-
         document.addEventListener('DOMContentLoaded', function() {
             const btn = document.getElementById('mobileMenuBtn');
             const menu = document.getElementById('mobileMenu');
@@ -299,8 +276,7 @@
             }
         });
     </script>
-    {{ matieres_par_filiere|json_script:"matieres-par-filiere" }}
-    <script>{% include "core/includes/filiere_matiere.js" %}</script>
+    {% comment %} Suppression du select matiere — saisie libre remplace {% endcomment %}
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const data = JSON.parse(document.getElementById('matieres-par-filiere').textContent);

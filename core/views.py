@@ -384,22 +384,25 @@ def ajouter_sujet(request):
     if request.method == "POST":
         titre = request.POST.get("titre", "").strip()
         filiere_id = request.POST.get("filiere")
-        matiere_id = request.POST.get("matiere")
+        nom_matiere = request.POST.get("matiere", "").strip()
         niveau_id = request.POST.get("niveau")
         annee_academique = request.POST.get("annee_academique", "").strip()
         fichier = request.FILES.get("fichier_pdf")
 
-        if not all([titre, filiere_id, matiere_id, niveau_id, annee_academique, fichier]):
+        if not all([titre, filiere_id, nom_matiere, niveau_id, annee_academique, fichier]):
             messages.error(request, "Tous les champs sont obligatoires.")
         elif not est_fichier_pdf(fichier):
             messages.error(request, "Seuls les fichiers PDF valides sont acceptés.")
-        elif not Matiere.objects.filter(id=matiere_id, filiere_id=filiere_id).exists():
-            messages.error(request, "La matière sélectionnée ne correspond pas à la filière.")
         else:
+            matiere, _ = Matiere.objects.get_or_create(
+                nom__iexact=nom_matiere,
+                filiere_id=filiere_id,
+                defaults={"nom": nom_matiere, "filiere_id": filiere_id},
+            )
             sujet = Sujet.objects.create(
                 titre=titre,
                 filiere_id=filiere_id,
-                matiere_id=matiere_id,
+                matiere=matiere,
                 niveau_id=niveau_id,
                 annee_academique=annee_academique,
                 fichier_pdf=fichier,
@@ -467,7 +470,7 @@ def modifier_sujet(request, sujet_id):
 
         titre = request.POST.get("titre", "").strip()
         filiere_id = request.POST.get("filiere")
-        matiere_id = request.POST.get("matiere")
+        nom_matiere = request.POST.get("matiere", "").strip()
         niveau_id = request.POST.get("niveau")
         annee_academique = request.POST.get("annee_academique", "").strip()
         description = request.POST.get("description", "")
@@ -478,8 +481,13 @@ def modifier_sujet(request, sujet_id):
             sujet.titre = titre
         if filiere_id:
             sujet.filiere_id = filiere_id
-        if matiere_id:
-            sujet.matiere_id = matiere_id
+        if nom_matiere:
+            matiere, _ = Matiere.objects.get_or_create(
+                nom__iexact=nom_matiere,
+                filiere_id=filiere_id or sujet.filiere_id,
+                defaults={"nom": nom_matiere, "filiere_id": filiere_id or sujet.filiere_id},
+            )
+            sujet.matiere = matiere
         if niveau_id:
             sujet.niveau_id = niveau_id
         if annee_academique:

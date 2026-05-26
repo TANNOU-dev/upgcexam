@@ -112,9 +112,8 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-6">
                         <div>
                             <label class="block text-xs font-bold tracking-wider uppercase text-gray-500 mb-2">Filière</label>
-                            <select name="filiere" id="modif_filiere" required
-                                    class="w-full px-4 py-3 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#0037B0] focus:border-[#0037B0] appearance-none"
-                                    onchange="filtrerMatieres('modif')">
+                            <select name="filiere" required
+                                    class="w-full px-4 py-3 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#0037B0] focus:border-[#0037B0] appearance-none">
                                 {% for f in filieres %}
                                 <option value="{{ f.id }}" {% if sujet.filiere_id == f.id %}selected{% endif %}>{{ f.nom }}</option>
                                 {% endfor %}
@@ -122,13 +121,10 @@
                         </div>
                         <div>
                             <label class="block text-xs font-bold tracking-wider uppercase text-gray-500 mb-2">Matière</label>
-                            <select name="matiere" id="modif_matiere" required
-                                    class="w-full px-4 py-3 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#0037B0] focus:border-[#0037B0] appearance-none">
-                                <option value="">Sélectionner une matière</option>
-                                {% for m in matieres %}
-                                <option value="{{ m.id }}" data-filiere="{{ m.filiere_id }}" {% if sujet.matiere_id == m.id %}selected{% endif %}>{{ m.nom }}</option>
-                                {% endfor %}
-                            </select>
+                            <input type="text" name="matiere" required
+                                   value="{{ sujet.matiere.nom }}"
+                                   class="w-full px-4 py-3 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#0037B0] focus:border-[#0037B0]">
+                            <p class="text-xs text-gray-400 mt-1">Saisissez le nom de la matière. Si elle n'existe pas, elle sera créée automatiquement.</p>
                         </div>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-6">
@@ -299,33 +295,6 @@
             }
         });
 
-        // Filtrage des matieres par filiere
-        function filtrerMatieres(prefix) {
-            const filiere = document.getElementById(prefix + '_filiere');
-            const matiere = document.getElementById(prefix + '_matiere');
-            const selected = matiere.value;
-            const filiereId = filiere.value;
-
-            for (let opt of matiere.options) {
-                if (!opt.value) continue;
-                const fId = opt.getAttribute('data-filiere');
-                opt.style.display = (fId === filiereId) ? 'block' : 'none';
-                opt.disabled = (fId !== filiereId);
-            }
-
-            // Si l'option courante n'est plus dans la filiere, reinitialiser
-            const currentOpt = matiere.options[matiere.selectedIndex];
-            if (currentOpt && currentOpt.disabled) {
-                matiere.value = '';
-            }
-        }
-
-        // Declencher le filtrage au chargement
-        document.addEventListener('DOMContentLoaded', function() {
-            if (document.getElementById('modif_filiere')) {
-                filtrerMatieres('modif');
-            }
-        });
     </script>
 </body>
 </html>
