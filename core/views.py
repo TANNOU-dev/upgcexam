@@ -54,13 +54,6 @@ def _sujets_accessibles(request):
     return qs
 
 
-def _matieres_par_filiere():
-    result = {}
-    for m in Matiere.objects.select_related("filiere").order_by("nom"):
-        result.setdefault(str(m.filiere_id), []).append({"id": m.id, "nom": m.nom})
-    return result
-
-
 def _creer_code_verification(email):
     code = generer_code_verification()
     Verification.objects.create(
