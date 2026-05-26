@@ -942,6 +942,14 @@ def admin_sujets(request):
         elif action == "reactiver" and sujet_id:
             Sujet.objects.filter(id=sujet_id, statut="archive").update(statut="actif")
             messages.success(request, "Sujet réactivé et visible par tous.")
+        elif action == "visibilite" and sujet_id:
+            sujet = get_object_or_404(Sujet, id=sujet_id)
+            if sujet.visibilite == "restreint":
+                Sujet.objects.filter(id=sujet_id).update(visibilite="visible")
+                messages.success(request, "Sujet désormais visible par tous.")
+            else:
+                Sujet.objects.filter(id=sujet_id).update(visibilite="restreint")
+                messages.success(request, "Sujet passé en accès restreint.")
         elif action == "supprimer" and sujet_id:
         
             Sujet.objects.filter(id=sujet_id).delete()
