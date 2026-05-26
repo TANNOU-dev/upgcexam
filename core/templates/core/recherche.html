@@ -72,6 +72,16 @@
         </div>
     </header>
 
+    {% if messages %}
+    <div class="max-w-7xl mx-auto px-6 pt-6">
+        {% for message in messages %}
+        <div class="px-4 py-3 rounded-lg text-sm mb-2 {% if message.tags == 'error' %}bg-red-50 text-red-600 border border-red-200{% else %}bg-green-50 text-green-700 border border-green-200{% endif %}">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
     <!-- ==================== SEARCH HEADER ==================== -->
     <div class="bg-white border-b border-gray-100">
         <div class="max-w-7xl mx-auto px-6 py-8">
