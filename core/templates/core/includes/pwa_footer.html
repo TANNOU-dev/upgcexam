@@ -1,0 +1,63 @@
+<script>
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/static/pwa/sw.js', { scope: '/' }).then(function(reg) {
+        console.log('PWA prête ✅');
+    }).catch(function() {});
+}
+
+// Subscription aux notifications push
+function abonnerPush() {
+    if (!('Notification' in window) || !('PushManager' in window)) return;
+    if (Notification.permission === 'denied') return;
+
+    Notification.requestPermission().then(function(perm) {
+        if (perm !== 'granted') return;
+
+        navigator.serviceWorker.ready.then(function(reg) {
+            reg.pushManager.subscribe({
+                userVisibleOnly: true,
+                applicationServerKey: null  // Clé VAPID publique à renseigner
+            }).then(function(sub) {
+                fetch('/pwa/subscribe/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCSRF() },
+                    body: JSON.stringify(sub.toJSON())
+                });
+            }).catch(function() {});
+        });
+    });
+}
+
+function getCSRF() {
+    var name = 'csrftoken';
+    if (document.cookie.indexOf(name + '=') !== -1) {
+        return document.cookie.split('; ')
+            .find(function(r) { return r.startsWith(name + '='); })
+            .split('=')[1];
+    }
+    return '';
+}
+
+// Bannière pour activer les notifications
+window.addEventListener('load', function() {
+    if ('Notification' in window && Notification.permission === 'default') {
+        // Petite bannière discrète après 3 secondes
+        setTimeout(function() {
+            var banner = document.createElement('div');
+            banner.className = 'fixed bottom-4 right-4 bg-[#0037B0] text-white text-sm px-4 py-3 rounded-lg shadow-lg z-50 cursor-pointer hover:bg-[#002A8A] transition';
+            banner.innerHTML = '🔔 Activer les notifications <strong>UPGCExam</strong>';
+            banner.onclick = function() {
+                abonnerPush();
+                banner.remove();
+            };
+            // Fermeture au clic sur X
+            var closeBtn = document.createElement('span');
+            closeBtn.className = 'ml-3 text-white/60 hover:text-white cursor-pointer';
+            closeBtn.textContent = '✕';
+            closeBtn.onclick = function() { banner.remove(); return false; };
+            banner.appendChild(closeBtn);
+            document.body.appendChild(banner);
+        }, 3000);
+    }
+});
+</script>

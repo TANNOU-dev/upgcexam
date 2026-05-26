@@ -1,0 +1,24 @@
+{
+  "name": "UPGCExam — Bibliothèque d'examens",
+  "short_name": "UPGCExam",
+  "description": "Bibliothèque d'examens et sujets de révision pour les étudiants de l'UPGC.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#F5F7FA",
+  "theme_color": "#0037B0",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "/static/pwa/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/static/pwa/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

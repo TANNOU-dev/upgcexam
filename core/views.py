@@ -9,7 +9,10 @@ from django.contrib.auth.models import User
 from django.core.paginator import Paginator
 from django.db.models import Count, Q
 from django.db.models.functions import ExtractWeekDay
-from django.http import FileResponse, Http404
+import json
+import os
+
+from django.http import FileResponse, Http404, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
@@ -22,6 +25,7 @@ from .models import (
     Matiere,
     Niveau,
     PresenceSession,
+    PushSubscription,
     Sujet,
     Telechargement,
     Utilisateur,
@@ -411,6 +415,15 @@ def ajouter_sujet(request):
                 description=f"Ajout du sujet : {titre}",
             )
             messages.success(request, "✅ Sujet ajouté avec succès ! En attente.")
+            # Notifier les admins
+            admins = User.objects.filter(is_staff=True)
+            for admin in admins:
+                envoyer_notification_push(
+                    admin,
+                    "🆕 Nouveau sujet en attente",
+                    f"{titre} — {nom_matiere}",
+                    url="/administration/sujets/",
+                )
             return redirect_apres_sujet(request)
 
     return render(
@@ -503,6 +516,15 @@ def modifier_sujet(request, sujet_id):
             sujet.statut = "en_attente"
             sujet.save()
             messages.success(request, "✅ Modifications enregistrées. En attente.")
+            # Notifier les admins
+            admins = User.objects.filter(is_staff=True)
+            for admin in admins:
+                envoyer_notification_push(
+                    admin,
+                    "🔄 Sujet modifié — en attente",
+                    f"{sujet.titre} — {sujet.matiere.nom}",
+                    url="/administration/sujets/",
+                )
             # Rediriger vers la bibliotheque (le sujet n'est plus visible)
             return redirect(reverse("bibliotheque") + query_bibliotheque(request))
 
@@ -1090,3 +1112,55 @@ def basculer_visibilite(request, sujet_id):
     sujet.save(update_fields=["visibilite"])
     messages.success(request, msg)
     return redirect("detail_sujet", sujet_id=sujet.id)
+
+
+# ─── PWA : Notifications Push ──────────────────────────────────────────────
+
+@require_POST
+@login_required
+def push_subscribe(request):
+    """Enregistre l'abonnement push d'un utilisateur."""
+    try:
+        data = json.loads(request.body)
+        sub, created = PushSubscription.objects.update_or_create(
+            utilisateur=request.user,
+            endpoint=data["endpoint"],
+            defaults={
+                "auth": data["keys"]["auth"],
+                "p256dh": data["keys"]["p256dh"],
+            },
+        )
+        return JsonResponse({"ok": True, "created": created})
+    except Exception as e:
+        return JsonResponse({"ok": False, "error": str(e)}, status=400)
+
+
+def envoyer_notification_push(utilisateur, titre, corps, url=None):
+    """Envoie une notification push à un utilisateur.
+    Nécessite pywebpush : pip install pywebpush
+    """
+    try:
+        from pywebpush import webpush, WebPushException
+    except ImportError:
+        return False
+
+    vapid_private = os.environ.get("VAPID_PRIVATE_KEY")
+    vapid_public = os.environ.get("VAPID_PUBLIC_KEY")
+    if not vapid_private or not vapid_public:
+        return False
+
+    subs = PushSubscription.objects.filter(utilisateur=utilisateur)
+    for sub in subs:
+        try:
+            webpush(
+                subscription_info={
+                    "endpoint": sub.endpoint,
+                    "keys": {"auth": sub.auth, "p256dh": sub.p256dh},
+                },
+                data=json.dumps({"title": titre, "body": corps, "url": url or "/"}),
+                vapid_private_key=vapid_private,
+                vapid_public_key=vapid_public,
+            )
+        except WebPushException:
+            sub.delete()
+    return True

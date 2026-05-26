@@ -158,6 +158,21 @@ class PresenceSession(models.Model):
         return f"{self.utilisateur.username} - {self.secondes}s"
 
 
+class PushSubscription(models.Model):
+    utilisateur = models.ForeignKey(User, on_delete=models.CASCADE, related_name="push_subscriptions")
+    endpoint = models.URLField(max_length=500)
+    auth = models.CharField(max_length=100)
+    p256dh = models.CharField(max_length=100)
+    cree_le = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Abonnement Push"
+        verbose_name_plural = "Abonnements Push"
+
+    def __str__(self):
+        return f"Push: {self.utilisateur.username}"
+
+
 class Verification(models.Model):
     email = models.EmailField(db_index=True)
     code = models.CharField(max_length=6)

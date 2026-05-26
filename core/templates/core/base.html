@@ -6,11 +6,25 @@
     <title>{% block title %}UPGCExam{% endblock %}</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="manifest" href="/static/manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="UPGCExam">
+    <link rel="apple-touch-icon" href="/static/pwa/icon-192.png">
     <style>{% block extra_css %}* { font-family: 'Inter', sans-serif; }{% endblock %}</style>
     {% block extra_head %}{% endblock %}
 </head>
 <body class="{% block body_class %}bg-[#F5F7FA] min-h-screen{% endblock %}">
     {% block body %}{% endblock %}
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/static/pwa/sw.js', { scope: '/' }).then(function(reg) {
+                console.log('PWA prête ✅', reg.scope);
+            }).catch(function(err) {
+                console.log('PWA non disponible:', err);
+            });
+        }
+    </script>
     {% block extra_js %}{% endblock %}
 </body>
 </html>
