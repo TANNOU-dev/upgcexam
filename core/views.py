@@ -413,7 +413,7 @@ def ajouter_sujet(request):
                 sujet=sujet,
                 description=f"Ajout du sujet : {titre}",
             )
-            messages.success(request, "Sujet ajouté avec succès ! En attente de validation.")
+            messages.success(request, "✅ Sujet ajouté avec succès ! En attente.")
             return redirect_apres_sujet(request)
 
     return render(
@@ -501,7 +501,7 @@ def modifier_sujet(request, sujet_id):
         else:
             sujet.statut = "archive"
             sujet.save()
-            messages.success(request, "✅ Modifications enregistrées. En attente de validation.")
+            messages.success(request, "✅ Modifications enregistrées. En attente.")
             # Rediriger vers la bibliotheque (le sujet n'est plus visible)
             return redirect(reverse("bibliotheque") + query_bibliotheque(request))
 
