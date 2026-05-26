@@ -28,7 +28,7 @@
         {% endif %}
 
         <!-- Stats -->
-        <div class="grid grid-cols-3 gap-4 mb-6">
+        <div class="grid grid-cols-4 gap-4 mb-6">
             <div class="bg-white rounded-xl shadow-sm p-5 text-center">
                 <p class="text-3xl font-black text-[#0037B0]">{{ stats.total }}</p>
                 <p class="text-sm text-gray-400">Total</p>
@@ -40,6 +40,10 @@
             <div class="bg-white rounded-xl shadow-sm p-5 text-center">
                 <p class="text-3xl font-black text-[#F59E0B]">{{ stats.en_attente }}</p>
                 <p class="text-sm text-gray-400">En attente de validation</p>
+            </div>
+            <div class="bg-white rounded-xl shadow-sm p-5 text-center">
+                <p class="text-3xl font-black text-[#EF4444]">{{ stats.restreints }}</p>
+                <p class="text-sm text-gray-400">🔒 À rendre public</p>
             </div>
         </div>
 

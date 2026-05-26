@@ -630,6 +630,7 @@ def admin_dashboard(request):
         "total_sujets": Sujet.objects.count(),
         "sujets_actifs": Sujet.objects.filter(statut="actif").count(),
         "sujets_en_attente": Sujet.objects.filter(statut="en_attente").count(),
+        "sujets_restreints": Sujet.objects.filter(statut="actif", visibilite="restreint").count(),
         "total_utilisateurs": User.objects.count(),
         "total_telechargements": Telechargement.objects.count(),
     }
@@ -989,6 +990,7 @@ def admin_sujets(request):
                 "actifs": Sujet.objects.filter(statut="actif").count(),
                 "en_attente": Sujet.objects.filter(statut="en_attente").count(),
                 "archives": Sujet.objects.filter(statut="archive").count(),
+                "restreints": Sujet.objects.filter(statut="actif", visibilite="restreint").count(),
             },
         },
     )

@@ -85,7 +85,7 @@
         {% endif %}
 
         <!-- Stats cards -->
-        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
             <div class="bg-white rounded-xl shadow-sm p-5">
                 <p class="text-3xl font-black text-[#0037B0]">{{ stats.total_sujets }}</p>
                 <p class="text-sm text-gray-400 mt-1">Sujets totaux</p>
@@ -95,16 +95,20 @@
                 <p class="text-sm text-gray-400 mt-1">Sujets actifs</p>
             </div>
             <div class="bg-white rounded-xl shadow-sm p-5">
+                <p class="text-3xl font-black text-[#EF4444]">{{ stats.sujets_en_attente }}</p>
+                <p class="text-sm text-gray-400 mt-1">En attente de validation</p>
+            </div>
+            <div class="bg-white rounded-xl shadow-sm p-5">
+                <p class="text-3xl font-black text-[#F97316]">{{ stats.sujets_restreints }}</p>
+                <p class="text-sm text-gray-400 mt-1">🔒 À rendre public</p>
+            </div>
+            <div class="bg-white rounded-xl shadow-sm p-5">
                 <p class="text-3xl font-black text-[#8B5CF6]">{{ stats.total_utilisateurs }}</p>
                 <p class="text-sm text-gray-400 mt-1">Utilisateurs</p>
             </div>
             <div class="bg-white rounded-xl shadow-sm p-5">
                 <p class="text-3xl font-black text-[#F59E0B]">{{ stats.total_telechargements }}</p>
                 <p class="text-sm text-gray-400 mt-1">Téléchargements</p>
-            </div>
-            <div class="bg-white rounded-xl shadow-sm p-5">
-                <p class="text-3xl font-black text-[#EF4444]">{{ stats.sujets_en_attente }}</p>
-                <p class="text-sm text-gray-400 mt-1">En attente de validation</p>
             </div>
         </div>
 
