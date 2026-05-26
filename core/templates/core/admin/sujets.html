@@ -97,9 +97,10 @@
 
         <!-- Barre d'actions groupées -->
         <div id="bulkBar" class="hidden flex-col sm:flex-row items-start sm:items-center justify-between bg-blue-50 border border-blue-200 rounded-xl p-4 mb-4 gap-3">
-            <div class="flex items-center gap-2">
+            <div class="flex items-center gap-2 flex-wrap">
                 <span class="w-7 h-7 rounded-full bg-[#0037B0] text-white flex items-center justify-center text-xs font-bold" id="bulkCount">0</span>
-                <span class="text-sm font-semibold text-[#0B1C30]">sujet(s) sélectionné(s)</span>
+                <span class="text-sm font-semibold text-[#0B1C30]">sujet(s)</span>
+                <div id="bulkResume" class="flex gap-1.5"></div>
             </div>
             <div class="flex flex-wrap gap-2">
                 <button id="bulkValider" onclick="bulkAction('valider')"
@@ -268,16 +269,35 @@
         bar.classList.add('flex');
 
         // Analyser les statuts des sujets sélectionnés
-        var ids = [];
         var statuts = {};
         var visibilites = {};
         checked.forEach(function(cb) {
             var s = cb.dataset.statut;
             var v = cb.dataset.visibilite;
-            ids.push(cb.value);
             statuts[s] = (statuts[s] || 0) + 1;
             visibilites[v] = (visibilites[v] || 0) + 1;
         });
+
+        // Afficher le résumé dans la barre
+        var resume = document.getElementById('bulkResume');
+        resume.innerHTML = '';
+        var etiquetteStatut = { 'actif': 'Publiés', 'en_attente': 'En attente', 'archive': 'Archivés' };
+        var etiquetteVisi = { 'visible': '👁 Visibles', 'restreint': '🔒 Restreints' };
+        for (var s in statuts) {
+            var badge = document.createElement('span');
+            badge.className = 'text-xs px-2 py-0.5 rounded-full font-bold ' +
+                (s === 'actif' ? 'bg-green-100 text-green-700' :
+                 s === 'en_attente' ? 'bg-yellow-100 text-yellow-700' : 'bg-gray-100 text-gray-600');
+            badge.textContent = statuts[s] + ' ' + (etiquetteStatut[s] || s);
+            resume.appendChild(badge);
+        }
+        for (var v in visibilites) {
+            var badge = document.createElement('span');
+            badge.className = 'text-xs px-2 py-0.5 rounded-full font-bold ' +
+                (v === 'visible' ? 'bg-blue-100 text-blue-600' : 'bg-red-100 text-red-600');
+            badge.textContent = visibilites[v] + ' ' + (etiquetteVisi[v] || v);
+            resume.appendChild(badge);
+        }
 
         // Boutons visibles seulement si TOUS les sujets cochés sont concernés
         // Valider : que des sujets en_attente
