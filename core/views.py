@@ -741,18 +741,30 @@ def tableau_de_bord(request):
     valeurs_px = [
         max(round(v / max_val * 100), 4 if v > 0 else 0) for v in valeurs
     ]
-    # Temps formaté pour l'affichage dans le tooltip
+    # Temps formaté pour l'affichage (clair, lisible)
     temps_format = []
     for v in valeurs:
         heures = v // 3600
         minutes = (v % 3600) // 60
         if heures > 0:
-            temps_format.append(f"{heures}h {minutes:02d}min")
+            temps_format.append(f"{heures}h{minutes:02d}")
         elif minutes > 0:
-            temps_format.append(f"{minutes} min")
+            temps_format.append(f"{minutes}min")
+        elif v > 0:
+            temps_format.append(f"{v}s")
         else:
-            temps_format.append(f"{v} sec")
+            temps_format.append("—")
     activite = list(zip(jours, valeurs_px, temps_format))
+
+    total_secondes = sum(valeurs)
+    total_heures = total_secondes // 3600
+    total_minutes = (total_secondes % 3600) // 60
+    if total_heures > 0:
+        total_semaine = f"Total : {total_heures}h{total_minutes:02d}"
+    elif total_minutes > 0:
+        total_semaine = f"Total : {total_minutes}min"
+    else:
+        total_semaine = ""  # Pas encore de données
 
     sujets_recommandes = []
     for sujet in _sujets_accessibles(request).order_by("-vues")[:3]:
@@ -785,6 +797,7 @@ def tableau_de_bord(request):
             "stats": stats,
             "progressions": progressions,
             "activite": activite,
+            "total_semaine": total_semaine,
             "sujets_recommandes": sujets_recommandes,
             "activites_recentes": activites_recentes,
             "salutation": salutation(),
