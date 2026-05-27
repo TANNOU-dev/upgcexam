@@ -166,35 +166,35 @@
         </div>
 
         <!-- Graphique + Progression -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-            <div class="bg-white rounded-xl shadow-sm p-6">
-                <!-- Header : stats today + week comme dans l'exemple -->
-                <div class="grid grid-cols-2 gap-4 mb-6 pb-4 border-b border-gray-100">
-                    <div>
-                        <p class="text-[10px] font-semibold tracking-wider text-gray-400 uppercase">Aujourd'hui</p>
-                        <p class="text-xl font-black text-[#0B1C30] mt-0.5">{{ temps_aujourd_hui }}</p>
-                        <p class="text-[10px] text-gray-400">{{ aujourdhui_nom }} MOYEN</p>
-                        <p class="text-xs font-bold text-gray-600">{{ moyenne_jour }}</p>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-8">
+            <div class="bg-white rounded-xl shadow-sm p-4 sm:p-6">
+                <!-- Header : Aujourd'hui / Cette semaine (responsive 2 colonnes) -->
+                <div class="grid grid-cols-2 gap-2 sm:gap-4 mb-4 sm:mb-6 pb-3 sm:pb-4 border-b border-gray-100">
+                    <div class="min-w-0">
+                        <p class="text-[9px] sm:text-[10px] font-semibold tracking-wider text-gray-400 uppercase truncate">Aujourd'hui</p>
+                        <p class="text-lg sm:text-xl font-black text-[#0B1C30] mt-0.5 truncate">{{ temps_aujourd_hui }}</p>
+                        <p class="text-[9px] sm:text-[10px] text-gray-400 truncate">{{ aujourdhui_nom }} MOYEN</p>
+                        <p class="text-[10px] sm:text-xs font-bold text-gray-600 truncate">{{ moyenne_jour }}</p>
                     </div>
-                    <div class="text-right">
-                        <p class="text-[10px] font-semibold tracking-wider text-gray-400 uppercase">Cette semaine</p>
-                        <p class="text-xl font-black text-[#0037B0] mt-0.5">{{ total_semaine }}</p>
-                        <p class="text-[10px] text-gray-400">SEMAINE MOYENNE</p>
-                        <p class="text-xs font-bold text-gray-600">{{ moyenne_jour }}</p>
+                    <div class="text-right min-w-0">
+                        <p class="text-[9px] sm:text-[10px] font-semibold tracking-wider text-gray-400 uppercase truncate">Cette semaine</p>
+                        <p class="text-lg sm:text-xl font-black text-[#0037B0] mt-0.5 truncate">{{ total_semaine }}</p>
+                        <p class="text-[9px] sm:text-[10px] text-gray-400 truncate">SEMAINE MOYENNE</p>
+                        <p class="text-[10px] sm:text-xs font-bold text-gray-600 truncate">{{ moyenne_jour }}</p>
                     </div>
                 </div>
                 <!-- Barres -->
-                <h3 class="text-[10px] font-semibold tracking-wider text-gray-400 uppercase mb-4">Activité Hebdomadaire</h3>
-                <div class="flex items-end justify-between h-24 gap-1 sm:gap-0">
+                <h3 class="text-[9px] sm:text-[10px] font-semibold tracking-wider text-gray-400 uppercase mb-3 sm:mb-4">Activité Hebdomadaire</h3>
+                <div class="flex items-end justify-between h-20 sm:h-24 gap-0.5 sm:gap-1">
                     {% for jour, hauteur, temps in activite %}
-                    <div class="flex flex-col items-center relative group flex-1 max-w-[48px] sm:max-w-none">
+                    <div class="flex flex-col items-center relative group flex-1">
                         {% if hauteur > 2 %}
                         <div class="w-full sm:w-8 rounded-t-lg transition-all duration-300 hover:opacity-80 cursor-pointer relative" style="height: {{ hauteur }}px; background: linear-gradient(180deg, #0037B0, #4F8CFF);">
                         {% else %}
                         <div class="w-full sm:w-8 rounded-t-lg transition-all duration-300 relative" style="height: 2px; background: #E5E7EB;">
                         {% endif %}
                         </div>
-                        <span class="text-[9px] text-gray-400 mt-1.5">{{ jour }}</span>
+                        <span class="text-[8px] sm:text-[9px] text-gray-400 mt-1">{{ jour }}</span>
                     </div>
                     {% endfor %}
                 </div>
