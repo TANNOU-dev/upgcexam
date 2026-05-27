@@ -29,7 +29,7 @@
                     {% if request.user.is_authenticated %}
                     <li>{% include "core/includes/logout_form.html" with button_class="text-gray-400 hover:text-white text-xs transition bg-transparent border-0 cursor-pointer p-0" %}</li>
                     {% else %}
-                    <li><a href="{% url 'login' %}" class="text-gray-400 hover:text-white text-xs transition">Connexion</a></li>
+                    <li><a href="{% url 'connexion' %}" class="text-gray-400 hover:text-white text-xs transition">Connexion</a></li>
                     {% endif %}
                 </ul>
             </div>
