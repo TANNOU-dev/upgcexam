@@ -759,12 +759,32 @@ def tableau_de_bord(request):
     total_secondes = sum(valeurs)
     total_heures = total_secondes // 3600
     total_minutes = (total_secondes % 3600) // 60
-    if total_heures > 0:
-        total_semaine = f"Total : {total_heures}h{total_minutes:02d}"
-    elif total_minutes > 0:
-        total_semaine = f"Total : {total_minutes}min"
-    else:
-        total_semaine = ""  # Pas encore de données
+
+    # Stats pour le header comme l'exemple
+    aujourdhui_idx = timezone.now().weekday()  # 0=Mon..6=Sun
+    temps_aujourdhui_sec = valeurs[aujourdhui_idx]
+    jours_actifs = sum(1 for v in valeurs if v > 0)
+    moyenne_sec = total_secondes // max(jours_actifs, 1)
+
+    def formater_temps(sec):
+        h = sec // 3600
+        m = (sec % 3600) // 60
+        if h > 0:
+            return f"{h}h {m:02d}" if m > 0 else f"{h}h"
+        elif m > 0:
+            return f"{m} min"
+        elif sec > 0:
+            return f"{sec} s"
+        return "—"
+
+    temps_aujourd_hui = formater_temps(temps_aujourdhui_sec)
+    moyenne_jour = formater_temps(moyenne_sec)
+    total_semaine = formater_temps(total_secondes)
+    if total_semaine != "—":
+        total_semaine = f"{total_semaine}"
+    # Nom du jour actuel pour l'affichage
+    jours_noms = ["LUNDI", "MARDI", "MERCREDI", "JEUDI", "VENDREDI", "SAMEDI", "DIMANCHE"]
+    aujourdhui_nom = jours_noms[aujourdhui_idx]
 
     sujets_recommandes = []
     for sujet in _sujets_accessibles(request).order_by("-vues")[:3]:
@@ -798,6 +818,9 @@ def tableau_de_bord(request):
             "progressions": progressions,
             "activite": activite,
             "total_semaine": total_semaine,
+            "temps_aujourd_hui": temps_aujourd_hui,
+            "moyenne_jour": moyenne_jour,
+            "aujourdhui_nom": aujourdhui_nom,
             "sujets_recommandes": sujets_recommandes,
             "activites_recentes": activites_recentes,
             "salutation": salutation(),
