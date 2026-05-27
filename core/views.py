@@ -736,10 +736,10 @@ def tableau_de_bord(request):
             idx = mapping.get(s.jour_sem, 0)
             valeurs[idx] += s.secondes
 
-    max_val = max(valeurs) if max(valeurs) > 0 else 1
-    # Convertir en hauteur de barre (max = 100px)
+    # Échelle fixe : 1h = 100px. Pas de seuil, pas de dynamique.
+    # Chaque barre grandit selon le vrai temps, sans artifice.
     valeurs_px = [
-        max(round(v / max_val * 100), 4 if v > 0 else 0) for v in valeurs
+        min(max(round(v / 3600 * 100), 4 if v > 0 else 0), 100) for v in valeurs
     ]
     # Temps formaté pour l'affichage (clair, lisible)
     temps_format = []
