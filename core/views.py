@@ -737,8 +737,9 @@ def tableau_de_bord(request):
             valeurs[idx] += s.secondes
 
     max_val = max(valeurs) if max(valeurs) > 0 else 1
+    # Seuil minimum : 10 min (600s) pour éviter une barre à 100px avec 5 secondes de données
+    max_val = max(max_val, 600)
     # Convertir en hauteur de barre (max = 100px)
-    # On affiche aussi les heures dans la tooltip (voir template)
     valeurs_px = [
         max(round(v / max_val * 100), 4 if v > 0 else 0) for v in valeurs
     ]
