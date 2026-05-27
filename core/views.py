@@ -740,7 +740,7 @@ def tableau_de_bord(request):
     # Convertir en hauteur de barre (max = 100px)
     # On affiche aussi les heures dans la tooltip (voir template)
     valeurs_px = [
-        max(round(v / max_val * 100), 8 if v > 0 else 0) for v in valeurs
+        max(round(v / max_val * 100), 4 if v > 0 else 0) for v in valeurs
     ]
     # Temps formaté pour l'affichage dans le tooltip
     temps_format = []
