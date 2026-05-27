@@ -14,11 +14,10 @@
 <body class="bg-[#F5F7FA] min-h-screen">
     <!-- HEADER : Logo à gauche, Navigation centrée, Avatar à droite -->
     <header class="bg-white border-b border-gray-200">
-        <div class="max-w-7xl mx-auto px-6 h-16 grid grid-cols-3 items-center">
-            <div>
-                <a href="{% url 'accueil' %}" class="text-xl font-black text-[#0037B0] tracking-tight flex-shrink-0">UPGCExam</a>
-            </div>
-            <nav class="justify-self-center hidden md:flex items-center space-x-8">
+        <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+            <a href="{% url 'accueil' %}" class="text-xl font-black text-[#0037B0] tracking-tight flex-shrink-0">UPGCExam</a>
+
+            <nav class="hidden md:flex items-center space-x-8">
                 <a href="{% url 'tableau_de_bord' %}" class="text-[#0037B0] font-semibold text-sm border-b-2 border-[#0037B0] pb-1">Accueil</a>
                 <a href="{% url 'bibliotheque' %}" class="text-gray-500 hover:text-gray-700 font-medium text-sm">Sujets</a>
                 <a href="{% url 'ajouter_sujet' %}" class="text-gray-500 hover:text-gray-700 font-medium text-sm">Ajouter un sujet</a>
@@ -26,8 +25,9 @@
                 <a href="{% url 'admin_dashboard' %}" class="text-orange-500 hover:text-orange-600 font-medium text-sm">Admin</a>
                 {% endif %}
             </nav>
-            <div class="justify-self-end flex items-center space-x-3">
-    
+
+            <div class="flex items-center space-x-3">
+
                 <div class="relative" id="profileMenu">
                     <button onclick="toggleMenu()" class="w-9 h-9 bg-[#0037B0] rounded-full flex items-center justify-center text-white text-sm font-bold hover:bg-[#002A8A] transition cursor-pointer">
                         {{ request.user.username|first|upper }}
