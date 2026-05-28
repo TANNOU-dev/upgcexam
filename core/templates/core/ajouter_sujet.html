@@ -234,12 +234,7 @@
         });
     </script>
     {% comment %} Suppression du select matiere — saisie libre remplace {% endcomment %}
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const data = JSON.parse(document.getElementById('matieres-par-filiere').textContent);
-            initFiliereMatiereFilter('filiere-select', 'matiere-select', data);
-        });
-    </script>
+
 {% include "core/includes/pwa_footer.html" %}
 </body>
 </html>
