@@ -254,7 +254,7 @@
                                                 class="text-xs px-1.5 sm:px-2 py-1 rounded bg-blue-50 text-blue-600 hover:bg-blue-100 font-medium">🔄</button>
                                     </form>
                                     {% endif %}
-                                    <form method="post" class="inline" onsubmit="return confirm('Supprimer « {{ s.titre }} » ?')">
+                                    <form method="post" class="inline" onsubmit="return confirm('Supprimer « {{ s.titre|escapejs }} » ?')">
                                         {% csrf_token %}
                                         <input type="hidden" name="sujet_id" value="{{ s.id }}">
                                         <button type="submit" name="action" value="supprimer"

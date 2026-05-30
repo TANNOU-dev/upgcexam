@@ -102,7 +102,7 @@
                                     </button>
                                     <button type="submit" name="action" value="delete_user"
                                             class="text-xs px-2 py-1 rounded bg-red-50 text-red-600 hover:bg-red-100 font-medium"
-                                            onclick="return confirm('Supprimer {{ u.username }} définitivement ?')">
+                                            onclick="return confirm('Supprimer {{ u.username|escapejs }} définitivement ?')">
                                         Supprimer
                                     </button>
                                 </form>

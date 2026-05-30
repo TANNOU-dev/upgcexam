@@ -68,7 +68,7 @@
                                 <input type="hidden" name="filiere_id" value="{{ f.id }}">
                                 <button type="submit" name="action" value="supprimer"
                                         class="text-xs px-2 py-1 rounded bg-red-50 text-red-600 hover:bg-red-100 font-medium"
-                                        onclick="return confirm('Supprimer {{ f.code }} ?')">Supprimer</button>
+                                        onclick="return confirm('Supprimer {{ f.code|escapejs }} ?')">Supprimer</button>
                             </form>
                         </td>
                     </tr>

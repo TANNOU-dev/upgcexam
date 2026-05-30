@@ -1,0 +1,6 @@
+Django>=6.0,<6.1
+django-allauth>=65,<66
+django-ratelimit>=4,<5
+gunicorn>=23,<24
+whitenoise>=6,<7
+pywebpush>=1,<2

@@ -255,7 +255,8 @@ def password_reset_code(request):
 def password_reset_new(request):
     """Étape 3 : choisir un nouveau mot de passe."""
     email = request.session.get("reset_email", "")
-    if not email:
+    code_verified = request.session.pop("reset_code_verified", False)
+    if not email or not code_verified:
         return redirect("password_reset")
 
     if request.method == "POST":
