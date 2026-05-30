@@ -164,8 +164,15 @@
 
             </form>
 
+            <!-- Mot de passe oublié -->
+            <div class="text-center mt-4">
+                <a href="{% url 'password_reset' %}" class="text-sm font-medium hover:underline transition-colors" style="color:#1d3fa8;">
+                    Mot de passe oublié ?
+                </a>
+            </div>
+
             <!-- Sign up link -->
-            <p class="mt-7 text-sm text-center text-gray-500">
+            <p class="mt-5 text-sm text-center text-gray-500">
                 Nouveau sur la plateforme ?
                 <a href="{{ inscription_url }}" class="font-bold hover:underline transition-colors" style="color:#1d3fa8;">
                     Créer un compte
