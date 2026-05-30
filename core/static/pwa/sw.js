@@ -1,9 +1,14 @@
 const CACHE_NAME = "upgcexam-v1";
 const STATIC_ASSETS = [
   "/static/manifest.json",
+  "/static/pwa/icon-192.png",
+  "/static/pwa/icon-512.png",
 ];
 
-// Installation : pré-cache des assets essentiels
+// Extensions de fichiers statiques pouvant être mises en cache
+const STATIC_EXTENSIONS = /\.(css|js|png|jpg|jpeg|svg|ico|woff2?|ttf|eot)$/;
+
+// Installation : pré-cache des assets statiques essentiels
 self.addEventListener("install", (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
@@ -23,23 +28,50 @@ self.addEventListener("activate", (event) => {
   self.clients.claim();
 });
 
-// Interception des requêtes : réseau d'abord, cache en fallback
+// Interception des requêtes : seuls les fichiers statiques sont mis en cache
 self.addEventListener("fetch", (event) => {
-  event.respondWith(
-    fetch(event.request)
-      .then((response) => {
+  const { request } = event;
+
+  // Ne pas intercepter les requêtes non-GET
+  if (request.method !== "GET") return;
+
+  // Ne pas intercepter les requêtes vers des pages HTML, admin, API, téléchargements, médias
+  const url = new URL(request.url);
+  
+  // Exclure les pages HTML (navigation)
+  if (request.mode === "navigate") return;
+
+  // Exclure les chemins sensibles
+  const excludePaths = ["/administration/", "/sujets/telecharger/", "/media/", "/pwa/"];
+  if (excludePaths.some((p) => url.pathname.startsWith(p))) return;
+
+  // Exclure les appels API
+  if (url.pathname.startsWith("/pwa/")) return;
+
+  // Mettre en cache uniquement les fichiers statiques (CSS, JS, images, polices)
+  if (STATIC_EXTENSIONS.test(url.pathname)) {
+    event.respondWith(
+      caches.match(request).then((cached) => cached || fetch(request).then((response) => {
         const clone = response.clone();
-        if (
-          event.request.method === "GET" &&
-          (event.request.url.startsWith(self.location.origin) ||
-            event.request.url.includes("cdn.tailwindcss.com"))
-        ) {
-          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
-        }
+        caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
         return response;
-      })
-      .catch(() => caches.match(event.request))
-  );
+      }))
+    );
+    return;
+  }
+
+  // Pour CDN (Tailwind, Google Fonts) : réseau d'abord, cache en fallback
+  if (url.hostname.includes("cdn.") || url.hostname.includes("fonts.googleapis")) {
+    event.respondWith(
+      fetch(request)
+        .then((response) => {
+          const clone = response.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
+          return response;
+        })
+        .catch(() => caches.match(request))
+    );
+  }
 });
 
 // Notifications push
