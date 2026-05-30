@@ -15,9 +15,4 @@ class Migration(migrations.Migration):
             name='tentatives',
             field=models.PositiveSmallIntegerField(default=0),
         ),
-        migrations.AlterField(
-            model_name='filiere',
-            name='code',
-            field=models.CharField(max_length=10, unique=True),
-        ),
     ]
