@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.utils import timezone
 
 from .utils import formater_taille_pdf
 
@@ -178,10 +179,13 @@ class PushSubscription(models.Model):
 
 
 class Verification(models.Model):
+    MAX_TENTATIVES = 5
+
     email = models.EmailField(db_index=True)
     code = models.CharField(max_length=6)
     expire_le = models.DateTimeField(db_index=True)
     utilise = models.BooleanField(default=False)
+    tentatives = models.PositiveSmallIntegerField(default=0)
 
     class Meta:
         verbose_name = "Vérification"
@@ -189,3 +193,13 @@ class Verification(models.Model):
 
     def __str__(self):
         return self.email
+
+    def est_valide(self):
+        """Code encore valable (non utilisé, non expiré, tentatives < max)."""
+        return not self.utilise and self.expire_le >= timezone.now() and self.tentatives < self.MAX_TENTATIVES
+
+    def enregistrer_echec(self):
+        """Incrémente le compteur d'échecs et invalide si max atteint."""
+        self.tentatives += 1
+        self.save(update_fields=["tentatives"])
+        return self.tentatives >= self.MAX_TENTATIVES

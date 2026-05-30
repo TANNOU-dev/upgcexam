@@ -22,15 +22,6 @@ from ..navigation import safe_next_url
 from .shared import _creer_code_verification
 
 
-def _rate_limiter_check(email):
-    """Vérifie si l'email n'a pas dépassé 5 tentatives dans la dernière minute."""
-    seuil = timezone.now() - timezone.timedelta(minutes=1)
-    tentatives = Verification.objects.filter(
-        email=email, utilise=False, expire_le__gte=seuil
-    ).count()
-    return tentatives >= 5
-
-
 def connexion(request):
     if request.user.is_authenticated:
         return redirect("tableau_de_bord")
@@ -114,12 +105,6 @@ def inscription(request):
 
 def verification(request):
     email = request.session.get("email_a_verifier", "")
-    
-    # Rate limiting : max 5 tentatives/min par email
-    if request.method == "POST" and email and _rate_limiter_check(email):
-        messages.error(request, "Trop de tentatives. Réessayez dans une minute.")
-        return render(request, "core/verification.html", {"email": email, "afficher_code_dev": settings.DEBUG})
-    
     next_url = request.GET.get("next") or request.session.get("verification_next", "")
     if next_url:
         request.session["verification_next"] = next_url
@@ -132,8 +117,8 @@ def verification(request):
     if request.method == "POST":
         code_saisi = request.POST.get("code", "").strip()
         try:
-            verif = Verification.objects.get(email=email, code=code_saisi, utilise=False)
-            if verif.expire_le >= timezone.now():
+            verif = Verification.objects.get(email=email, code=code_saisi)
+            if verif.est_valide():
                 verif.utilise = True
                 verif.save()
                 request.session.pop("email_a_verifier", None)
@@ -149,7 +134,12 @@ def verification(request):
                 messages.success(request, "Email vérifié avec succès.")
                 request.session.pop("verification_next", None)
                 return redirect(safe_next_url(next_url))
-            messages.error(request, "Le code a expiré.")
+            else:
+                bloque = verif.enregistrer_echec()
+                if bloque:
+                    messages.error(request, "Trop de tentatives. Le code a été invalidé. Demandez-en un nouveau.")
+                else:
+                    messages.error(request, "Code invalide.")
         except Verification.DoesNotExist:
             messages.error(request, "Code invalide.")
 
@@ -243,21 +233,20 @@ def password_reset_code(request):
     if not email:
         return redirect("password_reset")
     
-    # Rate limiting : max 5 tentatives/min par email
-    if request.method == "POST" and email and _rate_limiter_check(email):
-        messages.error(request, "Trop de tentatives. Réessayez dans une minute.")
-        return render(request, "core/password_reset_code.html", {"email": email})
-
     if request.method == "POST":
         code_saisi = request.POST.get("code", "").strip()
         try:
-            verif = Verification.objects.get(email=email, code=code_saisi, utilise=False)
-            if verif.expire_le >= timezone.now():
+            verif = Verification.objects.get(email=email, code=code_saisi)
+            if verif.est_valide():
                 verif.utilise = True
                 verif.save()
                 return redirect("password_reset_new")
             else:
-                messages.error(request, "Le code a expiré.")
+                bloque = verif.enregistrer_echec()
+                if bloque:
+                    messages.error(request, "Trop de tentatives. Le code a été invalidé.")
+                else:
+                    messages.error(request, "Code invalide.")
         except Verification.DoesNotExist:
             messages.error(request, "Code invalide.")
 
