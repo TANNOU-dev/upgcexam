@@ -92,13 +92,10 @@ def password_reset_envoyer(request):
 
         code = _creer_code_verification(email)
         request.session["reset_email"] = email
-
-        if settings.DEBUG:
-            messages.success(
-                request,
-                f"[DEV] Le code de vérification est : {code}",
-            )
-
+        messages.success(
+            request,
+            "Un code de vérification a été envoyé à votre adresse email.",
+        )
         return redirect("password_reset_code")
 
     return render(request, "core/password_reset.html")
@@ -109,14 +106,6 @@ def password_reset_code(request):
     email = request.session.get("reset_email", "")
     if not email:
         return redirect("password_reset")
-
-    code_dev = None
-    if settings.DEBUG:
-        try:
-            verif = Verification.objects.filter(email=email, utilise=False).latest("expire_le")
-            code_dev = verif.code
-        except Verification.DoesNotExist:
-            pass
 
     if request.method == "POST":
         code_saisi = request.POST.get("code", "").strip()
@@ -138,8 +127,6 @@ def password_reset_code(request):
         "core/password_reset_code.html",
         {
             "email": email,
-            "afficher_code_dev": settings.DEBUG,
-            "code_dev": code_dev,
         },
     )
 
