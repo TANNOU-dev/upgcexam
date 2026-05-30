@@ -736,10 +736,11 @@ def tableau_de_bord(request):
             idx = mapping.get(s.jour_sem, 0)
             valeurs[idx] += s.secondes
 
-    # Échelle fixe : 1h = 100px. Pas de seuil, pas de dynamique.
-    # Chaque barre grandit selon le vrai temps, sans artifice.
-    valeurs_px = [
-        min(max(round(v / 3600 * 100), 4 if v > 0 else 0), 100) for v in valeurs
+    # Échelle fixe : 10h = 100% (correspond à l'échelle 0h→10h affichée)
+    max_seconds = 10 * 3600  # 10 heures = hauteur max
+    valeurs_pct = [
+        min(max(round(v / max_seconds * 100, 1), 1.5 if v > 0 else 0), 100)
+        for v in valeurs
     ]
     # Temps formaté pour l'affichage (clair, lisible)
     temps_format = []
@@ -754,7 +755,7 @@ def tableau_de_bord(request):
             temps_format.append(f"{v}s")
         else:
             temps_format.append("—")
-    activite = list(zip(jours, valeurs_px, temps_format))
+    activite = list(zip(jours, valeurs_pct, temps_format))
 
     total_secondes = sum(valeurs)
     total_heures = total_secondes // 3600
