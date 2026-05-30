@@ -78,14 +78,9 @@ def admin_dashboard(request):
 
 @email_verifie_required
 def tableau_de_bord(request):
-    user_id = request.user.id
-    # Admin voit les stats globales, étudiant voit ses stats
-    if request.user.is_staff:
-        sujets_vus = Activite.objects.filter(type="consultation").count()
-        pdfs_telecharges = Telechargement.objects.count()
-    else:
-        sujets_vus = Activite.objects.filter(utilisateur_id=user_id, type="consultation").count()
-        pdfs_telecharges = Telechargement.objects.filter(utilisateur_id=user_id).count()
+    # Stats GLOBALES (tous les utilisateurs) — identique pour tout le monde
+    sujets_vus = Activite.objects.filter(type="consultation").count()
+    pdfs_telecharges = Telechargement.objects.count()
     stats = {
         "sujets_vus": sujets_vus,
         "pdfs_telecharges": pdfs_telecharges,
@@ -103,12 +98,9 @@ def tableau_de_bord(request):
         .values_list("filiere_id")
         .annotate(total=Count("id"))
     )
-    # Admin : stats globales, étudiant : stats perso
-    activites_filtre = Activite.objects.filter(sujet__filiere_id__in=filiere_ids, type="consultation")
-    if not request.user.is_staff:
-        activites_filtre = activites_filtre.filter(utilisateur_id=user_id)
+    # Stats globales (identique pour tout le monde)
     sujets_vus_par_filiere = dict(
-        activites_filtre
+        Activite.objects.filter(sujet__filiere_id__in=filiere_ids, type="consultation")
         .values("sujet__filiere_id")
         .annotate(total=Count("sujet_id", distinct=True))
         .values_list("sujet__filiere_id", "total")
@@ -127,16 +119,11 @@ def tableau_de_bord(request):
     jours = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"]
     mapping = {2: 0, 3: 1, 4: 2, 5: 3, 6: 4, 7: 5, 1: 6}
 
-    # Temps réel passé (en secondes) depuis PresenceSession
-    # Admin : voit les stats globales (tous les utilisateurs)
-    # Étudiant : voit ses stats personnelles
+    # Temps réel passé global (tous utilisateurs confondus)
     cette_semaine = timezone.now() - timezone.timedelta(days=7)
     sessions_semaine = PresenceSession.objects.filter(
         debut__gte=cette_semaine
-    )
-    if not request.user.is_staff:
-        sessions_semaine = sessions_semaine.filter(utilisateur_id=user_id)
-    sessions_semaine = sessions_semaine.annotate(jour_sem=ExtractWeekDay("debut"))
+    ).annotate(jour_sem=ExtractWeekDay("debut"))
 
     valeurs = [0] * 7
     if sessions_semaine.exists():
@@ -207,7 +194,7 @@ def tableau_de_bord(request):
         sujets_recommandes.append({"titre": sujet.titre, "annee": sujet.annee_academique})
 
     activites_recentes = []
-    for act in Activite.objects.filter(utilisateur_id=user_id).order_by("-cree_le")[:5]:
+    for act in Activite.objects.all().order_by("-cree_le")[:5]:
         depuis = timezone.now() - act.cree_le
         if depuis.total_seconds() < 60:
             temps = "Il y a quelques secondes"
