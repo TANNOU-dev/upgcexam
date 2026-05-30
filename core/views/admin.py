@@ -134,22 +134,47 @@ def tableau_de_bord(request):
 
     # Échelle dynamique : le pic de la semaine = 100%
     max_secondes_vu = max(valeurs) if valeurs else 0
+
     if max_secondes_vu <= 0:
-        max_echelle = 3600  # 1h minimum
+        # Aucune activité → échelle par défaut en minutes
+        max_echelle = 1800  # 30 min par défaut
+        pas = 300  # 5 min
+        labels_num = list(range(0, max_echelle + 1, pas))
+        echelle_labels = []
+        for m in reversed(labels_num):
+            minutes = m // 60
+            if minutes >= 60:
+                echelle_labels.append(f"{minutes//60}h")
+            else:
+                echelle_labels.append(f"{minutes}min")
+    elif max_secondes_vu < 7200:
+        # Moins de 2h → échelle en minutes
+        max_echelle = min(((max_secondes_vu // 300) + 1) * 300, 7200)  # paliers de 5 min
+        pas = max(60, max_echelle // 5 // 60 * 60)  # pas min 1 min
+        labels_num = list(range(0, max_echelle + 1, pas))
+        if labels_num[-1] != max_echelle:
+            labels_num.append(max_echelle)
+        echelle_labels = []
+        for m in reversed(labels_num):
+            minutes = m // 60
+            if minutes >= 60:
+                echelle_labels.append(f"{minutes//60}h")
+            else:
+                echelle_labels.append(f"{minutes}min")
     else:
+        # Plus de 2h → échelle en heures
         max_echelle = min(((max_secondes_vu // 3600) + 1) * 3600, 10 * 3600)
+        max_h = max_echelle // 3600
+        pas = max(1, max_h // 4)
+        labels_num = list(range(0, max_h + 1, pas))
+        if labels_num[-1] != max_h:
+            labels_num.append(max_h)
+        echelle_labels = [f"{h}h" for h in reversed(labels_num)]
 
     valeurs_pct = [
         min(max(round(v / max_echelle * 100, 1), 10 if v > 0 else 0), 100)
         for v in valeurs
     ]
-
-    max_h = max_echelle // 3600
-    pas = max(1, max_h // 4)
-    labels_num = list(range(0, max_h + 1, pas))
-    if labels_num[-1] != max_h:
-        labels_num.append(max_h)
-    echelle_labels = [f"{h}h" for h in reversed(labels_num)]
 
     temps_format = []
     for v in valeurs:
