@@ -18,6 +18,8 @@ from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 
+from django_ratelimit.decorators import ratelimit
+
 from .decorators import email_verifie_required
 from .models import (
     Activite,
@@ -59,7 +61,7 @@ def _sujets_accessibles(request):
     return qs
 
 
-def _creer_code_verification(email):
+def _creer_code_verification(email, request=None):
     code = generer_code_verification()
     Verification.objects.create(
         email=email,
@@ -70,10 +72,9 @@ def _creer_code_verification(email):
         envoyer_code_verification(email, code)
     except Exception:
         if settings.DEBUG:
-            messages.warning(
-                None,
-                "Email non envoyé (configurez SMTP). Consultez la console du serveur.",
-            )
+            msg = "Email non envoyé (configurez SMTP). Consultez la console du serveur."
+            if request:
+                messages.warning(request, msg)
         else:
             raise
     return code
@@ -90,7 +91,7 @@ def password_reset_envoyer(request):
             )
             return render(request, "core/password_reset.html")
 
-        code = _creer_code_verification(email)
+        code = _creer_code_verification(email, request)
         request.session["reset_email"] = email
         messages.success(
             request,
@@ -101,6 +102,7 @@ def password_reset_envoyer(request):
     return render(request, "core/password_reset.html")
 
 
+@ratelimit(key="post:code", rate="5/m", method="POST", block=True)
 def password_reset_code(request):
     """Étape 2 : saisir le code de vérification."""
     email = request.session.get("reset_email", "")
@@ -306,7 +308,7 @@ def inscription(request):
                 except Filiere.DoesNotExist:
                     pass
             try:
-                _creer_code_verification(email)
+                _creer_code_verification(email, request)
             except Exception:
                 messages.error(
                     request,
@@ -323,6 +325,7 @@ def inscription(request):
     return render(request, "core/inscription.html", {"filieres": filieres})
 
 
+@ratelimit(key="post:code", rate="5/m", method="POST", block=True)
 def verification(request):
     email = request.session.get("email_a_verifier", "")
     next_url = request.GET.get("next") or request.session.get("verification_next", "")
@@ -790,17 +793,29 @@ def tableau_de_bord(request):
 
     progressions = []
     couleurs = ["#0037B0", "#F59E0B", "#10B981", "#EF4444", "#8B5CF6"]
-    for i, filiere in enumerate(Filiere.objects.all()[:5]):
-        total_sujets = Sujet.objects.filter(filiere=filiere, statut="actif").count()
+    # Optimisation N+1 : une seule query pour les stats par filière
+    top_filieres = list(Filiere.objects.all()[:5])
+    filiere_ids = [f.id for f in top_filieres]
+    # Optimisation N+1 : stats par filière en 2 queries au lieu de N
+    from django.db.models import Count
+    sujets_par_filiere = dict(
+        Sujet.objects.filter(filiere_id__in=filiere_ids, statut="actif")
+        .values_list("filiere_id")
+        .annotate(total=Count("id"))
+    )
+    # Sujets consultés (distincts) par l'utilisateur dans ces filières
+    sujets_vus_par_filiere = dict(
+        Activite.objects.filter(
+            utilisateur_id=user_id, sujet__filiere_id__in=filiere_ids, type="consultation"
+        )
+        .values("sujet__filiere_id")
+        .annotate(total=Count("sujet_id", distinct=True))
+        .values_list("sujet__filiere_id", "total")
+    )
+    for i, filiere in enumerate(top_filieres):
+        total_sujets = sujets_par_filiere.get(filiere.id, 0)
+        vus = sujets_vus_par_filiere.get(filiere.id, 0) if total_sujets > 0 else 0
         if total_sujets > 0:
-            vus = (
-                Activite.objects.filter(
-                    utilisateur_id=user_id, sujet__filiere=filiere, type="consultation"
-                )
-                .values("sujet")
-                .distinct()
-                .count()
-            )
             pct = min(int(vus * 100 / total_sujets), 100)
         else:
             pct = 0
@@ -1093,9 +1108,9 @@ def admin_logs(request):
         messages.error(request, "Accès réservé aux administrateurs.")
         return redirect("tableau_de_bord")
 
-    activites = Activite.objects.select_related("utilisateur", "sujet").order_by("-cree_le")[:100]
+    activites = Activite.objects.select_related("utilisateur", "sujet__matiere").order_by("-cree_le")[:100]
     telechargements = (
-        Telechargement.objects.select_related("utilisateur", "sujet").order_by("-telecharge_le")[:100]
+        Telechargement.objects.select_related("utilisateur", "sujet__matiere").order_by("-telecharge_le")[:100]
     )
     return render(
         request,

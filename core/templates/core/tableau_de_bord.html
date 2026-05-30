@@ -1,17 +1,8 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UPGCExam - Tableau de bord</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <style>
-        * { font-family: 'Inter', sans-serif; }
-    </style>
-{% include "core/includes/pwa_head.html" %}
-</head>
-<body class="bg-[#F5F7FA] min-h-screen">
+{% extends "core/base.html" %}
+{% block title %}UPGCExam - Tableau de bord{% endblock %}
+{% block body_class %}bg-[#F5F7FA] min-h-screen{% endblock %}
+{% block extra_head %}{% include "core/includes/pwa_head.html" %}{% endblock %}
+{% block body %}
     <!-- HEADER : Logo à gauche, Navigation centrée, Avatar à droite -->
     <header class="bg-white border-b border-gray-200">
         <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
@@ -294,5 +285,4 @@
 
     {% include "core/includes/footer.html" %}
 {% include "core/includes/pwa_footer.html" %}
-</body>
-</html>
+{% endblock %}
