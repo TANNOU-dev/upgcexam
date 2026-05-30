@@ -199,7 +199,8 @@
                             <div class="w-full sm:w-10 rounded-t-md z-10" style="height: 2px; background: #E5E7EB;">
                             {% endif %}
                             </div>
-                            <span class="text-[9px] sm:text-[10px] text-gray-400 mt-1 z-10 font-medium">{{ jour|slice:":1" }}</span>
+                            <span class="text-[9px] sm:text-[10px] text-gray-400 mt-1 z-10 font-medium">{{ jour|slice:":3" }}</span>
+                            <!-- Affichage complet Lun/Mar/Mer... pour eviter les doublons L/M/M -->
                         </div>
                         {% endfor %}
                     </div>

@@ -745,7 +745,7 @@ def tableau_de_bord(request):
         max_echelle = min(((max_secondes_vu // 3600) + 1) * 3600, 10 * 3600)
 
     valeurs_pct = [
-        min(max(round(v / max_echelle * 100, 1), 2 if v > 0 else 0), 100)
+        min(max(round(v / max_echelle * 100, 1), 5 if v > 0 else 0), 100)
         for v in valeurs
     ]
 
