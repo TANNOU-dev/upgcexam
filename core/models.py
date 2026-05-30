@@ -7,7 +7,7 @@ from .utils import formater_taille_pdf
 
 class Filiere(models.Model):
     nom = models.CharField(max_length=100)
-    code = models.CharField(max_length=10)
+    code = models.CharField(max_length=10, unique=True)
     description = models.TextField(blank=True, null=True)
     ordre = models.PositiveIntegerField(default=0, db_index=True)
 
