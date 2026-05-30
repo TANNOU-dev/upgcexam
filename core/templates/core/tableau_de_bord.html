@@ -168,30 +168,46 @@
         <!-- Graphique + Progression -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-8">
             <div class="bg-white rounded-xl shadow-sm p-4 sm:p-6">
-                <!-- Header : Aujourd'hui / Cette semaine (responsive 2 colonnes) -->
-                <div class="flex items-center justify-between mb-4 sm:mb-6 pb-3 sm:pb-4 border-b border-gray-100">
-                    <div class="min-w-0">
+                <!-- Header : Aujourd'hui / Cette semaine (side by side) -->
+                <div class="grid grid-cols-2 gap-4 mb-3 sm:mb-4">
+                    <div>
                         <p class="text-[9px] sm:text-[10px] font-semibold tracking-wider text-gray-400 uppercase">Aujourd'hui</p>
                         <p class="text-lg sm:text-xl font-black text-[#0B1C30] mt-0.5">{{ temps_aujourd_hui }}</p>
+                        <p class="text-[10px] sm:text-[11px] text-gray-400 mt-0.5">{{ aujourdhui_nom }} MOYEN {{ moyenne_jour }}</p>
                     </div>
-                    <div class="text-right min-w-0 ml-4">
-                        <p class="text-[9px] sm:text-[10px] font-semibold tracking-wider text-gray-400 uppercase">Cette semaine</p>
+                    <div class="text-right">
+                        <p class="text-[9px] sm:text-[10px] font-semibold tracking-wider text-[#0037B0] uppercase">Cette semaine</p>
                         <p class="text-lg sm:text-xl font-black text-[#0037B0] mt-0.5">{{ total_semaine }}</p>
+                        <p class="text-[10px] sm:text-[11px] text-gray-400 mt-0.5">SEMAINE MOYENNE {{ moyenne_semaine }}</p>
                     </div>
                 </div>
-                <!-- Barres -->
-                <div class="flex items-end justify-between h-20 sm:h-24 gap-0.5 sm:gap-1">
-                    {% for jour, hauteur, temps in activite %}
-                    <div class="flex flex-col items-center relative group flex-1">
-                        {% if hauteur > 2 %}
-                        <div class="w-full sm:w-8 rounded-t-lg transition-all duration-300 hover:opacity-80 cursor-pointer relative" style="height: {{ hauteur }}px; background: linear-gradient(180deg, #0037B0, #4F8CFF);">
-                        {% else %}
-                        <div class="w-full sm:w-8 rounded-t-lg transition-all duration-300 relative" style="height: 2px; background: #E5E7EB;">
-                        {% endif %}
-                        </div>
-                        <span class="text-[8px] sm:text-[9px] text-gray-400 mt-1">{{ jour }}</span>
+                <!-- Barres avec échelle -->
+                <div class="relative pt-5 pb-2">
+                    <!-- Scale sur la droite -->
+                    <div class="absolute right-0 top-0 bottom-0 w-8 sm:w-10 flex flex-col justify-between text-[8px] sm:text-[9px] text-gray-300 font-medium">
+                        <span>10h</span>
+                        <span>8h</span>
+                        <span>6h</span>
+                        <span>4h</span>
+                        <span>2h</span>
+                        <span>0h</span>
                     </div>
-                    {% endfor %}
+                    <!-- Barres -->
+                    <div class="flex items-end justify-between h-24 sm:h-28 gap-0.5 sm:gap-1 pr-8 sm:pr-10 relative">
+                        {% for jour, hauteur, temps in activite %}
+                        <div class="flex flex-col items-center flex-1 h-full justify-end relative">
+                            {% if hauteur > 2 %}
+                            <div class="w-full sm:w-10 rounded-t-md transition-all duration-300 hover:opacity-80 cursor-pointer relative z-10" style="height: {{ hauteur }}px; background: linear-gradient(180deg, #0037B0, #4F8CFF);">
+                            {% else %}
+                            <div class="w-full sm:w-10 rounded-t-md z-10" style="height: 2px; background: #E5E7EB;">
+                            {% endif %}
+                            </div>
+                            <span class="text-[9px] sm:text-[10px] text-gray-400 mt-1 z-10 font-medium">{{ jour|slice:":1" }}</span>
+                        </div>
+                        {% endfor %}
+                        <!-- Ligne pointillée de référence à 8h -->
+                        <div class="absolute left-0 right-8 sm:right-10 border-t border-dashed border-gray-300 pointer-events-none" style="top: 20%;"></div>
+                    </div>
                 </div>
             </div>
             <div class="bg-white rounded-xl shadow-sm p-6">

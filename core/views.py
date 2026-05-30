@@ -782,6 +782,9 @@ def tableau_de_bord(request):
     total_semaine = formater_temps(total_secondes)
     if total_semaine != "—":
         total_semaine = f"{total_semaine}"
+    # Moyenne hebdo (sur 7 jours)
+    moyenne_semaine_sec = total_secondes
+    moyenne_semaine = formater_temps(moyenne_semaine_sec)
     # Nom du jour actuel pour l'affichage
     jours_noms = ["LUNDI", "MARDI", "MERCREDI", "JEUDI", "VENDREDI", "SAMEDI", "DIMANCHE"]
     aujourdhui_nom = jours_noms[aujourdhui_idx]
@@ -820,6 +823,7 @@ def tableau_de_bord(request):
             "total_semaine": total_semaine,
             "temps_aujourd_hui": temps_aujourd_hui,
             "moyenne_jour": moyenne_jour,
+            "moyenne_semaine": moyenne_semaine,
             "aujourdhui_nom": aujourdhui_nom,
             "sujets_recommandes": sujets_recommandes,
             "activites_recentes": activites_recentes,
