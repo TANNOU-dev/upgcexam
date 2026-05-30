@@ -79,6 +79,106 @@ def _creer_code_verification(email):
     return code
 
 
+def password_reset_envoyer(request):
+    """Étape 1 : saisir l'email, génère un code de vérification."""
+    if request.method == "POST":
+        email = request.POST.get("email", "").strip().lower()
+        if not User.objects.filter(email=email).exists():
+            messages.error(
+                request,
+                "Aucun compte trouvé avec cette adresse email.",
+            )
+            return render(request, "core/password_reset.html")
+
+        code = _creer_code_verification(email)
+        request.session["reset_email"] = email
+
+        if settings.DEBUG:
+            messages.success(
+                request,
+                f"[DEV] Le code de vérification est : {code}",
+            )
+
+        return redirect("password_reset_code")
+
+    return render(request, "core/password_reset.html")
+
+
+def password_reset_code(request):
+    """Étape 2 : saisir le code de vérification."""
+    email = request.session.get("reset_email", "")
+    if not email:
+        return redirect("password_reset")
+
+    code_dev = None
+    if settings.DEBUG:
+        try:
+            verif = Verification.objects.filter(email=email, utilise=False).latest("expire_le")
+            code_dev = verif.code
+        except Verification.DoesNotExist:
+            pass
+
+    if request.method == "POST":
+        code_saisi = request.POST.get("code", "").strip()
+        try:
+            verif = Verification.objects.get(
+                email=email, code=code_saisi, utilise=False
+            )
+            if verif.expire_le >= timezone.now():
+                verif.utilise = True
+                verif.save()
+                return redirect("password_reset_new")
+            else:
+                messages.error(request, "Le code a expiré.")
+        except Verification.DoesNotExist:
+            messages.error(request, "Code invalide.")
+
+    return render(
+        request,
+        "core/password_reset_code.html",
+        {
+            "email": email,
+            "afficher_code_dev": settings.DEBUG,
+            "code_dev": code_dev,
+        },
+    )
+
+
+def password_reset_new(request):
+    """Étape 3 : choisir un nouveau mot de passe."""
+    email = request.session.get("reset_email", "")
+    if not email:
+        return redirect("password_reset")
+
+    if request.method == "POST":
+        password = request.POST.get("password", "")
+        password2 = request.POST.get("password2", "")
+
+        if len(password) < 8:
+            messages.error(request, "Le mot de passe doit contenir au moins 8 caractères.")
+        elif password != password2:
+            messages.error(request, "Les mots de passe ne correspondent pas.")
+        else:
+            try:
+                user = User.objects.get(email=email)
+                user.set_password(password)
+                user.save()
+                request.session.pop("reset_email", None)
+                messages.success(
+                    request,
+                    "Mot de passe réinitialisé avec succès. Connectez-vous !",
+                )
+                return redirect("connexion")
+            except User.DoesNotExist:
+                messages.error(request, "Erreur : compte introuvable.")
+
+    return render(
+        request,
+        "core/password_reset_new.html",
+        {"email": email},
+    )
+
+
 def accueil(request):
     sujets_qs = _sujets_accessibles(request)
     total_sujets = sujets_qs.count()

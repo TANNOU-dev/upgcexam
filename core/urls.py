@@ -1,5 +1,4 @@
-from django.urls import path, reverse_lazy
-from django.contrib.auth import views as auth_views
+from django.urls import path
 from . import views
 
 urlpatterns = [
@@ -19,23 +18,10 @@ urlpatterns = [
     path('verification/', views.verification, name='verification'),
     path('deconnexion/', views.deconnexion, name='deconnexion'),
     path('parametres/', views.parametres, name='parametres'),
-    # Mot de passe oublié
-    path('mot-de-passe-oublie/', auth_views.PasswordResetView.as_view(
-        template_name='core/password_reset.html',
-        email_template_name='core/password_reset_email.html',
-        subject_template_name='core/password_reset_subject.txt',
-        success_url=reverse_lazy('password_reset_done'),
-    ), name='password_reset'),
-    path('mot-de-passe-oublie/envoye/', auth_views.PasswordResetDoneView.as_view(
-        template_name='core/password_reset_done.html',
-    ), name='password_reset_done'),
-    path('mot-de-passe-oublie/<uidb64>/<token>/', auth_views.PasswordResetConfirmView.as_view(
-        template_name='core/password_reset_confirm.html',
-        success_url=reverse_lazy('password_reset_complete'),
-    ), name='password_reset_confirm'),
-    path('mot-de-passe-oublie/termine/', auth_views.PasswordResetCompleteView.as_view(
-        template_name='core/password_reset_complete.html',
-    ), name='password_reset_complete'),
+    # Mot de passe oublié (flux avec code de vérification)
+    path('mot-de-passe-oublie/', views.password_reset_envoyer, name='password_reset'),
+    path('mot-de-passe-oublie/code/', views.password_reset_code, name='password_reset_code'),
+    path('mot-de-passe-oublie/nouveau/', views.password_reset_new, name='password_reset_new'),
     # Admin
     path('administration/utilisateurs/', views.admin_utilisateurs, name='admin_utilisateurs'),
     path('administration/filieres/', views.admin_filieres, name='admin_filieres'),
