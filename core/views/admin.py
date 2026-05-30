@@ -79,13 +79,8 @@ def admin_dashboard(request):
 @email_verifie_required
 def tableau_de_bord(request):
     user_id = request.user.id
-    # Admin voit les stats globales, étudiant voit ses stats
-    if request.user.is_staff:
-        sujets_vus = Activite.objects.filter(type="consultation").count()
-        pdfs_telecharges = Telechargement.objects.count()
-    else:
-        sujets_vus = Activite.objects.filter(utilisateur_id=user_id, type="consultation").count()
-        pdfs_telecharges = Telechargement.objects.filter(utilisateur_id=user_id).count()
+    sujets_vus = Activite.objects.filter(utilisateur_id=user_id, type="consultation").count()
+    pdfs_telecharges = Telechargement.objects.filter(utilisateur_id=user_id).count()
     stats = {
         "sujets_vus": sujets_vus,
         "pdfs_telecharges": pdfs_telecharges,
@@ -103,12 +98,10 @@ def tableau_de_bord(request):
         .values_list("filiere_id")
         .annotate(total=Count("id"))
     )
-    # Admin : stats globales, étudiant : stats perso
-    activites_filtre = Activite.objects.filter(sujet__filiere_id__in=filiere_ids, type="consultation")
-    if not request.user.is_staff:
-        activites_filtre = activites_filtre.filter(utilisateur_id=user_id)
     sujets_vus_par_filiere = dict(
-        activites_filtre
+        Activite.objects.filter(
+            utilisateur_id=user_id, sujet__filiere_id__in=filiere_ids, type="consultation"
+        )
         .values("sujet__filiere_id")
         .annotate(total=Count("sujet_id", distinct=True))
         .values_list("sujet__filiere_id", "total")
@@ -128,15 +121,10 @@ def tableau_de_bord(request):
     mapping = {2: 0, 3: 1, 4: 2, 5: 3, 6: 4, 7: 5, 1: 6}
 
     # Temps réel passé (en secondes) depuis PresenceSession
-    # Admin : voit les stats globales (tous les utilisateurs)
-    # Étudiant : voit ses stats personnelles
     cette_semaine = timezone.now() - timezone.timedelta(days=7)
     sessions_semaine = PresenceSession.objects.filter(
-        debut__gte=cette_semaine
-    )
-    if not request.user.is_staff:
-        sessions_semaine = sessions_semaine.filter(utilisateur_id=user_id)
-    sessions_semaine = sessions_semaine.annotate(jour_sem=ExtractWeekDay("debut"))
+        utilisateur_id=user_id, debut__gte=cette_semaine
+    ).annotate(jour_sem=ExtractWeekDay("debut"))
 
     valeurs = [0] * 7
     if sessions_semaine.exists():
