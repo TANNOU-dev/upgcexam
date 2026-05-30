@@ -33,12 +33,13 @@ def enregistrer_presence(get_response):
                         secondes=0,
                     )
                 else:
-                    ecart = (now - derniere.debut).total_seconds()
+                    # Vérifier l'inactivité depuis la DERNIÈRE requête (pas depuis le début)
+                    ecart = (now - (derniere.fin or derniere.debut)).total_seconds()
 
                     if ecart <= INACTIVITE_LIMITE_SEC:
-                        # Session active → mettre à jour fin et secondes
-                        duree = int((now - derniere.debut).total_seconds())
-                        derniere.secondes = duree
+                        # Session active → cumuler le temps depuis la dernière requête
+                        temps_ecoule = int(max(0, ecart))
+                        derniere.secondes += temps_ecoule
                         derniere.fin = now
                         derniere.save(update_fields=["fin", "secondes"])
                     else:
