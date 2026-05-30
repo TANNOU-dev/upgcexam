@@ -736,12 +736,26 @@ def tableau_de_bord(request):
             idx = mapping.get(s.jour_sem, 0)
             valeurs[idx] += s.secondes
 
-    # Échelle fixe : 10h = 100% (correspond à l'échelle 0h→10h affichée)
-    max_seconds = 10 * 3600  # 10 heures = hauteur max
+    # Échelle dynamique : le pic de la semaine = 100%
+    max_secondes_vu = max(valeurs) if valeurs else 0
+    if max_secondes_vu <= 0:
+        max_echelle = 3600  # 1h minimum
+    else:
+        # Arrondir à l'heure supérieure, max 10h
+        max_echelle = min(((max_secondes_vu // 3600) + 1) * 3600, 10 * 3600)
+
     valeurs_pct = [
-        min(max(round(v / max_seconds * 100, 1), 1.5 if v > 0 else 0), 100)
+        min(max(round(v / max_echelle * 100, 1), 2 if v > 0 else 0), 100)
         for v in valeurs
     ]
+
+    # Labels échelle : paliers propres de max_h à 0h
+    max_h = max_echelle // 3600
+    pas = max(1, max_h // 4)
+    labels_num = list(range(0, max_h + 1, pas))
+    if labels_num[-1] != max_h:
+        labels_num.append(max_h)
+    echelle_labels = [f"{h}h" for h in reversed(labels_num)]
     # Temps formaté pour l'affichage (clair, lisible)
     temps_format = []
     for v in valeurs:
@@ -821,6 +835,7 @@ def tableau_de_bord(request):
             "stats": stats,
             "progressions": progressions,
             "activite": activite,
+            "echelle_labels": echelle_labels,
             "total_semaine": total_semaine,
             "temps_aujourd_hui": temps_aujourd_hui,
             "moyenne_jour": moyenne_jour,

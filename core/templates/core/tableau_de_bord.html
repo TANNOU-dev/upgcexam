@@ -183,14 +183,11 @@
                 </div>
                 <!-- Barres avec échelle -->
                 <div class="relative pt-5 pb-2">
-                    <!-- Scale sur la droite -->
+                    <!-- Scale sur la droite (dynamique) -->
                     <div class="absolute right-0 top-0 bottom-0 w-8 sm:w-10 flex flex-col justify-between text-[8px] sm:text-[9px] text-gray-300 font-medium">
-                        <span>10h</span>
-                        <span>8h</span>
-                        <span>6h</span>
-                        <span>4h</span>
-                        <span>2h</span>
-                        <span>0h</span>
+                        {% for label in echelle_labels %}
+                        <span>{{ label }}</span>
+                        {% endfor %}
                     </div>
                     <!-- Barres -->
                     <div class="flex items-end justify-between h-24 sm:h-28 gap-0.5 sm:gap-1 pr-8 sm:pr-10 relative">
@@ -205,8 +202,6 @@
                             <span class="text-[9px] sm:text-[10px] text-gray-400 mt-1 z-10 font-medium">{{ jour|slice:":1" }}</span>
                         </div>
                         {% endfor %}
-                        <!-- Ligne pointillée de référence à 8h -->
-                        <div class="absolute left-0 right-8 sm:right-10 border-t border-dashed border-gray-300 pointer-events-none" style="top: 20%;"></div>
                     </div>
                 </div>
             </div>
