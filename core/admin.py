@@ -100,7 +100,7 @@ class ActiviteAdmin(admin.ModelAdmin):
 
 @admin.register(Verification)
 class VerificationAdmin(admin.ModelAdmin):
-    list_display = ("email", "code", "expire_le", "utilise")
+    list_display = ("email", "expire_le", "utilise")
     search_fields = ("email",)
 
 

@@ -5,7 +5,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.core.paginator import Paginator
-from django.db.models import Q
+from django.db.models import F, Q
 from django.http import FileResponse, Http404
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
@@ -123,6 +123,9 @@ def recherche(request):
             | Q(matiere__nom__icontains=query)
         ).order_by("-vues")
 
+    paginator = Paginator(resultats, 12)
+    resultats_page = paginator.get_page(request.GET.get("page", 1))
+
     suggestions = sujets_base.order_by("-vues")[:4]
     docs_populaires = sujets_base.order_by("-vues")[:2]
 
@@ -131,8 +134,8 @@ def recherche(request):
         "core/recherche.html",
         {
             "query": query,
-            "resultats": resultats,
-            "total_resultats": resultats.count(),
+            "resultats": resultats_page,
+            "total_resultats": paginator.count,
             "filieres": filieres,
             "annees": annees,
             "suggestions": suggestions,
@@ -162,6 +165,8 @@ def ajouter_sujet(request):
 
         if not all([titre, filiere_id, nom_matiere, niveau_id, annee_academique, fichier]):
             messages.error(request, "Tous les champs sont obligatoires.")
+        elif fichier.size > 10 * 1024 * 1024:
+            messages.error(request, "Le fichier PDF ne doit pas dépasser 10 Mo.")
         elif not est_fichier_pdf(fichier):
             messages.error(request, "Seuls les fichiers PDF valides sont acceptés.")
         else:
@@ -261,6 +266,9 @@ def modifier_sujet(request, sujet_id):
             sujet.annee_academique = annee_academique
         sujet.description = description
         if fichier:
+            if fichier.size > 10 * 1024 * 1024:
+                messages.error(request, "Le fichier PDF ne doit pas dépasser 10 Mo.")
+                return redirect("modifier_sujet", sujet_id=sujet.id)
             if not est_fichier_pdf(fichier):
                 messages.error(request, "Seuls les fichiers PDF valides sont acceptés.")
                 return redirect("modifier_sujet", sujet_id=sujet.id)
@@ -341,8 +349,8 @@ def detail_sujet(request, sujet_id):
         messages.error(request, "Sujet introuvable.")
         return redirect(reverse("bibliotheque") + query_bibliotheque(request))
 
-    sujet.vues += 1
-    sujet.save(update_fields=["vues"])
+    Sujet.objects.filter(id=sujet.id).update(vues=F("vues") + 1)
+    sujet.refresh_from_db(fields=["vues"])
     if request.user.is_authenticated:
         Activite.objects.create(
             utilisateur=request.user,
@@ -387,8 +395,7 @@ def telecharger_sujet(request, sujet_id):
     except Sujet.DoesNotExist:
         raise Http404("Sujet introuvable")
 
-    sujet.telechargements += 1
-    sujet.save(update_fields=["telechargements"])
+    Sujet.objects.filter(id=sujet.id).update(telechargements=F("telechargements") + 1)
     Telechargement.objects.create(utilisateur=request.user, sujet=sujet)
     Activite.objects.create(
         utilisateur=request.user,

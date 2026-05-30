@@ -9,6 +9,8 @@ from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError
 from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.utils import timezone
@@ -79,6 +81,11 @@ def inscription(request):
         elif User.objects.filter(username=username).exists():
             messages.error(request, "Ce nom d'utilisateur est déjà pris")
         else:
+            try:
+                validate_password(password, user=User(username=username, email=email))
+            except ValidationError as erreurs:
+                messages.error(request, " ".join(erreurs.messages))
+                return render(request, "core/inscription.html", {"filieres": filieres})
             user = User.objects.create_user(username=username, email=email, password=password)
             profil = Utilisateur.objects.create(user=user)
             if filiere_id:
@@ -183,6 +190,11 @@ def parametres(request):
             if not ancien_mdp or not user.check_password(ancien_mdp):
                 messages.error(request, "Ancien mot de passe incorrect")
                 return redirect("parametres")
+            try:
+                validate_password(nouveau_mdp, user=user)
+            except ValidationError as erreurs:
+                messages.error(request, " ".join(erreurs.messages))
+                return redirect("parametres")
 
         if nouveau_username and nouveau_username != user.username:
             if User.objects.filter(username=nouveau_username).exclude(id=user.id).exists():
@@ -270,11 +282,14 @@ def password_reset_new(request):
         else:
             try:
                 user = User.objects.get(email=email)
+                validate_password(password, user=user)
                 user.set_password(password)
                 user.save()
                 request.session.pop("reset_email", None)
                 messages.success(request, "Mot de passe réinitialisé avec succès. Connectez-vous !")
                 return redirect("connexion")
+            except ValidationError as erreurs:
+                messages.error(request, " ".join(erreurs.messages))
             except User.DoesNotExist:
                 messages.error(request, "Erreur : compte introuvable.")
 

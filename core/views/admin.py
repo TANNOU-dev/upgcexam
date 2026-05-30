@@ -250,7 +250,9 @@ def admin_utilisateurs(request):
             return redirect("admin_utilisateurs")
 
         if action == "toggle_staff" and target:
-            if target != request.user:
+            if not request.user.is_superuser:
+                messages.error(request, "Action réservée aux superutilisateurs.")
+            elif target != request.user:
                 target.is_staff = not target.is_staff
                 target.save()
                 messages.success(request, f"Rôle de {target.username} mis à jour.")

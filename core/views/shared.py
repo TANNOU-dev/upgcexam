@@ -33,6 +33,7 @@ def _sujets_accessibles(request):
 
 
 def _creer_code_verification(email, request=None):
+    Verification.objects.filter(email=email, utilise=False).update(utilise=True)
     code = generer_code_verification()
     Verification.objects.create(
         email=email,

@@ -188,4 +188,4 @@ class Verification(models.Model):
         verbose_name_plural = "Vérifications"
 
     def __str__(self):
-        return f"{self.email} - {self.code}"
+        return self.email
