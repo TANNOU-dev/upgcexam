@@ -9,8 +9,16 @@ https://docs.djangoproject.com/en/6.0/howto/deployment/wsgi/
 
 import os
 
-from django.core.wsgi import get_wsgi_application
-
+# Charger .env manuellement avant Django
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings")
+try:
+    from dotenv import load_dotenv
+    dotenv_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), ".env")
+    if os.path.isfile(dotenv_path):
+        load_dotenv(dotenv_path)
+except ImportError:
+    pass
+
+from django.core.wsgi import get_wsgi_application
 
 application = get_wsgi_application()
