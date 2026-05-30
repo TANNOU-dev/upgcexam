@@ -172,16 +172,8 @@
                         <p class="text-[10px] sm:text-[11px] text-gray-400 mt-0.5">SEMAINE MOYENNE {{ moyenne_semaine }}</p>
                     </div>
                 </div>
-                <!-- Barres avec échelle -->
-                <div class="relative">
-                    <!-- Scale sur la droite (dynamique) -->
-                    <div class="absolute right-0 top-0 w-8 sm:w-10 h-32 sm:h-40 flex flex-col justify-between text-[8px] sm:text-[9px] text-gray-300 font-medium">
-                        {% for label in echelle_labels %}
-                        <span>{{ label }}</span>
-                        {% endfor %}
-                    </div>
-                    <!-- Barres -->
-                    <div class="flex items-end h-32 sm:h-40 pr-8 sm:pr-10 relative" style="padding-left: 2px;">
+                <!-- Barres d'activité (sans échelle) -->
+                    <div class="flex items-end h-32 sm:h-40" style="padding-left: 2px;">
                         {% for jour, hauteur, temps in activite %}
                         <div class="flex flex-col items-center h-full justify-end flex-1 px-px sm:px-0.5">
                             <div class="w-full rounded-t-md transition-all duration-300 hover:opacity-80 cursor-pointer" style="height: {{ hauteur }}%; min-height: {% if hauteur > 0 %}8px{% else %}2px{% endif %}; background: {% if hauteur > 0 %}linear-gradient(180deg, #0037B0, #4F8CFF){% else %}#E5E7EB{% endif %};">
@@ -190,7 +182,6 @@
                         </div>
                         {% endfor %}
                     </div>
-                </div>
             </div>
             <div class="bg-white rounded-xl shadow-sm p-6">
                 <div class="flex justify-between items-center mb-4">
