@@ -113,10 +113,10 @@
             <!-- ---- LEFT COLUMN ---- -->
             <div class="flex-1 min-w-0 w-full">
 
-                {% if resultats %}
+                {% if resultats_page %}
                 <!-- Results list -->
                 <div class="space-y-4">
-                    {% for sujet in resultats %}
+                    {% for sujet in resultats_page %}
                     <div class="bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition p-5">
                         <div class="flex items-start justify-between mb-2">
                             <span class="text-xs font-bold text-white bg-[#0037B0] px-2.5 py-0.5 rounded">{{ sujet.filiere.code }}</span>
@@ -142,6 +142,24 @@
                     </div>
                     {% endfor %}
                 </div>
+                
+                {% if resultats_page.paginator.num_pages > 1 %}
+                <div class="flex items-center justify-center mt-8 gap-1">
+                    {% if resultats_page.has_previous %}
+                    <a href="?page=1&amp;q={{ query }}"
+                       class="px-3 py-1.5 text-xs text-gray-500 hover:text-[#0037B0] border border-gray-200 rounded-lg hover:border-[#0037B0] transition">«</a>
+                    <a href="?page={{ resultats_page.previous_page_number }}&amp;q={{ query }}"
+                       class="px-3 py-1.5 text-xs text-gray-500 hover:text-[#0037B0] border border-gray-200 rounded-lg hover:border-[#0037B0] transition">‹</a>
+                    {% endif %}
+                    <span class="px-3 py-1.5 text-xs font-semibold text-gray-600">{{ resultats_page.number }} / {{ resultats_page.paginator.num_pages }}</span>
+                    {% if resultats_page.has_next %}
+                    <a href="?page={{ resultats_page.next_page_number }}&amp;q={{ query }}"
+                       class="px-3 py-1.5 text-xs text-gray-500 hover:text-[#0037B0] border border-gray-200 rounded-lg hover:border-[#0037B0] transition">›</a>
+                    <a href="?page={{ resultats_page.paginator.num_pages }}&amp;q={{ query }}"
+                       class="px-3 py-1.5 text-xs text-gray-500 hover:text-[#0037B0] border border-gray-200 rounded-lg hover:border-[#0037B0] transition">»</a>
+                    {% endif %}
+                </div>
+                {% endif %}
                 {% else %}
                 <!-- Empty state -->
                 <div class="bg-white rounded-2xl p-8 text-center">
