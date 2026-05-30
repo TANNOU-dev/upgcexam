@@ -135,7 +135,7 @@
                         <label class="block text-[11px] font-bold tracking-[0.13em] uppercase text-gray-600">
                             Mot de passe
                         </label>
-                        <a href="#" class="text-[11px] font-bold tracking-[0.1em] uppercase hover:underline transition-colors" style="color:#1d3fa8;">
+                        <a href="{% url 'password_reset' %}" class="text-[11px] font-bold tracking-[0.1em] uppercase hover:underline transition-colors" style="color:#1d3fa8;">
                             Oublié ?
                         </a>
                     </div>
@@ -187,13 +187,6 @@
             </a>
             {% endfor %}
             {% endif %}
-
-            <!-- Mot de passe oublié -->
-            <div class="text-center mt-4">
-                <a href="{% url 'password_reset' %}" class="text-sm font-medium hover:underline transition-colors" style="color:#1d3fa8;">
-                    Mot de passe oublié ?
-                </a>
-            </div>
 
             <!-- Sign up link -->
             <p class="mt-5 text-sm text-center text-gray-500">
