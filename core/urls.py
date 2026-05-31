@@ -20,6 +20,7 @@ urlpatterns = [
     path('connexion/', auth.connexion, name='connexion'),
     path('inscription/', auth.inscription, name='inscription'),
     path('tableau-de-bord/', admin.tableau_de_bord, name='tableau_de_bord'),
+    path('api/mon-activite/', admin.mon_activite_json, name='mon_activite_json'),
     path('verification/', auth.verification, name='verification'),
     path('deconnexion/', auth.deconnexion, name='deconnexion'),
     path('parametres/', auth.parametres, name='parametres'),

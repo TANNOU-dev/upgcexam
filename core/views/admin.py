@@ -7,7 +7,7 @@ from django.contrib.auth.models import User
 from django.core.paginator import Paginator
 from django.db.models import Count, Q
 from django.db.models.functions import ExtractWeekDay
-from django.http import FileResponse, Http404
+from django.http import FileResponse, Http404, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
@@ -118,23 +118,9 @@ def tableau_de_bord(request):
         )
 
     jours = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"]
-    # ExtractWeekDay retourne 1-7 (1=Dim, 2=Lun, ..., 7=Sam) sur TOUS les backends
-    # Mapping vers l'index du tableau (0=Lun, 1=Mar, ..., 6=Dim)
-    mapping = {2: 0, 3: 1, 4: 2, 5: 3, 6: 4, 7: 5, 1: 6}
+    valeurs = _temps_activite(user_id)["valeurs"]
 
-    # Temps réel passé (en secondes) depuis PresenceSession
-    cette_semaine = timezone.now() - timezone.timedelta(days=7)
-    sessions_semaine = PresenceSession.objects.filter(
-        utilisateur_id=user_id, debut__gte=cette_semaine
-    ).annotate(jour_sem=ExtractWeekDay("debut"))
-
-    valeurs = [0] * 7
-    if sessions_semaine.exists():
-        for s in sessions_semaine:
-            idx = mapping.get(s.jour_sem, 0)
-            valeurs[idx] += s.secondes
-
-    # Échelle dynamique : le pic de la semaine = 100%
+    # Échelle FIXE
     # Échelle FIXE à 3h (10800s) : visible dès 15min, plein à 3h
     # 15min→12px  30min→27px  1h→53px  2h→107px  3h→160px
     MAX_ECHELLE = 10800  # 3 heures en secondes
@@ -229,6 +215,44 @@ def tableau_de_bord(request):
             "salutation": salutation(),
         },
     )
+
+
+def _temps_activite(utilisateur_id):
+    """Calcule le temps d'activité par jour pour un utilisateur."""
+    mapping = {2: 0, 3: 1, 4: 2, 5: 3, 6: 4, 7: 5, 1: 6}
+    cette_semaine = timezone.now() - timezone.timedelta(days=7)
+    sessions = PresenceSession.objects.filter(
+        utilisateur_id=utilisateur_id, debut__gte=cette_semaine
+    ).annotate(jour_sem=ExtractWeekDay("debut"))
+    valeurs = [0] * 7
+    for s in sessions:
+        valeurs[mapping.get(s.jour_sem, 0)] += s.secondes
+    return {"valeurs": valeurs}
+
+
+@login_required
+def mon_activite_json(request):
+    """Retourne les données d'activité en JSON (rafraîchissement AJAX)."""
+    data = _temps_activite(request.user.id)
+    valeurs = data["valeurs"]
+    aujourdhui_idx = timezone.now().weekday()
+    MAX_ECHELLE = 10800
+    BAR_MAX_PX = 160
+
+    def ft(sec):
+        h, m = sec // 3600, (sec % 3600) // 60
+        if h > 0: return f"{h}h {m:02d}" if m > 0 else f"{h}h"
+        if m > 0: return f"{m} min"
+        if sec > 0: return f"{sec} s"
+        return "—"
+
+    return JsonResponse({
+        "secondes": valeurs,
+        "pourcentages": [min(round(v / MAX_ECHELLE * 100, 1), 100) for v in valeurs],
+        "hauteurs_px": [max(round(v / MAX_ECHELLE * BAR_MAX_PX), 0) for v in valeurs],
+        "aujourd_hui": ft(valeurs[aujourdhui_idx]),
+        "total_semaine": ft(sum(valeurs)),
+    })
 
 
 @login_required

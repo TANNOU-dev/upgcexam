@@ -161,7 +161,7 @@
             <div class="bg-white rounded-xl shadow-sm p-4 sm:p-6">
                 <h3 class="text-sm font-bold text-[#0B1C30] mb-3">Temps d'activité cette semaine</h3>
                 <!-- Header : Aujourd'hui / Cette semaine (side by side) -->
-                <div class="grid grid-cols-2 gap-4 mb-3 sm:mb-4">
+                <div class="grid grid-cols-2 gap-4 mb-3 sm:mb-4" data-activity-headers>
                     <div>
                         <p class="text-[9px] sm:text-[10px] font-semibold tracking-wider text-gray-400 uppercase">Aujourd'hui</p>
                         <p class="text-lg sm:text-xl font-black text-[#0B1C30] mt-0.5">{{ temps_aujourd_hui }}</p>
@@ -174,7 +174,7 @@
                     </div>
                 </div>
                 <!-- Barres d'activité (sans échelle) -->
-                    <div class="flex items-end h-32 sm:h-40" style="padding-left: 2px;">
+                    <div class="flex items-end h-32 sm:h-40" style="padding-left: 2px;" data-activity-bars>
                         {% for jour, hauteur, hauteur_px, temps in activite %}
                         <div class="flex flex-col items-center h-full justify-end flex-1 px-px sm:px-0.5">
                             <div class="w-full rounded-t-md transition-all duration-300 hover:opacity-80 cursor-pointer" style="height: {{ hauteur_px }}px; min-height: {% if hauteur > 0 %}8px{% else %}2px{% endif %}; background: {% if hauteur > 0 %}linear-gradient(180deg, #0037B0, #4F8CFF){% else %}#E5E7EB{% endif %};">
@@ -277,4 +277,38 @@
 
     {% include "core/includes/footer.html" %}
 {% include "core/includes/pwa_footer.html" %}
+
+<script>
+(function() {
+    'use strict';
+    // Mise à jour temps réel des barres d'activité (toutes les 30s)
+    var barsContainer = document.querySelector('[data-activity-bars]');
+    if (!barsContainer) return;
+    var barEls = barsContainer.querySelectorAll(':scope > div > .w-full.rounded-t-md');
+    var headerBox = document.querySelector('[data-activity-headers]');
+    var headerAujourdhui = headerBox ? headerBox.querySelector('div:first-child p.text-lg') : null;
+    var headerSemaine = headerBox ? headerBox.querySelector('div:last-child p.text-lg') : null;
+
+    function rafraichirActivite() {
+        fetch('/api/mon-activite/')
+            .then(function(r) { return r.json(); })
+            .then(function(d) {
+                if (!barEls || !barEls.length) return;
+                for (var i = 0; i < 7 && i < barEls.length; i++) {
+                    var h = d.hauteurs_px[i] || 0;
+                    var el = barEls[i];
+                    el.style.height = h + 'px';
+                    el.style.background = h > 0 ? 'linear-gradient(180deg, #0037B0, #4F8CFF)' : '#E5E7EB';
+                }
+                if (headerAujourdhui) headerAujourdhui.textContent = d.aujourd_hui || '—';
+                if (headerSemaine) headerSemaine.textContent = d.total_semaine || '—';
+            })
+            .catch(function() {});
+    }
+
+    if (barEls && barEls.length > 0) {
+        setInterval(rafraichirActivite, 30000);
+    }
+})();
+</script>
 {% endblock %}
