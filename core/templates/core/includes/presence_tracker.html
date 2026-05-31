@@ -1,24 +1,44 @@
 <script>
 (function() {
     if (!document.querySelector('meta[name="user-authenticated"]')) return;
-    
+
     const debut = Date.now();
-    let maxSeconds = 0;
+    let dernierEnvoi = 0;
 
-    function envoyer() {
-        const ecoule = Math.floor((Date.now() - debut) / 1000);
-        if (ecoule <= maxSeconds) return;
-        maxSeconds = ecoule;
-
-        try {
-            navigator.sendBeacon('/api/ping/', JSON.stringify({ seconds: ecoule }));
-        } catch(e) {}
+    // Lecture du token CSRF (méthode officielle Django)
+    function getCSRF() {
+        var c = document.cookie.split(';');
+        for (var i = 0; i < c.length; i++) {
+            var ck = c[i].trim();
+            if (ck.indexOf('csrftoken=') === 0) return decodeURIComponent(ck.substring(10));
+        }
+        return null;
     }
 
-    // Envoyer toutes les 30 secondes sans bloquer
+    function envoyer() {
+        var ecoule = Math.floor((Date.now() - debut) / 1000);
+        if (ecoule <= dernierEnvoi) return;
+        dernierEnvoi = ecoule;
+
+        var token = getCSRF();
+        if (!token) return;
+
+        fetch('/api/ping/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': token
+            },
+            body: JSON.stringify({ seconds: ecoule }),
+            keepalive: true,
+            credentials: 'same-origin'
+        }).catch(function() {});
+    }
+
+    // Envoi toutes les 30s
     setInterval(envoyer, 30000);
 
-    // Envoyer quand l'utilisateur quitte
+    // Envoi à la fermeture / changement d'onglet
     window.addEventListener('beforeunload', envoyer);
     document.addEventListener('visibilitychange', function() {
         if (document.hidden) envoyer();
