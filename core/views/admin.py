@@ -135,9 +135,9 @@ def tableau_de_bord(request):
             valeurs[idx] += s.secondes
 
     # Échelle dynamique : le pic de la semaine = 100%
-    # Échelle FIXE à 6h (21600s) : la barre grandit VISIBLEMENT avec le temps
-    # 30min→5%  1h→17%  2h→33%  3h→50%  6h→100%
-    MAX_ECHELLE = 21600  # 6 heures en secondes
+    # Échelle FIXE à 3h (10800s) : visible dès 15min, plein à 3h
+    # 15min→12px  30min→27px  1h→53px  2h→107px  3h→160px
+    MAX_ECHELLE = 10800  # 3 heures en secondes
     BAR_MAX_PX = 160
 
     valeurs_pct = [
