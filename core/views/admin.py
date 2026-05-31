@@ -42,6 +42,73 @@ def admin_dashboard(request):
         "total_telechargements": Telechargement.objects.count(),
     }
 
+    # ---- Statistiques de présence agrégées (tous les utilisateurs) ----
+    aujourdhui = timezone.now().replace(hour=0, minute=0, second=0, microsecond=0)
+    cette_semaine = aujourdhui - timezone.timedelta(days=7)
+
+    sessions_aujourdhui = PresenceSession.objects.filter(debut__gte=aujourdhui)
+    sessions_semaine = PresenceSession.objects.filter(debut__gte=cette_semaine)
+
+    actifs_ajd = (
+        sessions_aujourdhui.values("utilisateur").distinct().count()
+    )
+    actifs_semaine = (
+        sessions_semaine.values("utilisateur").distinct().count()
+    )
+
+    from django.db.models import Sum
+    temps_total_ajd = sessions_aujourdhui.aggregate(total=Sum("secondes"))["total"] or 0
+    temps_total_semaine = sessions_semaine.aggregate(total=Sum("secondes"))["total"] or 0
+
+    def ft(sec):
+        h, m = sec // 3600, (sec % 3600) // 60
+        if h > 0: return f"{h}h{' ' + str(m) + 'min' if m > 0 else ''}"
+        return f"{m} min" if m > 0 else "—"
+
+    # Top étudiants cette semaine
+    top_etudiants = (
+        sessions_semaine
+        .values("utilisateur", "utilisateur__username")
+        .annotate(total=Sum("secondes"))
+        .order_by("-total")[:10]
+    )
+    for e in top_etudiants:
+        e["temps"] = ft(e["total"])
+
+    # Barres d'activité hebdo agrégées (tous utilisateurs)
+    mapping = {2: 0, 3: 1, 4: 2, 5: 3, 6: 4, 7: 5, 1: 6}
+    jours_agg = sessions_semaine.annotate(
+        jour_sem=ExtractWeekDay("debut")
+    ).values("jour_sem").annotate(
+        total=Sum("secondes")
+    ).order_by("jour_sem")
+
+    valeurs_hebdo = [0] * 7
+    for j in jours_agg:
+        valeurs_hebdo[mapping.get(j["jour_sem"], 0)] = j["total"]
+
+    MAX_PX = 140
+    MAX_ECHELLE = max(max(valeurs_hebdo), 600) if any(valeurs_hebdo) else 600
+    jours_noms = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"]
+    activite_hebdo = []
+    for i, val in enumerate(valeurs_hebdo):
+        hauteur = round(val / MAX_ECHELLE * MAX_PX) if MAX_ECHELLE > 0 else 0
+        activite_hebdo.append({
+            "jour": jours_noms[i],
+            "secondes": val,
+            "temps": ft(val),
+            "hauteur_px": min(hauteur, MAX_PX),
+        })
+
+    activite_stats = {
+        "actifs_ajd": actifs_ajd,
+        "actifs_semaine": actifs_semaine,
+        "temps_total_ajd": ft(temps_total_ajd),
+        "temps_total_semaine": ft(temps_total_semaine),
+        "top_etudiants": top_etudiants,
+        "activite_hebdo": activite_hebdo,
+    }
+
     sujets_recents = Sujet.objects.select_related("filiere", "publie_par").order_by("-cree_le")[:10]
     utilisateurs_recents = User.objects.select_related("profil").order_by("-date_joined")[:10]
     sujets_en_attente = (
@@ -69,6 +136,7 @@ def admin_dashboard(request):
             "sujets_recents": sujets_recents,
             "utilisateurs_recents": utilisateurs_recents,
             "sujets_en_attente": sujets_en_attente,
+            "activite_stats": activite_stats,
         },
     )
 

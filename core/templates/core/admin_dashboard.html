@@ -113,6 +113,68 @@
             </div>
         </div>
 
+        <!-- ========== ACTIVITÉ DES ÉTUDIANTS ========== -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-50 p-6 mb-8">
+            <div class="flex items-center justify-between mb-5">
+                <div>
+                    <h2 class="font-bold text-[#0B1C30]">Activité des étudiants</h2>
+                    <p class="text-xs text-gray-400 mt-0.5">Temps de connexion agrégé (tous les utilisateurs)</p>
+                </div>
+                <span class="text-xs text-gray-400">Cette semaine</span>
+            </div>
+
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
+                <div class="bg-[#0037B0]/5 rounded-xl p-4">
+                    <p class="text-2xl font-black text-[#0037B0]">{{ activite_stats.actifs_ajd }}</p>
+                    <p class="text-xs text-gray-500 mt-1">Étudiants actifs aujourd'hui</p>
+                </div>
+                <div class="bg-[#10B981]/5 rounded-xl p-4">
+                    <p class="text-2xl font-black text-[#10B981]">{{ activite_stats.actifs_semaine }}</p>
+                    <p class="text-xs text-gray-500 mt-1">Étudiants actifs cette semaine</p>
+                </div>
+                <div class="bg-[#F59E0B]/5 rounded-xl p-4">
+                    <p class="text-2xl font-black text-[#F59E0B]">{{ activite_stats.temps_total_ajd }}</p>
+                    <p class="text-xs text-gray-500 mt-1">Temps total aujourd'hui</p>
+                </div>
+                <div class="bg-[#8B5CF6]/5 rounded-xl p-4">
+                    <p class="text-2xl font-black text-[#8B5CF6]">{{ activite_stats.temps_total_semaine }}</p>
+                    <p class="text-xs text-gray-500 mt-1">Temps total cette semaine</p>
+                </div>
+            </div>
+
+            <!-- Barres hebdomadaires agrégées -->
+            <div class="flex items-end h-28 sm:h-32 gap-1 mb-4">
+                {% for jour in activite_stats.activite_hebdo %}
+                <div class="flex flex-col items-center h-full justify-end flex-1">
+                    <div class="w-full rounded-t-md transition-all duration-300 hover:opacity-80"
+                         style="height: {{ jour.hauteur_px }}px; min-height: {% if jour.secondes > 0 %}6px{% else %}2px{% endif %}; background: {% if jour.secondes > 0 %}linear-gradient(180deg, #8B5CF6, #A78BFA){% else %}#E5E7EB{% endif %};">
+                    </div>
+                    <span class="text-[9px] sm:text-[10px] text-gray-400 mt-1.5 font-medium">{{ jour.jour }}</span>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Top étudiants -->
+            {% if activite_stats.top_etudiants %}
+            <div class="border-t border-gray-100 pt-5">
+                <h3 class="text-sm font-bold text-[#0B1C30] mb-3">Top étudiants cette semaine</h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    {% for etu in activite_stats.top_etudiants %}
+                    <div class="flex items-center justify-between px-3 py-2 rounded-lg bg-gray-50">
+                        <div class="flex items-center gap-2.5">
+                            <div class="w-7 h-7 bg-[#8B5CF6] rounded-full flex items-center justify-center text-white text-xs font-bold">
+                                {{ etu.utilisateur__username|first|upper }}
+                            </div>
+                            <span class="text-sm font-medium text-[#0B1C30]">{{ etu.utilisateur__username }}</span>
+                        </div>
+                        <span class="text-xs font-bold text-[#8B5CF6]">{{ etu.temps }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
         <!-- Navigation rapide vers les pages admin -->
         <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
             <a href="{% url 'admin_utilisateurs' %}" class="bg-white rounded-xl shadow-sm p-5 text-center hover:shadow-md hover:-translate-y-0.5 transition-all group">
