@@ -46,10 +46,13 @@ class PresenceConsumer(AsyncWebsocketConsumer):
         )
 
         if derniere and (maintenant - derniere.debut).total_seconds() < 15 * 60:
-            if secondes > derniere.secondes:
-                derniere.secondes = secondes
-                derniere.fin = maintenant
-                derniere.save(update_fields=["secondes", "fin"])
+            # Toujours mettre à jour : le compteur client (sessionStorage)
+            # ne se réinitialise pas entre les pages du même onglet.
+            # Si un nouvel onglet envoie une valeur plus petite, on la prend
+            # quand même — elle finira par dépasser l'ancienne après qques min.
+            derniere.secondes = secondes
+            derniere.fin = maintenant
+            derniere.save(update_fields=["secondes", "fin"])
         else:
             PresenceSession.objects.create(
                 utilisateur=self.user,
