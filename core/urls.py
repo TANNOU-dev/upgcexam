@@ -37,5 +37,4 @@ urlpatterns = [
     path('administration/sujets/voir-pdf/<int:sujet_id>/', admin.admin_voir_sujet_pdf, name='admin_voir_sujet_pdf'),
     path('administration/verifications/', admin.admin_verifications, name='admin_verifications'),
     path('pwa/subscribe/', pwa.push_subscribe, name='push_subscribe'),
-    path('api/ping/', pwa.ping_presence, name='ping_presence'),
 ]

@@ -2,46 +2,52 @@
 (function() {
     if (!document.querySelector('meta[name="user-authenticated"]')) return;
 
-    const debut = Date.now();
-    let dernierEnvoi = 0;
+    var debut = Date.now();
+    var ws = null;
+    var timer = null;
 
-    // Lecture du token CSRF (méthode officielle Django)
-    function getCSRF() {
-        var c = document.cookie.split(';');
-        for (var i = 0; i < c.length; i++) {
-            var ck = c[i].trim();
-            if (ck.indexOf('csrftoken=') === 0) return decodeURIComponent(ck.substring(10));
-        }
-        return null;
+    function connecter() {
+        var protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        var url = protocol + '//' + window.location.host + '/ws/presence/';
+
+        ws = new WebSocket(url);
+
+        ws.onopen = function() {
+            envoyerTemps(); // premier envoi immédiat
+            timer = setInterval(envoyerTemps, 10000); // puis toutes les 10s
+        };
+
+        ws.onclose = function() {
+            if (timer) clearInterval(timer);
+            timer = null;
+            ws = null;
+            // Reconnexion après 3s
+            setTimeout(connecter, 3000);
+        };
+
+        ws.onerror = function() {
+            // Déjà géré par onclose
+        };
     }
 
-    function envoyer() {
+    function envoyerTemps() {
+        if (!ws || ws.readyState !== WebSocket.OPEN) return;
         var ecoule = Math.floor((Date.now() - debut) / 1000);
-        if (ecoule <= dernierEnvoi) return;
-        dernierEnvoi = ecoule;
-
-        var token = getCSRF();
-        if (!token) return;
-
-        fetch('/api/ping/', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': token
-            },
-            body: JSON.stringify({ seconds: ecoule }),
-            keepalive: true,
-            credentials: 'same-origin'
-        }).catch(function() {});
+        ws.send(JSON.stringify({ seconds: ecoule }));
     }
 
-    // Envoi toutes les 30s
-    setInterval(envoyer, 30000);
-
-    // Envoi à la fermeture / changement d'onglet
-    window.addEventListener('beforeunload', envoyer);
+    // Envoyer avant de quitter ou de cacher la page
     document.addEventListener('visibilitychange', function() {
-        if (document.hidden) envoyer();
+        if (document.hidden) envoyerTemps();
     });
+    window.addEventListener('beforeunload', function() {
+        if (ws && ws.readyState === WebSocket.OPEN) {
+            ws.send(JSON.stringify({ seconds: Math.floor((Date.now() - debut) / 1000) }));
+            ws.close();
+        }
+    });
+
+    // Démarrer la connexion
+    connecter();
 })();
 </script>
