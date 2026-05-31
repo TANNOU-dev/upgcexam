@@ -2,7 +2,12 @@
 (function() {
     if (!document.querySelector('meta[name="user-authenticated"]')) return;
 
-    var debut = Date.now();
+    // sessionStorage persiste entre les pages (même onglet)
+    // → le compteur de temps continue après une navigation
+    if (!sessionStorage.getItem('upg_presence_start')) {
+        sessionStorage.setItem('upg_presence_start', Date.now());
+    }
+    var debut = parseInt(sessionStorage.getItem('upg_presence_start'), 10);
     var ws = null;
     var timer = null;
 
