@@ -36,6 +36,7 @@ urlpatterns = [
     path('administration/logs/', admin.admin_logs, name='admin_logs'),
     path('administration/sujets/', admin.admin_sujets, name='admin_sujets'),
     path('administration/sujets/voir-pdf/<int:sujet_id>/', admin.admin_voir_sujet_pdf, name='admin_voir_sujet_pdf'),
+    path('administration/presences/', admin.admin_presences, name='admin_presences'),
     path('administration/verifications/', admin.admin_verifications, name='admin_verifications'),
     path('pwa/subscribe/', pwa.push_subscribe, name='push_subscribe'),
 ]

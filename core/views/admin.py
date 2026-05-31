@@ -641,6 +641,84 @@ def admin_voir_sujet_pdf(request, sujet_id):
 
 
 @login_required
+def admin_presences(request):
+    """Liste tous les étudiants avec leur temps de connexion."""
+    if not request.user.is_staff:
+        messages.error(request, "Accès réservé aux administrateurs.")
+        return redirect("tableau_de_bord")
+
+    aujourdhui = timezone.now().replace(hour=0, minute=0, second=0, microsecond=0)
+    cette_semaine = aujourdhui - timezone.timedelta(days=7)
+
+    from django.db.models import Sum, Max
+
+    # Agrégation : temps total et dernière activité par utilisateur
+    aggs = (
+        PresenceSession.objects.filter(debut__gte=cette_semaine)
+        .values("utilisateur")
+        .annotate(
+            total=Sum("secondes"),
+            derniere_activite=Max("fin"),
+            jours_actifs=Count("id", distinct=True),
+        )
+        .order_by("-total")
+    )
+
+    # Tous les utilisateurs avec ou sans activité cette semaine
+    utilisateurs_data = []
+    aggs_map = {a["utilisateur"]: a for a in aggs}
+    for u in User.objects.all().order_by("-date_joined"):
+        data = aggs_map.get(u.id)
+        total_sec = data["total"] if data else 0
+        h, m = total_sec // 3600, (total_sec % 3600) // 60
+        if h > 0:
+            temps_str = f"{h}h {m:02d}" if m > 0 else f"{h}h"
+        elif m > 0:
+            temps_str = f"{m} min"
+        elif total_sec > 0:
+            temps_str = f"{total_sec} s"
+        else:
+            temps_str = "—"
+
+        dernier = data["derniere_activite"] if data else None
+        if dernier:
+            depuis = timezone.now() - dernier
+            if depuis.total_seconds() < 3600:
+                dernier_str = f"Il y a {int(depuis.total_seconds() // 60)} min"
+            else:
+                dernier_str = f"Il y a {int(depuis.total_seconds() // 3600)}h"
+        else:
+            dernier_str = "—"
+
+        utilisateurs_data.append({
+            "id": u.id,
+            "username": u.username,
+            "email": u.email,
+            "is_staff": u.is_staff,
+            "temps": temps_str,
+            "secondes": total_sec,
+            "derniere_activite": dernier_str,
+        })
+
+    # Tri par temps décroissant (les inactifs à la fin)
+    utilisateurs_data.sort(key=lambda x: (x["secondes"] == 0, -x["secondes"]))
+
+    paginator = Paginator(utilisateurs_data, 25)
+    page = request.GET.get("page", 1)
+    page_obj = paginator.get_page(page)
+
+    return render(
+        request,
+        "core/admin_presences.html",
+        {
+            "page_obj": page_obj,
+            "total_utilisateurs": User.objects.count(),
+            "actifs_semaine": sum(1 for u in utilisateurs_data if u["secondes"] > 0),
+        },
+    )
+
+
+@login_required
 def admin_verifications(request):
     if not request.user.is_staff:
         messages.error(request, "Accès réservé aux administrateurs.")

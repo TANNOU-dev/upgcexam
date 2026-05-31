@@ -157,7 +157,10 @@
             <!-- Top étudiants -->
             {% if activite_stats.top_etudiants %}
             <div class="border-t border-gray-100 pt-5">
-                <h3 class="text-sm font-bold text-[#0B1C30] mb-3">Top étudiants cette semaine</h3>
+                <div class="flex items-center justify-between">
+                    <h3 class="text-sm font-bold text-[#0B1C30] mb-3">Top étudiants cette semaine</h3>
+                    <a href="{% url 'admin_presences' %}" class="text-xs text-[#0037B0] font-semibold hover:underline mb-3">Voir tous</a>
+                </div>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     {% for etu in activite_stats.top_etudiants %}
                     <div class="flex items-center justify-between px-3 py-2 rounded-lg bg-gray-50">
