@@ -12,6 +12,7 @@
         html { scroll-behavior: smooth; }
     </style>
 {% include "core/includes/pwa_head.html" %}
+    {% if user.is_authenticated %}<meta name="user-authenticated" content="true">{% endif %}
 </head>
 <body class="bg-white min-h-screen">
 
@@ -365,6 +366,7 @@
 
     {% include "core/includes/footer.html" %}
 
+    {% include "core/includes/presence_tracker.html" %}
     <!-- Scripts -->
     <script>
         function toggleMenu() {

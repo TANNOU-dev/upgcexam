@@ -1,0 +1,27 @@
+<script>
+(function() {
+    if (!document.querySelector('meta[name="user-authenticated"]')) return;
+    
+    const debut = Date.now();
+    let maxSeconds = 0;
+
+    function envoyer() {
+        const ecoule = Math.floor((Date.now() - debut) / 1000);
+        if (ecoule <= maxSeconds) return;
+        maxSeconds = ecoule;
+
+        try {
+            navigator.sendBeacon('/api/ping/', JSON.stringify({ seconds: ecoule }));
+        } catch(e) {}
+    }
+
+    // Envoyer toutes les 30 secondes sans bloquer
+    setInterval(envoyer, 30000);
+
+    // Envoyer quand l'utilisateur quitte
+    window.addEventListener('beforeunload', envoyer);
+    document.addEventListener('visibilitychange', function() {
+        if (document.hidden) envoyer();
+    });
+})();
+</script>

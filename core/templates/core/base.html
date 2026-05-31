@@ -12,10 +12,12 @@
     <meta name="apple-mobile-web-app-title" content="UPGCExam">
     <link rel="apple-touch-icon" href="/static/pwa/icon-192.png">
     <style>{% block extra_css %}* { font-family: 'Inter', sans-serif; }{% endblock %}</style>
+    {% if user.is_authenticated %}<meta name="user-authenticated" content="true">{% endif %}
     {% block extra_head %}{% endblock %}
 </head>
 <body class="{% block body_class %}bg-[#F5F7FA] min-h-screen{% endblock %}">
     {% block body %}{% endblock %}
+    {% include "core/includes/presence_tracker.html" %}
     <script>
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('/static/pwa/sw.js', { scope: '/' }).then(function(reg) {
