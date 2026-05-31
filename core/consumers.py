@@ -46,11 +46,11 @@ class PresenceConsumer(AsyncWebsocketConsumer):
         )
 
         if derniere and (maintenant - derniere.debut).total_seconds() < 15 * 60:
-            # Toujours mettre à jour : le compteur client (sessionStorage)
-            # ne se réinitialise pas entre les pages du même onglet.
-            # Si un nouvel onglet envoie une valeur plus petite, on la prend
-            # quand même — elle finira par dépasser l'ancienne après qques min.
-            derniere.secondes = secondes
+            # Le client envoie des deltas (secondes écoulées depuis le
+            # dernier envoi). On les accumule dans la session en cours.
+            # → Pas de sessionStorage : chaque utilisateur (même en
+            #   changeant de compte dans le même onglet) a son compteur.
+            derniere.secondes += secondes
             derniere.fin = maintenant
             derniere.save(update_fields=["secondes", "fin"])
         else:

@@ -2,12 +2,11 @@
 (function() {
     if (!document.querySelector('meta[name="user-authenticated"]')) return;
 
-    // sessionStorage persiste entre les pages (même onglet)
-    // → le compteur de temps continue après une navigation
-    if (!sessionStorage.getItem('upg_presence_start')) {
-        sessionStorage.setItem('upg_presence_start', Date.now());
-    }
-    var debut = parseInt(sessionStorage.getItem('upg_presence_start'), 10);
+    // Chaque page envoie des DELTAS de temps (secondes écoulées depuis
+    // le dernier envoi). Le serveur accumule dans PresenceSession.
+    // → Pas de sessionStorage : chaque utilisateur a son propre compteur
+    //   même en changeant de compte dans le même onglet.
+    var dernierEnvoi = Date.now();
     var ws = null;
     var timer = null;
 
@@ -18,41 +17,36 @@
         ws = new WebSocket(url);
 
         ws.onopen = function() {
-            envoyerTemps(); // premier envoi immédiat
-            timer = setInterval(envoyerTemps, 10000); // puis toutes les 10s
+            dernierEnvoi = Date.now();
+            envoyerDelta();
+            timer = setInterval(envoyerDelta, 10000);
         };
 
         ws.onclose = function() {
             if (timer) clearInterval(timer);
             timer = null;
             ws = null;
-            // Reconnexion après 3s
             setTimeout(connecter, 3000);
         };
 
-        ws.onerror = function() {
-            // Déjà géré par onclose
-        };
+        ws.onerror = function() {};
     }
 
-    function envoyerTemps() {
+    function envoyerDelta() {
         if (!ws || ws.readyState !== WebSocket.OPEN) return;
-        var ecoule = Math.floor((Date.now() - debut) / 1000);
-        ws.send(JSON.stringify({ seconds: ecoule }));
+        var maintenant = Date.now();
+        var delta = Math.floor((maintenant - dernierEnvoi) / 1000);
+        if (delta <= 0) return;
+        dernierEnvoi = maintenant;
+        ws.send(JSON.stringify({ seconds: delta }));
     }
 
-    // Envoyer avant de quitter ou de cacher la page
-    document.addEventListener('visibilitychange', function() {
-        if (document.hidden) envoyerTemps();
-    });
+    // onbeforeunload : on ferme juste la socket (le dernier delta
+    // a été envoyé il y a <10s → perte acceptable)
     window.addEventListener('beforeunload', function() {
-        if (ws && ws.readyState === WebSocket.OPEN) {
-            ws.send(JSON.stringify({ seconds: Math.floor((Date.now() - debut) / 1000) }));
-            ws.close();
-        }
+        if (ws) ws.close();
     });
 
-    // Démarrer la connexion
     connecter();
 })();
 </script>
