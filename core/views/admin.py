@@ -24,10 +24,7 @@ from ..models import (
     Utilisateur,
     Verification,
 )
-from ..navigation import query_bibliotheque, safe_next_url
-from ..utils import envoyer_code_verification, generer_code_verification
 from .shared import _sujets_accessibles, _creer_code_verification, salutation
-from .pwa import envoyer_notification_push
 
 
 @login_required
