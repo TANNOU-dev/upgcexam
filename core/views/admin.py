@@ -188,7 +188,7 @@ def tableau_de_bord(request):
     # Échelle FIXE
     # Échelle FIXE à 3h (10800s) : visible dès 15min, plein à 3h
     # 15min→12px  30min→27px  1h→53px  2h→107px  3h→160px
-    MAX_ECHELLE = 10800  # 3 heures en secondes
+    MAX_ECHELLE = 18000  # 5 heures en secondes
     BAR_MAX_PX = 160
 
     valeurs_pct = [
@@ -301,7 +301,7 @@ def mon_activite_json(request):
     data = _temps_activite(request.user.id)
     valeurs = data["valeurs"]
     aujourdhui_idx = timezone.now().weekday()
-    MAX_ECHELLE = 10800
+    MAX_ECHELLE = 18000
     BAR_MAX_PX = 160
 
     def ft(sec):
