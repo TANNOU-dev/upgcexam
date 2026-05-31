@@ -118,9 +118,9 @@ def tableau_de_bord(request):
         )
 
     jours = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"]
-    # SQLite : strftime('%%w', debut) retourne 0=Dim, 1=Lun, ..., 6=Sam
+    # ExtractWeekDay retourne 1-7 (1=Dim, 2=Lun, ..., 7=Sam) sur TOUS les backends
     # Mapping vers l'index du tableau (0=Lun, 1=Mar, ..., 6=Dim)
-    mapping = {1: 0, 2: 1, 3: 2, 4: 3, 5: 4, 6: 5, 0: 6}
+    mapping = {2: 0, 3: 1, 4: 2, 5: 3, 6: 4, 7: 5, 1: 6}
 
     # Temps réel passé (en secondes) depuis PresenceSession
     cette_semaine = timezone.now() - timezone.timedelta(days=7)

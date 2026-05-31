@@ -33,19 +33,18 @@ def enregistrer_presence(get_response):
                         secondes=0,
                     )
                 else:
-                    # Vérifier l'inactivité depuis la DERNIÈRE requête (pas depuis le début)
                     ecart = (now - (derniere.fin or derniere.debut)).total_seconds()
 
                     if ecart <= INACTIVITE_LIMITE_SEC:
-                        # Session active → cumuler le temps depuis la dernière requête
-                        temps_ecoule = int(max(0, ecart))
-                        derniere.secondes += temps_ecoule
+                        # Session active → temps total depuis le début de la session
+                        derniere.secondes = int(max(0, (now - derniere.debut).total_seconds()))
                         derniere.fin = now
                         derniere.save(update_fields=["fin", "secondes"])
                     else:
-                        # Inactivité > 15 min → fermer l'ancienne, créer une nouvelle
+                        # Inactivité > 15 min → finaliser l'ancienne session
+                        derniere.secondes = int(max(0, (now - derniere.debut).total_seconds()))
                         derniere.fin = now
-                        derniere.save(update_fields=["fin"])
+                        derniere.save(update_fields=["fin", "secondes"])
                         PresenceSession.objects.create(
                             utilisateur=request.user,
                             debut=now,
