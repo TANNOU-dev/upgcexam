@@ -175,9 +175,9 @@
                 </div>
                 <!-- Barres d'activité (sans échelle) -->
                     <div class="flex items-end h-32 sm:h-40" style="padding-left: 2px;">
-                        {% for jour, hauteur, temps in activite %}
+                        {% for jour, hauteur, hauteur_px, temps in activite %}
                         <div class="flex flex-col items-center h-full justify-end flex-1 px-px sm:px-0.5">
-                            <div class="w-full rounded-t-md transition-all duration-300 hover:opacity-80 cursor-pointer" style="height: {{ hauteur }}%; min-height: {% if hauteur > 0 %}8px{% else %}2px{% endif %}; background: {% if hauteur > 0 %}linear-gradient(180deg, #0037B0, #4F8CFF){% else %}#E5E7EB{% endif %};">
+                            <div class="w-full rounded-t-md transition-all duration-300 hover:opacity-80 cursor-pointer" style="height: {{ hauteur_px }}px; min-height: {% if hauteur > 0 %}8px{% else %}2px{% endif %}; background: {% if hauteur > 0 %}linear-gradient(180deg, #0037B0, #4F8CFF){% else %}#E5E7EB{% endif %};">
                             </div>
                             <span class="text-[9px] sm:text-[10px] text-gray-400 mt-1.5 font-medium">{{ jour|slice:":3" }}</span>
                         </div>

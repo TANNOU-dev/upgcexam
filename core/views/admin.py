@@ -178,6 +178,10 @@ def tableau_de_bord(request):
         for v in valeurs
     ]
 
+    # Hauteur en pixels (pas de pourcentage, plus fiable avec flexbox)
+    BAR_MAX_PX = 160
+    hauteurs_px = [round(v * BAR_MAX_PX / 100) for v in valeurs_pct]
+
     temps_format = []
     for v in valeurs:
         heures = v // 3600
@@ -190,7 +194,7 @@ def tableau_de_bord(request):
             temps_format.append(f"{v}s")
         else:
             temps_format.append("—")
-    activite = list(zip(jours, valeurs_pct, temps_format))
+    activite = list(zip(jours, valeurs_pct, hauteurs_px, temps_format))
 
     total_secondes = sum(valeurs)
     aujourdhui_idx = timezone.now().weekday()
