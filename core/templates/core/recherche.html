@@ -22,7 +22,8 @@
             <nav class="hidden md:flex items-center space-x-8">
                 <a href="{% url 'tableau_de_bord' %}" class="text-gray-500 hover:text-gray-800 font-medium text-sm">Accueil</a>
                 <a href="{% url 'bibliotheque' %}" class="text-gray-500 hover:text-gray-800 font-medium text-sm">Sujets</a>
-                <a href="{% url 'ajouter_sujet' %}" class="text-gray-500 hover:text-gray-800 font-medium text-sm">Ajouter un sujet</a>
+                <a href="{% url 'mes_sujets' %}" class="text-gray-500 hover:text-gray-800 font-medium text-sm">Mes sujets</a>
+                <a href="{% url 'ajouter_sujet' %}" class="text-gray-500 hover:text-gray-800 font-medium text-sm">Ajouter</a>
             </nav>
 
             <div class="flex items-center space-x-3">
@@ -59,7 +60,8 @@
             <nav class="flex flex-col space-y-3">
                 <a href="{% url 'tableau_de_bord' %}" class="text-gray-500 hover:text-gray-800 font-medium text-sm">Accueil</a>
                 <a href="{% url 'bibliotheque' %}" class="text-gray-500 hover:text-gray-800 font-medium text-sm">Sujets</a>
-                <a href="{% url 'ajouter_sujet' %}" class="text-gray-500 hover:text-gray-800 font-medium text-sm">Ajouter un sujet</a>
+                <a href="{% url 'mes_sujets' %}" class="text-gray-500 hover:text-gray-800 font-medium text-sm">Mes sujets</a>
+                <a href="{% url 'ajouter_sujet' %}" class="text-gray-500 hover:text-gray-800 font-medium text-sm">Ajouter</a>
                 {% if user.is_authenticated %}
                 <hr class="border-gray-100">
                 <a href="{% url 'parametres' %}" class="text-sm text-gray-700 font-medium">Paramètres</a>

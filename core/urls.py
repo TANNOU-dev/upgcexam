@@ -10,6 +10,7 @@ urlpatterns = [
     path('', sujets.accueil, name='accueil'),
     path('sujets/', sujets.bibliotheque, name='bibliotheque'),
     path('sujets/recherche/', sujets.recherche, name='recherche'),
+    path('sujets/mes-sujets/', sujets.mes_sujets, name='mes_sujets'),
     path('sujets/ajouter/', sujets.ajouter_sujet, name='ajouter_sujet'),
     path('sujets/modifier/<int:sujet_id>/', sujets.modifier_sujet, name='modifier_sujet'),
     path('sujets/<int:sujet_id>/', sujets.detail_sujet, name='detail_sujet'),

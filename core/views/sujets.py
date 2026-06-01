@@ -428,3 +428,21 @@ def basculer_visibilite(request, sujet_id):
     sujet.save(update_fields=["visibilite"])
     messages.success(request, msg)
     return redirect("detail_sujet", sujet_id=sujet.id)
+
+
+@login_required
+def mes_sujets(request):
+    """Page où l'étudiant voit ses propres soumissions et leur statut."""
+    sujets = (
+        Sujet.objects.filter(publie_par=request.user)
+        .select_related("filiere", "matiere", "niveau")
+        .order_by("-cree_le")
+    )
+    return render(
+        request,
+        "core/mes_sujets.html",
+        {
+            "sujets": sujets,
+            **ctx_retour(request),
+        },
+    )

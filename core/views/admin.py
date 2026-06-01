@@ -24,6 +24,7 @@ from ..models import (
     Utilisateur,
     Verification,
 )
+from .pwa import envoyer_notification_push
 from .shared import _sujets_accessibles, _creer_code_verification, salutation
 
 
@@ -123,6 +124,14 @@ def admin_dashboard(request):
             sujet = Sujet.objects.get(id=sujet_id, statut="en_attente")
             sujet.statut = "actif"
             sujet.save()
+            # Notifier l'étudiant qui a soumis le sujet
+            if sujet.publie_par and sujet.publie_par != request.user:
+                envoyer_notification_push(
+                    sujet.publie_par,
+                    "✅ Sujet validé",
+                    f"Votre sujet « {sujet.titre} » a été validé et publié.",
+                    url=reverse("detail_sujet", args=[sujet.id]),
+                )
             messages.success(request, f"Sujet « {sujet.titre} » validé et publié.")
         except Sujet.DoesNotExist:
             messages.error(request, "Sujet introuvable ou déjà traité.")
@@ -511,14 +520,23 @@ def admin_sujets(request):
             ids_list = [int(x) for x in ids_list if x]
 
             if action == "valider":
-                updated = Sujet.objects.filter(id__in=ids_list, statut="en_attente").update(statut="actif")
-                for sid in ids_list:
+                sujets_a_valider = Sujet.objects.filter(id__in=ids_list, statut="en_attente").select_related("publie_par")
+                updated = sujets_a_valider.update(statut="actif")
+                for sujet_valide in sujets_a_valider:
                     Activite.objects.create(
                         utilisateur=request.user,
                         type="validation",
-                        sujet_id=sid,
-                        description=f"Validation du sujet #{sid}",
+                        sujet=sujet_valide,
+                        description=f"Validation du sujet #{sujet_valide.id}",
                     )
+                    # Notifier l'étudiant
+                    if sujet_valide.publie_par and sujet_valide.publie_par != request.user:
+                        envoyer_notification_push(
+                            sujet_valide.publie_par,
+                            "✅ Sujet validé",
+                            f"Votre sujet « {sujet_valide.titre} » a été validé et publié sur la bibliothèque.",
+                            url=reverse("detail_sujet", args=[sujet_valide.id]),
+                        )
                 messages.success(request, f"{updated} sujet(s) validé(s) et publié(s).")
             elif action == "archiver":
                 updated = Sujet.objects.filter(id__in=ids_list, statut="actif").update(statut="archive")
