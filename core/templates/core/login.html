@@ -1,90 +1,8 @@
-{% load socialaccount %}
-{% get_providers as socialaccount_providers %}
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Connexion — UPGCExam</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
-    <style>
-        * { font-family: 'Inter', sans-serif; }
-        html, body { height: 100%; margin: 0; }
-        body {
-            background-color: #edf0f8;
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-        }
+{% extends "core/base.html" %}
 
-        .input-wrap { position: relative; display: flex; align-items: center; }
-        .input-icon {
-            position: absolute;
-            left: 16px;
-            color: #9ca3af;
-            width: 18px; height: 18px;
-            flex-shrink: 0;
-            pointer-events: none;
-        }
-        .form-input {
-            width: 100%;
-            padding: 14px 16px 14px 46px;
-            background: white;
-            border: 1.5px solid #e5e7eb;
-            border-radius: 10px;
-            font-size: 15px;
-            color: #111827;
-            outline: none;
-            transition: border-color 0.15s, box-shadow 0.15s;
-            font-family: 'Inter', sans-serif;
-        }
-        .form-input::placeholder { color: #9ca3af; }
-        .form-input:focus {
-            border-color: #1d3fa8;
-            box-shadow: 0 0 0 3px rgba(29,63,168,0.09);
-        }
-
-        .btn-submit {
-            width: 100%;
-            padding: 16px;
-            background: #1d3fa8;
-            color: white;
-            border: none;
-            border-radius: 12px;
-            font-size: 16px;
-            font-weight: 700;
-            cursor: pointer;
-            display: flex; align-items: center; justify-content: center; gap: 10px;
-            transition: background 0.15s, box-shadow 0.15s;
-            letter-spacing: 0.01em;
-        }
-        .btn-submit:hover {
-            background: #162e87;
-            box-shadow: 0 4px 20px rgba(29,63,168,0.28);
-        }
-
-        .eye-btn {
-            position: absolute;
-            right: 14px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #9ca3af;
-            background: none;
-            border: none;
-            cursor: pointer;
-            padding: 4px;
-        }
-        .eye-btn:hover { color: #6b7280; }
-        .eye-btn svg { width: 18px; height: 18px; }
-    </style>
-{% include "core/includes/pwa_head.html" %}
-</head>
-<body>
-
-    <main class="flex-1 flex flex-col items-center justify-center px-4 py-16">
+{% block title %}Login | UPGCExam{% endblock %}
+{% block content %}
+<main class="flex-1 flex flex-col items-center justify-center px-4 py-16">
 
         <!-- Logo + tagline -->
         <div class="text-center mb-8">
@@ -101,7 +19,7 @@
             </div>
 
             <!-- Messages Django -->
-    {% include "core/includes/messages.html" %}
+    
 
             <!-- Formulaire -->
             <form method="post" class="space-y-5">
@@ -194,8 +112,6 @@
 
     </main>
 
-{% include "core/includes/footer.html" %}
-
     <script>
         function togglePassword(fieldId, btn) {
             const field = document.getElementById(fieldId);
@@ -212,6 +128,4 @@
             }
         }
     </script>
-{% include "core/includes/pwa_footer.html" %}
-</body>
-</html>
+{% endblock %}

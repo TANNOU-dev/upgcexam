@@ -1,40 +1,8 @@
-{% load nav_tags %}
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UPGCExam - Mes sujets</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <style>
-        * { font-family: 'Inter', sans-serif; }
-    </style>
-{% include "core/includes/pwa_head.html" %}
-</head>
-<body class="bg-[#F5F7FA] min-h-screen">
+{% extends "core/base.html" %}
 
-    {% include "core/includes/navbar.html" %}
-
-        <!-- Mobile nav -->
-        <div id="mobileMenu" class="hidden md:hidden border-t border-gray-100 px-6 py-4 bg-white">
-            <nav class="flex flex-col space-y-3">
-                <a href="{% url 'tableau_de_bord' %}" class="text-gray-500 hover:text-gray-800 font-medium text-sm">Accueil</a>
-                <a href="{% url 'bibliotheque' %}" class="text-gray-500 hover:text-gray-800 font-medium text-sm">Sujets</a>
-                <a href="{% url 'mes_sujets' %}" class="text-[#0037B0] font-semibold text-sm">Mes sujets</a>
-                <a href="{% ajouter_sujet_url %}" class="text-gray-500 hover:text-gray-800 font-medium text-sm">Ajouter</a>
-                {% if user.is_authenticated %}
-                <hr class="border-gray-100">
-                {% include "core/includes/logout_form.html" %}
-                {% else %}
-                <hr class="border-gray-100">
-                <a href="{% url 'connexion' %}?next={{ request.get_full_path|urlencode }}" class="text-sm text-[#0037B0] font-medium">Se connecter</a>
-                <a href="{% url 'inscription' %}?next={{ request.get_full_path|urlencode }}" class="text-sm text-[#0037B0] font-medium">S'inscrire</a>
-                {% endif %}
-            </nav>
-        </div>
-
-    {% include "core/includes/messages.html" %}
+{% block title %}Mes Sujets | UPGCExam{% endblock %}
+{% block content %}
+    
 
     <main class="max-w-7xl mx-auto px-6 py-8">
         <div class="mb-8">
@@ -133,29 +101,4 @@
         </div>
         {% endif %}
     </main>
-
-    {% include "core/includes/footer.html" %}
-
-    <script>
-        function toggleMenu() {
-            const menu = document.getElementById('dropdownMenu');
-            if (menu) menu.classList.toggle('hidden');
-        }
-        document.addEventListener('click', function(e) {
-            const menu = document.getElementById('profileMenu');
-            const dropdown = document.getElementById('dropdownMenu');
-            if (menu && dropdown && !menu.contains(e.target)) {
-                dropdown.classList.add('hidden');
-            }
-        });
-        document.addEventListener('DOMContentLoaded', function() {
-            const btn = document.getElementById('mobileMenuBtn');
-            const menu = document.getElementById('mobileMenu');
-            if (btn && menu) {
-                btn.addEventListener('click', function() { menu.classList.toggle('hidden'); });
-            }
-        });
-    </script>
-{% include "core/includes/pwa_footer.html" %}
-</body>
-</html>
+{% endblock %}

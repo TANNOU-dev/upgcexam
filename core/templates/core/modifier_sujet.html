@@ -1,21 +1,8 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UPGCExam - Modifier le sujet</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <style>
-        * { font-family: 'Inter', sans-serif; }
-    </style>
-{% include "core/includes/pwa_head.html" %}
-</head>
-<body class="bg-[#EDF0F8] min-h-screen">
+{% extends "core/base.html" %}
 
-    {% include "core/includes/navbar.html" %}
-
-    <!-- ============ PAGE ============ -->
+{% block title %}Modifier Sujet | UPGCExam{% endblock %}
+{% block content %}
+<!-- ============ PAGE ============ -->
     <div class="max-w-7xl mx-auto px-6 pt-10 pb-16">
 
         <!-- Badge + titre + retour -->
@@ -36,7 +23,7 @@
         </div>
 
         <!-- Messages -->
-    {% include "core/includes/messages.html" %}
+    
 
         <form method="post" enctype="multipart/form-data">
             {% include "core/includes/hidden_next.html" %}
@@ -180,30 +167,4 @@
         </form>
 
     </div>
-
-    {% include "core/includes/footer.html" %}
-
-    <script>
-        function toggleMenu() {
-            const menu = document.getElementById('dropdownMenu');
-            if (menu) menu.classList.toggle('hidden');
-        }
-        document.addEventListener('click', function(e) {
-            const menu = document.getElementById('profileMenu');
-            const dropdown = document.getElementById('dropdownMenu');
-            if (menu && dropdown && !menu.contains(e.target)) {
-                dropdown.classList.add('hidden');
-            }
-        });
-        document.addEventListener('DOMContentLoaded', function() {
-            const btn = document.getElementById('mobileMenuBtn');
-            const menu = document.getElementById('mobileMenu');
-            if (btn && menu) {
-                btn.addEventListener('click', function() { menu.classList.toggle('hidden'); });
-            }
-        });
-
-    </script>
-{% include "core/includes/pwa_footer.html" %}
-</body>
-</html>
+{% endblock %}

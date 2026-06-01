@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+{% load nav_tags %}<!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
@@ -13,10 +13,23 @@
     <link rel="apple-touch-icon" href="/static/pwa/icon-192.png">
     <style>{% block extra_css %}* { font-family: 'Inter', sans-serif; }{% endblock %}</style>
     {% if user.is_authenticated %}<meta name="user-authenticated" content="true">{% endif %}
+    {% include "core/includes/pwa_head.html" %}
     {% block extra_head %}{% endblock %}
 </head>
 <body class="{% block body_class %}bg-[#F5F7FA] min-h-screen{% endblock %}">
-    {% block body %}{% endblock %}
+
+    {% block navbar %}
+    {% include "core/includes/navbar.html" %}
+    {% endblock %}
+
+    {% include "core/includes/messages.html" %}
+
+    {% block content %}{% endblock %}
+
+    {% block footer %}
+    {% include "core/includes/footer.html" %}
+    {% endblock %}
+
     {% include "core/includes/presence_tracker.html" %}
     <script>
         if ('serviceWorker' in navigator) {
@@ -27,6 +40,7 @@
             });
         }
     </script>
+    {% include "core/includes/pwa_footer.html" %}
     {% block extra_js %}{% endblock %}
 </body>
 </html>

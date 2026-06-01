@@ -1,26 +1,8 @@
-{% load nav_tags %}
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UPGCExam - Accueil</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <style>
-        * { font-family: 'Inter', sans-serif; }
-        html { scroll-behavior: smooth; }
-    </style>
-{% include "core/includes/pwa_head.html" %}
-    {% if user.is_authenticated %}<meta name="user-authenticated" content="true">{% endif %}
-</head>
-<body class="bg-white min-h-screen">
+{% extends "core/base.html" %}
 
-    {% include "core/includes/navbar.html" %}
-
-    {% include "core/includes/messages.html" %}
-
-    <!-- ==================== HERO SECTION ==================== -->
+{% block title %}Accueil | UPGCExam{% endblock %}
+{% block content %}
+<!-- ==================== HERO SECTION ==================== -->
     <section class="relative overflow-hidden">
         <!-- Background gradient -->
         <div class="absolute inset-0 bg-gradient-to-b from-[#E8EEFF] via-[#F4F7FF] to-white pointer-events-none"></div>
@@ -291,32 +273,7 @@
         </div>
     </section>
 
-    {% include "core/includes/footer.html" %}
+    
 
-    {% include "core/includes/presence_tracker.html" %}
     <!-- Scripts -->
-    <script>
-        function toggleMenu() {
-            const menu = document.getElementById('dropdownMenu');
-            if (menu) menu.classList.toggle('hidden');
-        }
-        document.addEventListener('click', function(e) {
-            const menu = document.getElementById('profileMenu');
-            const dropdown = document.getElementById('dropdownMenu');
-            if (menu && dropdown && !menu.contains(e.target)) {
-                dropdown.classList.add('hidden');
-            }
-        });
-        document.addEventListener('DOMContentLoaded', function() {
-            const btn = document.getElementById('mobileMenuBtn');
-            const menu = document.getElementById('mobileMenu');
-            if (btn && menu) {
-                btn.addEventListener('click', function() {
-                    menu.classList.toggle('hidden');
-                });
-            }
-        });
-    </script>
-{% include "core/includes/pwa_footer.html" %}
-</body>
-</html>
+{% endblock %}

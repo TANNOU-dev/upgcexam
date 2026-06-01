@@ -1,31 +1,7 @@
 {% extends "core/base.html" %}
 {% block title %}UPGCExam - Tableau de bord{% endblock %}
 {% block body_class %}bg-[#F5F7FA] min-h-screen{% endblock %}
-{% block extra_head %}{% include "core/includes/pwa_head.html" %}{% endblock %}
-{% block body %}
-    {% include "core/includes/navbar.html" %}
-
-    {% include "core/includes/messages.html" %}
-
-    <script>
-        function toggleMenu() {
-            document.getElementById('dropdownMenu').classList.toggle('hidden');
-        }
-        document.addEventListener('click', function(e) {
-            const menu = document.getElementById('profileMenu');
-            const dropdown = document.getElementById('dropdownMenu');
-            if (menu && dropdown && !menu.contains(e.target)) {
-                dropdown.classList.add('hidden');
-            }
-        });
-        document.addEventListener('DOMContentLoaded', function() {
-            const btn = document.getElementById('mobileMenuBtn');
-            const menu = document.getElementById('mobileMenu');
-            if (btn && menu) {
-                btn.addEventListener('click', function() { menu.classList.toggle('hidden'); });
-            }
-        });
-    </script>
+{% block content %}
 
     <main class="max-w-7xl mx-auto px-6 py-8">
         <!-- Message de bienvenue -->
@@ -98,7 +74,6 @@
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-8">
             <div class="bg-white rounded-xl shadow-sm p-4 sm:p-6">
                 <h3 class="text-sm font-bold text-[#0B1C30] mb-3">Temps d'activité cette semaine</h3>
-                <!-- Header : Aujourd'hui / Cette semaine (side by side) -->
                 <div class="grid grid-cols-2 gap-4 mb-3 sm:mb-4" data-activity-headers>
                     <div>
                         <p class="text-[9px] sm:text-[10px] font-semibold tracking-wider text-gray-400 uppercase">Aujourd'hui</p>
@@ -111,16 +86,15 @@
                         <p class="text-[10px] sm:text-[11px] text-gray-400 mt-0.5">SEMAINE MOYENNE {{ moyenne_semaine }}</p>
                     </div>
                 </div>
-                <!-- Barres d'activité (sans échelle) -->
-                    <div class="flex items-end h-32 sm:h-40" style="padding-left: 2px;" data-activity-bars>
-                        {% for jour, hauteur, hauteur_px, temps in activite %}
-                        <div class="flex flex-col items-center h-full justify-end flex-1 px-px sm:px-0.5">
-                            <div class="w-full rounded-t-md transition-all duration-300 hover:opacity-80 cursor-pointer" style="height: {{ hauteur_px }}px; min-height: {% if hauteur > 0 %}8px{% else %}2px{% endif %}; background: {% if hauteur > 0 %}linear-gradient(180deg, #0037B0, #4F8CFF){% else %}#E5E7EB{% endif %};">
-                            </div>
-                            <span class="text-[9px] sm:text-[10px] text-gray-400 mt-1.5 font-medium">{{ jour|slice:":3" }}</span>
+                <div class="flex items-end h-32 sm:h-40" style="padding-left: 2px;" data-activity-bars>
+                    {% for jour, hauteur, hauteur_px, temps in activite %}
+                    <div class="flex flex-col items-center h-full justify-end flex-1 px-px sm:px-0.5">
+                        <div class="w-full rounded-t-md transition-all duration-300 hover:opacity-80 cursor-pointer" style="height: {{ hauteur_px }}px; min-height: {% if hauteur > 0 %}8px{% else %}2px{% endif %}; background: {% if hauteur > 0 %}linear-gradient(180deg, #0037B0, #4F8CFF){% else %}#E5E7EB{% endif %};">
                         </div>
-                        {% endfor %}
+                        <span class="text-[9px] sm:text-[10px] text-gray-400 mt-1.5 font-medium">{{ jour|slice:":3" }}</span>
                     </div>
+                    {% endfor %}
+                </div>
             </div>
             <div class="bg-white rounded-xl shadow-sm p-6">
                 <div class="flex justify-between items-center mb-4">
@@ -140,13 +114,11 @@
                     </div>
                     {% endfor %}
                 </div>
-
             </div>
         </div>
 
         <!-- Grille : Sujets recommandés + Activités récentes -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-            <!-- Sujets recommandés -->
             <div class="bg-white rounded-xl shadow-sm p-6">
                 <div class="flex justify-between items-center mb-5">
                     <h3 class="text-sm font-bold text-[#0B1C30]">Sujets recommandés</h3>
@@ -171,8 +143,6 @@
                     {% endfor %}
                 </div>
             </div>
-
-            <!-- Activités récentes -->
             <div class="bg-white rounded-xl shadow-sm p-6">
                 <div class="flex justify-between items-center mb-5">
                     <h3 class="text-sm font-bold text-[#0B1C30]">Activités récentes</h3>
@@ -210,16 +180,12 @@
                 </div>
             </div>
         </div>
-
     </main>
 
-    {% include "core/includes/footer.html" %}
-{% include "core/includes/pwa_footer.html" %}
-
+{% block extra_js %}
 <script>
 (function() {
     'use strict';
-    // Mise à jour temps réel des barres d'activité (toutes les 30s)
     var barsContainer = document.querySelector('[data-activity-bars]');
     if (!barsContainer) return;
     var barEls = barsContainer.querySelectorAll(':scope > div > .w-full.rounded-t-md');
@@ -249,4 +215,5 @@
     }
 })();
 </script>
+{% endblock %}
 {% endblock %}

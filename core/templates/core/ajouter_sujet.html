@@ -1,21 +1,8 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UPGCExam - Ajouter un sujet</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <style>
-        * { font-family: 'Inter', sans-serif; }
-    </style>
-{% include "core/includes/pwa_head.html" %}
-</head>
-<body class="bg-[#F5F7FA] min-h-screen">
+{% extends "core/base.html" %}
 
-    {% include "core/includes/navbar.html" %}
-
-    <!-- ==================== HERO ==================== -->
+{% block title %}Ajouter Sujet | UPGCExam{% endblock %}
+{% block content %}
+<!-- ==================== HERO ==================== -->
     <div class="bg-gradient-to-b from-[#E8EEFF] via-[#F4F7FF] to-white">
         <div class="max-w-7xl mx-auto px-6 pt-12 pb-8">
             <p class="text-xs font-bold text-[#0037B0] tracking-[0.2em] mb-3">ESPACE ACADÉMIQUE</p>
@@ -36,7 +23,7 @@
                     {% csrf_token %}
                     {% include "core/includes/hidden_next.html" %}
 
-    {% include "core/includes/messages.html" %}
+    
 
                     <!-- Titre -->
                     <div class="mb-6">
@@ -138,56 +125,8 @@
         </div>
     </main>
 
-    {% include "core/includes/footer.html" %}
+    
 
-    <script>
-        function toggleMenu() {
-            const menu = document.getElementById('dropdownMenu');
-            if (menu) menu.classList.toggle('hidden');
-        }
-        document.addEventListener('click', function(e) {
-            const menu = document.getElementById('profileMenu');
-            const dropdown = document.getElementById('dropdownMenu');
-            if (menu && dropdown && !menu.contains(e.target)) {
-                dropdown.classList.add('hidden');
-            }
-        });
-        document.addEventListener('DOMContentLoaded', function() {
-            const btn = document.getElementById('mobileMenuBtn');
-            const menu = document.getElementById('mobileMenu');
-            if (btn && menu) {
-                btn.addEventListener('click', function() { menu.classList.toggle('hidden'); });
-            }
-            // Drag & drop
-            const dropZone = document.getElementById('dropZone');
-            const fileInput = document.getElementById('fichier_pdf');
-            const fileName = document.getElementById('fileName');
-            if (dropZone && fileInput) {
-                ['dragenter', 'dragover'].forEach(name => {
-                    dropZone.addEventListener(name, e => { e.preventDefault(); dropZone.classList.add('border-[#0037B0]', 'bg-blue-50/30'); });
-                });
-                ['dragleave', 'drop'].forEach(name => {
-                    dropZone.addEventListener(name, e => { e.preventDefault(); dropZone.classList.remove('border-[#0037B0]', 'bg-blue-50/30'); });
-                });
-                dropZone.addEventListener('drop', e => {
-                    if (e.dataTransfer.files.length) {
-                        fileInput.files = e.dataTransfer.files;
-                        fileName.textContent = e.dataTransfer.files[0].name;
-                        fileName.classList.remove('hidden');
-                    }
-                });
-                fileInput.addEventListener('change', function() {
-                    if (this.files.length) {
-                        fileName.textContent = this.files[0].name;
-                        fileName.classList.remove('hidden');
-                    }
-                });
-                dropZone.addEventListener('click', () => fileInput.click());
-            }
-        });
-    </script>
+    
     {% comment %} Suppression du select matiere — saisie libre remplace {% endcomment %}
-
-{% include "core/includes/pwa_footer.html" %}
-</body>
-</html>
+{% endblock %}

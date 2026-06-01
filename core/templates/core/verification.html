@@ -1,30 +1,8 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UPGCExam - Vérification</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <style>
-        * { font-family: 'Inter', sans-serif; }
-        .otp-input {
-            width: 48px;
-            height: 56px;
-            text-align: center;
-            font-size: 1.25rem;
-            font-weight: 700;
-        }
-        .otp-input:focus {
-            outline: none;
-            border-color: #0037B0;
-            box-shadow: 0 0 0 3px rgba(0, 55, 176, 0.15);
-        }
-    </style>
-{% include "core/includes/pwa_head.html" %}
-</head>
-<body class="min-h-screen bg-[#F0F4FF] flex items-center justify-center px-4">
-    <div class="w-full max-w-md">
+{% extends "core/base.html" %}
+
+{% block title %}Verification | UPGCExam{% endblock %}
+{% block content %}
+<div class="w-full max-w-md">
         <!-- Logo -->
         <div class="text-center mb-8">
             <h1 class="text-3xl font-black text-[#0037B0]">UPGCExam</h1>
@@ -44,7 +22,7 @@
                 <p class="text-sm font-semibold text-gray-700">{{ email }}</p>
             </div>
 
-    {% include "core/includes/messages.html" %}
+    
 
             <form method="post" class="space-y-6">
                 {% csrf_token %}
@@ -103,6 +81,4 @@
             });
         });
     </script>
-{% include "core/includes/pwa_footer.html" %}
-</body>
-</html>
+{% endblock %}

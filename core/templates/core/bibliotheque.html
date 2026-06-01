@@ -1,23 +1,9 @@
-{% load nav_tags %}
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UPGCExam - Bibliothèque</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <style>
-        * { font-family: 'Inter', sans-serif; }
-    </style>
-{% include "core/includes/pwa_head.html" %}
-</head>
-<body class="bg-[#F5F7FA] min-h-screen">
+{% extends "core/base.html" %}
 
-    {% include "core/includes/navbar.html" %}
-
-    <!-- ==================== MESSAGES ==================== -->
-    {% include "core/includes/messages.html" %}
+{% block title %}Bibliotheque | UPGCExam{% endblock %}
+{% block content %}
+<!-- ==================== MESSAGES ==================== -->
+    
 
     <!-- ==================== MAIN CONTENT ==================== -->
     <main class="max-w-7xl mx-auto px-6 py-8">
@@ -211,32 +197,4 @@
         {% endif %}
 
     </main>
-
-    {% include "core/includes/footer.html" %}
-
-    <script>
-        // Profile menu toggle
-        function toggleMenu() {
-            const menu = document.getElementById('dropdownMenu');
-            if (menu) menu.classList.toggle('hidden');
-        }
-        document.addEventListener('click', function(e) {
-            const menu = document.getElementById('profileMenu');
-            const dropdown = document.getElementById('dropdownMenu');
-            if (menu && dropdown && !menu.contains(e.target)) {
-                dropdown.classList.add('hidden');
-            }
-        });
-
-        // Mobile menu toggle
-        document.addEventListener('DOMContentLoaded', function() {
-            const btn = document.getElementById('mobileMenuBtn');
-            const menu = document.getElementById('mobileMenu');
-            if (btn && menu) {
-                btn.addEventListener('click', function() { menu.classList.toggle('hidden'); });
-            }
-        });
-    </script>
-{% include "core/includes/pwa_footer.html" %}
-</body>
-</html>
+{% endblock %}
