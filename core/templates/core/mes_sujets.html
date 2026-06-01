@@ -136,11 +136,12 @@
                                 </span>
                                 {% endif %}
                             </td>
-                            <td class="px-6 py-4 text-right">
+                            <td class="px-6 py-4 text-right space-x-3">
+                                {% if sujet.statut != "archive" %}
+                                <a href="{% url 'modifier_sujet' sujet.id %}" class="text-xs font-semibold text-[#F59E0B] hover:underline">Modifier</a>
+                                {% endif %}
                                 {% if sujet.statut == "actif" %}
                                 <a href="{% detail_sujet_url sujet.id %}" class="text-xs font-semibold text-[#0037B0] hover:underline">Voir →</a>
-                                {% else %}
-                                <span class="text-xs text-gray-400">—</span>
                                 {% endif %}
                             </td>
                         </tr>
