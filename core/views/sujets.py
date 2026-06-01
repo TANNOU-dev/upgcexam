@@ -275,26 +275,44 @@ def modifier_sujet(request, sujet_id):
             sujet.fichier_pdf = fichier
 
         # Seuls les admins peuvent changer la visibilite
-        # Les modifs d'un non-admin replacent le sujet en attente de validation
         if request.user.is_staff:
             sujet.visibilite = visibilite
             sujet.save()
             messages.success(request, "Sujet modifié avec succès.")
             return redirect_apres_sujet(request, sujet=sujet, defaut="detail_sujet")
-        else:
-            sujet.statut = "en_attente"
-            sujet.save()
-            messages.success(request, "✅ Modifications enregistrées. En attente.")
-            # Notifier les admins
-            admins = User.objects.filter(is_staff=True)
-            for admin in admins:
-                envoyer_notification_push(
-                    admin,
-                    "🔄 Sujet modifié — en attente",
-                    f"{sujet.titre} — {sujet.matiere.nom}",
-                    url="/administration/sujets/",
-                )
-            return redirect(reverse("bibliotheque") + query_bibliotheque(request))
+
+        # Pour un non-admin : ne remettre en attente QUE si des champs ont changé
+        original = Sujet.objects.get(id=sujet.id)  # état avant modif
+        a_change = (
+            (titre and titre != original.titre)
+            or (filiere_id and int(filiere_id) != original.filiere_id)
+            or (
+                nom_matiere
+                and nom_matiere.lower() != (original.matiere.nom.lower() if original.matiere else "")
+            )
+            or (niveau_id and int(niveau_id) != original.niveau_id)
+            or (annee_academique and annee_academique != original.annee_academique)
+            or description != original.description
+            or fichier is not None
+        )
+
+        if not a_change:
+            messages.info(request, "Aucune modification détectée.")
+            return redirect_apres_sujet(request, sujet=sujet, defaut="detail_sujet")
+
+        sujet.statut = "en_attente"
+        sujet.save()
+        messages.success(request, "✅ Modifications enregistrées. En attente de validation.")
+        # Notifier les admins
+        admins = User.objects.filter(is_staff=True)
+        for admin in admins:
+            envoyer_notification_push(
+                admin,
+                "🔄 Sujet modifié — en attente",
+                f"{sujet.titre} — {sujet.matiere.nom}",
+                url="/administration/sujets/",
+            )
+        return redirect(reverse("bibliotheque") + query_bibliotheque(request))
 
     retour = ctx_retour(request)
     if not request.GET.get("next"):
