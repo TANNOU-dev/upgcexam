@@ -105,3 +105,21 @@
         </nav>
     </div>
 </header>
+
+<script>
+function toggleMenu() {
+    var menu = document.getElementById('dropdownMenu');
+    if (menu) {
+        menu.classList.toggle('hidden');
+    }
+}
+
+// Fermer le menu en cliquant ailleurs
+document.addEventListener('click', function(e) {
+    var menu = document.getElementById('dropdownMenu');
+    var btn = document.getElementById('profileMenu');
+    if (menu && btn && !btn.contains(e.target)) {
+        menu.classList.add('hidden');
+    }
+});
+</script>
