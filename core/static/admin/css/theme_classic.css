@@ -1,0 +1,162 @@
+/* === Thème classique Django pour admin Django 6 === */
+
+/* Barre latérale / Navigation */
+.sidebar, [class*="sidebar"], nav[class*="sidebar"], .dashboard #content {
+    background-color: #f8f9fa !important;
+    border-right: 1px solid #e2e6ea !important;
+}
+
+/* Header / Branding */
+#header, .dashboard #header {
+    background: #417690 !important;
+    color: #fff !important;
+    border-bottom: 1px solid #305d7a !important;
+}
+
+#branding h1 {
+    color: #fff !important;
+    font-weight: 600 !important;
+}
+
+#branding h1 a:link, #branding h1 a:visited {
+    color: #fff !important;
+}
+
+/* Modules (sections) */
+.module h2, .module caption, .inline-group h2 {
+    background: #79aec8 !important;
+    color: #fff !important;
+    padding: 8px 12px !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    border-radius: 4px 4px 0 0 !important;
+}
+
+.module {
+    background: #fff !important;
+    border: 1px solid #e2e6ea !important;
+    border-radius: 4px !important;
+    margin-bottom: 20px !important;
+}
+
+/* Liens */
+a:link, a:visited {
+    color: #447e9b !important;
+}
+
+a:hover {
+    color: #036 !important;
+}
+
+/* Boutons */
+.button, input[type=submit], input[type=button], .submit-row input {
+    background: #79aec8 !important;
+    border: none !important;
+    color: #fff !important;
+    padding: 10px 15px !important;
+    border-radius: 4px !important;
+    font-size: 13px !important;
+}
+
+.button:hover, input[type=submit]:hover {
+    background: #609ab6 !important;
+}
+
+.button.default, input[type=submit].default {
+    background: #417690 !important;
+}
+
+.button.default:hover {
+    background: #305d7a !important;
+}
+
+/* Tableaux */
+#changelist table thead th {
+    background: #f8f9fa !important;
+    color: #333 !important;
+    border-bottom: 2px solid #e2e6ea !important;
+}
+
+#changelist table tbody tr:nth-child(odd) {
+    background: #fff !important;
+}
+
+#changelist table tbody tr:nth-child(even) {
+    background: #f8f9fa !important;
+}
+
+/* Messages */
+.success {
+    background: #dff0d8 !important;
+    border: 1px solid #d6e9c6 !important;
+    color: #3c763d !important;
+}
+
+.warning {
+    background: #fcf8e3 !important;
+    border: 1px solid #faebcc !important;
+    color: #8a6d3b !important;
+}
+
+.error {
+    background: #f2dede !important;
+    border: 1px solid #ebccd1 !important;
+    color: #a94442 !important;
+}
+
+/* Footer */
+#footer {
+    border-top: 1px solid #e2e6ea !important;
+    background: #f8f9fa !important;
+    padding: 10px !important;
+}
+
+/* Breadcrumbs */
+div.breadcrumbs {
+    background: #79aec8 !important;
+    color: #fff !important;
+    padding: 10px 40px !important;
+    font-size: 13px !important;
+}
+
+div.breadcrumbs a {
+    color: #fff !important;
+}
+
+/* Object tools */
+ul.object-tools a {
+    background: #79aec8 !important;
+    color: #fff !important;
+    padding: 8px 14px !important;
+    border-radius: 4px !important;
+    font-size: 12px !important;
+}
+
+ul.object-tools a:hover {
+    background: #609ab6 !important;
+}
+
+/* Pagination */
+.paginator {
+    border-top: 1px solid #e2e6ea !important;
+    padding: 10px !important;
+    background: #f8f9fa !important;
+}
+
+.paginator a, .paginator span {
+    padding: 6px 12px !important;
+    border: 1px solid #e2e6ea !important;
+    border-radius: 3px !important;
+    margin: 0 2px !important;
+}
+
+.paginator a {
+    background: #fff !important;
+    color: #447e9b !important;
+}
+
+.paginator .this-page {
+    background: #79aec8 !important;
+    color: #fff !important;
+    border-color: #79aec8 !important;
+}
