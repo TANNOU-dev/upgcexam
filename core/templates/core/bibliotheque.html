@@ -14,72 +14,7 @@
 </head>
 <body class="bg-[#F5F7FA] min-h-screen">
 
-    <!-- ==================== HEADER / NAVBAR ==================== -->
-    <header class="bg-white border-b border-gray-200">
-        <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-            <!-- Logo -->
-            <a href="{% url 'accueil' %}" class="text-xl font-black text-[#0037B0] tracking-tight flex-shrink-0">UPGCExam</a>
-
-            <!-- Nav links (desktop) -->
-            <nav class="hidden md:flex items-center space-x-8">
-                <a href="{% if user.is_authenticated %}{% url 'tableau_de_bord' %}{% else %}{% url 'accueil' %}{% endif %}" class="text-gray-500 hover:text-gray-800 font-medium text-sm">Accueil</a>
-                <a href="{% url 'bibliotheque' %}" class="text-[#0037B0] font-semibold text-sm border-b-2 border-[#0037B0]">Sujets</a>
-                <a href="{% url 'mes_sujets' %}" class="text-gray-500 hover:text-gray-800 font-medium text-sm">Mes sujets</a>
-                <a href="{% ajouter_sujet_url %}" class="text-gray-500 hover:text-gray-800 font-medium text-sm">Ajouter</a>
-            </nav>
-
-            <!-- Actions -->
-            <div class="flex items-center space-x-3">
-                {% if user.is_authenticated %}
-                <div class="relative" id="profileMenu">
-                    <button onclick="toggleMenu()" class="w-9 h-9 bg-[#0037B0] rounded-full flex items-center justify-center text-white text-sm font-bold hover:bg-[#002A8A] transition cursor-pointer">
-                        {{ user.username|first|upper }}
-                    </button>
-                    <div id="dropdownMenu" class="hidden absolute right-0 mt-2 w-44 bg-white rounded-xl shadow-lg border border-gray-100 py-2 z-50">
-                        <div class="px-4 py-2 border-b border-gray-100">
-                            <p class="text-sm font-semibold text-gray-900">{{ user.username }}</p>
-                            <p class="text-xs text-gray-400">{{ user.email }}</p>
-                        </div>
-                        <a href="{% url 'parametres' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Paramètres</a>
-                        <hr class="my-1 border-gray-100">
-                        {% include "core/includes/logout_form.html" with form_class="block" button_class="w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-red-50 bg-transparent border-0 cursor-pointer" %}
-                    </div>
-                </div>
-                {% else %}
-                <a href="{% url 'connexion' %}"
-                   class="hidden sm:inline-flex text-sm font-semibold text-gray-700 border border-gray-300 hover:border-gray-400 hover:bg-gray-50 px-4 py-2 rounded-lg transition">
-                    Connexion
-                </a>
-                <a href="{% url 'inscription' %}"
-                   class="text-sm font-bold text-white bg-[#0037B0] hover:bg-[#002A8A] px-4 py-2 rounded-lg transition shadow-sm">
-                    Inscription
-                </a>
-                {% endif %}
-                <button id="mobileMenuBtn" class="md:hidden p-2 text-gray-500 hover:text-gray-800">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
-                    </svg>
-                </button>
-            </div>
-        </div>
-
-        <!-- Mobile nav -->
-        <div id="mobileMenu" class="hidden md:hidden border-t border-gray-100 px-6 py-4 bg-white">
-            <nav class="flex flex-col space-y-3">
-                <a href="{% if user.is_authenticated %}{% url 'tableau_de_bord' %}{% else %}{% url 'accueil' %}{% endif %}" class="text-gray-500 hover:text-gray-800 font-medium text-sm">Accueil</a>
-                <a href="{% url 'bibliotheque' %}" class="text-[#0037B0] font-semibold text-sm">Sujets</a>
-                <a href="{% url 'mes_sujets' %}" class="text-gray-500 hover:text-gray-800 font-medium text-sm">Mes sujets</a>
-                <a href="{% ajouter_sujet_url %}" class="text-gray-500 hover:text-gray-800 font-medium text-sm">Ajouter</a>
-                <hr class="border-gray-100">
-                {% if user.is_authenticated %}
-                {% include "core/includes/logout_form.html" %}
-                {% else %}
-                <a href="{% url 'connexion' %}" class="text-sm font-semibold text-gray-700">Connexion</a>
-                <a href="{% url 'inscription' %}" class="text-sm font-bold text-white bg-[#0037B0] hover:bg-[#002A8A] px-4 py-2 rounded-lg text-center transition">Inscription</a>
-                {% endif %}
-            </nav>
-        </div>
-    </header>
+    {% include "core/includes/navbar.html" %}
 
     <!-- ==================== MESSAGES ==================== -->
     {% if messages %}

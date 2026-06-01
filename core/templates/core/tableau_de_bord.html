@@ -3,61 +3,7 @@
 {% block body_class %}bg-[#F5F7FA] min-h-screen{% endblock %}
 {% block extra_head %}{% include "core/includes/pwa_head.html" %}{% endblock %}
 {% block body %}
-    <!-- HEADER : Logo à gauche, Navigation centrée, Avatar à droite -->
-    <header class="bg-white border-b border-gray-200">
-        <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-            <a href="{% url 'accueil' %}" class="text-xl font-black text-[#0037B0] tracking-tight flex-shrink-0">UPGCExam</a>
-
-            <nav class="hidden md:flex items-center space-x-8">
-                <a href="{% url 'tableau_de_bord' %}" class="text-[#0037B0] font-semibold text-sm border-b-2 border-[#0037B0] pb-1">Accueil</a>
-                <a href="{% url 'bibliotheque' %}" class="text-gray-500 hover:text-gray-700 font-medium text-sm">Sujets</a>
-                <a href="{% url 'ajouter_sujet' %}" class="text-gray-500 hover:text-gray-700 font-medium text-sm">Ajouter un sujet</a>
-                {% if request.user.is_staff %}
-                <a href="{% url 'admin_dashboard' %}" class="text-orange-500 hover:text-orange-600 font-medium text-sm">Admin</a>
-                {% endif %}
-            </nav>
-
-            <div class="flex items-center space-x-3">
-
-                <div class="relative" id="profileMenu">
-                    <button onclick="toggleMenu()" class="w-9 h-9 bg-[#0037B0] rounded-full flex items-center justify-center text-white text-sm font-bold hover:bg-[#002A8A] transition cursor-pointer">
-                        {{ request.user.username|first|upper }}
-                    </button>
-                    <div id="dropdownMenu" class="hidden absolute right-0 mt-2 w-44 bg-white rounded-xl shadow-lg border border-gray-100 py-2 z-50">
-                        <div class="px-4 py-2 border-b border-gray-100">
-                            <p class="text-sm font-semibold text-gray-900">{{ request.user.username }}</p>
-                            <p class="text-xs text-gray-400">{{ request.user.email }}</p>
-                        </div>
-                        <a href="{% url 'parametres' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Paramètres du compte</a>
-                        {% if request.user.is_staff %}
-                        <a href="{% url 'admin_dashboard' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Administration</a>
-                        {% endif %}
-                        <hr class="my-1 border-gray-100">
-                        {% include "core/includes/logout_form.html" with form_class="block" button_class="w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-red-50 bg-transparent border-0 cursor-pointer" %}
-                    </div>
-                </div>
-                <button id="mobileMenuBtn" class="md:hidden p-2 text-gray-500 hover:text-gray-800">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
-                    </svg>
-                </button>
-        </div>
-        </div>
-        <!-- Mobile nav -->
-        <div id="mobileMenu" class="hidden md:hidden border-t border-gray-100 px-6 py-4 bg-white">
-            <nav class="flex flex-col space-y-3">
-                <a href="{% url 'tableau_de_bord' %}" class="text-[#0037B0] font-semibold text-sm">Accueil</a>
-                <a href="{% url 'bibliotheque' %}" class="text-gray-500 hover:text-gray-800 font-medium text-sm">Sujets</a>
-                <a href="{% url 'ajouter_sujet' %}" class="text-gray-500 hover:text-gray-800 font-medium text-sm">Ajouter un sujet</a>
-                {% if request.user.is_staff %}
-                <a href="{% url 'admin_dashboard' %}" class="text-orange-500 font-medium text-sm">Admin</a>
-                {% endif %}
-                <hr class="border-gray-100">
-                <a href="{% url 'parametres' %}" class="text-sm text-gray-700 font-medium">Paramètres</a>
-                {% include "core/includes/logout_form.html" %}
-            </nav>
-        </div>
-    </header>
+    {% include "core/includes/navbar.html" %}
 
     {% if messages %}
     <div class="max-w-7xl mx-auto px-6 pt-6">
