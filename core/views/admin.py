@@ -25,7 +25,7 @@ from ..models import (
     Verification,
 )
 from .pwa import envoyer_notification_push
-from .shared import _sujets_accessibles, _creer_code_verification, salutation
+from .shared import _sujets_accessibles, _creer_code_verification, salutation, _annees_actives
 
 
 @login_required
@@ -617,9 +617,7 @@ def admin_sujets(request):
         {
             "sujets": sujets_page,
             "filieres": Filiere.objects.all(),
-            "annees": Sujet.objects.values_list("annee_academique", flat=True)
-            .distinct()
-            .order_by("-annee_academique"),
+            "annees": _annees_actives(Sujet.objects.all()),
             "filtre_statut": filtre_statut,
             "filtre_filiere": filtre_filiere,
             "filtre_annee": filtre_annee,

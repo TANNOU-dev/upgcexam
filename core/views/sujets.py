@@ -3,7 +3,6 @@ Vues publiques : accueil, bibliothèque/recherche, sujets (CRUD étudiant).
 """
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.models import User
 from django.core.paginator import Paginator
 from django.db.models import F, Q
 from django.http import FileResponse, Http404
@@ -19,9 +18,7 @@ from ..navigation import (
     redirect_apres_sujet,
     safe_next_url,
 )
-from ..utils import est_fichier_pdf
-from .shared import _sujets_accessibles, _get_sujet_modifiable, _creer_code_verification
-from .pwa import envoyer_notification_push
+from .shared import _sujets_accessibles, _get_sujet_modifiable, _creer_code_verification, _annees_actives, valider_fichier_pdf, notifier_admins
 
 
 def accueil(request):
@@ -81,12 +78,7 @@ def bibliotheque(request):
 
     filieres = Filiere.objects.all()
     matieres = Matiere.objects.select_related("filiere").all()
-    annees_list = (
-        _sujets_accessibles(request)
-        .values_list("annee_academique", flat=True)
-        .distinct()
-        .order_by("-annee_academique")
-    )
+    annees_list = _annees_actives(_sujets_accessibles(request))
 
     return render(
         request,
@@ -110,9 +102,7 @@ def recherche(request):
     query = request.GET.get("q", "").strip()
     filieres = Filiere.objects.all()
     sujets_base = _sujets_accessibles(request)
-    annees = (
-        sujets_base.values_list("annee_academique", flat=True).distinct().order_by("-annee_academique")
-    )
+    annees = _annees_actives(sujets_base)
 
     resultats = sujets_base.none()
     if query:
@@ -148,12 +138,7 @@ def recherche(request):
 def ajouter_sujet(request):
     filieres = Filiere.objects.all()
     niveaux = Niveau.objects.all()
-    annees = (
-        Sujet.objects.filter(statut="actif")
-        .values_list("annee_academique", flat=True)
-        .distinct()
-        .order_by("-annee_academique")
-    )
+    annees = _annees_actives()
 
     if request.method == "POST":
         titre = request.POST.get("titre", "").strip()
@@ -165,10 +150,9 @@ def ajouter_sujet(request):
 
         if not all([titre, filiere_id, nom_matiere, niveau_id, annee_academique, fichier]):
             messages.error(request, "Tous les champs sont obligatoires.")
-        elif fichier.size > 10 * 1024 * 1024:
-            messages.error(request, "Le fichier PDF ne doit pas dépasser 10 Mo.")
-        elif not est_fichier_pdf(fichier):
-            messages.error(request, "Seuls les fichiers PDF valides sont acceptés.")
+        ok, err = valider_fichier_pdf(fichier)
+        if not ok:
+            messages.error(request, err)
         else:
             matiere, _ = Matiere.objects.get_or_create(
                 nom__iexact=nom_matiere,
@@ -194,10 +178,7 @@ def ajouter_sujet(request):
             )
             messages.success(request, "✅ Sujet ajouté avec succès ! En attente.")
             # Notifier les admins
-            admins = User.objects.filter(is_staff=True)
-            for admin in admins:
-                envoyer_notification_push(
-                    admin,
+            notifier_admins(
                     "🆕 Nouveau sujet en attente",
                     f"{titre} — {nom_matiere}",
                     url=reverse("admin_sujets"),
@@ -223,12 +204,7 @@ def modifier_sujet(request, sujet_id):
     filieres = Filiere.objects.all()
     matieres = Matiere.objects.all()
     niveaux = Niveau.objects.all()
-    annees = (
-        Sujet.objects.filter(statut="actif")
-        .values_list("annee_academique", flat=True)
-        .distinct()
-        .order_by("-annee_academique")
-    )
+    annees = _annees_actives()
 
     if request.method == "POST":
         if "archiver" in request.POST:
@@ -266,11 +242,9 @@ def modifier_sujet(request, sujet_id):
             sujet.annee_academique = annee_academique
         sujet.description = description
         if fichier:
-            if fichier.size > 10 * 1024 * 1024:
-                messages.error(request, "Le fichier PDF ne doit pas dépasser 10 Mo.")
-                return redirect("modifier_sujet", sujet_id=sujet.id)
-            if not est_fichier_pdf(fichier):
-                messages.error(request, "Seuls les fichiers PDF valides sont acceptés.")
+            ok, err = valider_fichier_pdf(fichier)
+            if not ok:
+                messages.error(request, err)
                 return redirect("modifier_sujet", sujet_id=sujet.id)
             sujet.fichier_pdf = fichier
 
@@ -304,10 +278,7 @@ def modifier_sujet(request, sujet_id):
         sujet.save()
         messages.success(request, "✅ Modifications enregistrées. En attente de validation.")
         # Notifier les admins
-        admins = User.objects.filter(is_staff=True)
-        for admin in admins:
-            envoyer_notification_push(
-                admin,
+        notifier_admins(
                 "🔄 Sujet modifié — en attente",
                 f"{sujet.titre} — {sujet.matiere.nom}",
                 url=reverse("admin_sujets"),
