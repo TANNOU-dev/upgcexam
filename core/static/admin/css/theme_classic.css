@@ -1,46 +1,92 @@
-/* === Thème classique Django pour admin Django 6 === */
+/* ====================================================
+   Thème classique Django pour admin Django 6
+   Cible les IDs et classes réels du HTML Django 6
+   ==================================================== */
 
-/* Barre latérale / Navigation */
-.sidebar, [class*="sidebar"], nav[class*="sidebar"], .dashboard #content {
-    background-color: #f8f9fa !important;
-    border-right: 1px solid #e2e6ea !important;
-}
-
-/* Header / Branding */
-#header, .dashboard #header {
+/* ── En-tête (header) : bleu foncé comme Django 5 ── */
+#header {
     background: #417690 !important;
     color: #fff !important;
-    border-bottom: 1px solid #305d7a !important;
+    border-bottom: 4px solid #79aec8 !important;
+    padding: 15px 30px !important;
 }
 
 #branding h1 {
     color: #fff !important;
     font-weight: 600 !important;
+    font-size: 18px !important;
+    margin: 0 !important;
+    padding: 0 !important;
 }
 
-#branding h1 a:link, #branding h1 a:visited {
+#branding h1 a:link,
+#branding h1 a:visited {
     color: #fff !important;
+    text-decoration: none !important;
 }
 
-/* Modules (sections) */
-.module h2, .module caption, .inline-group h2 {
+#user-tools {
+    color: #e8f0fe !important;
+    font-size: 13px !important;
+}
+
+#user-tools a {
+    color: #fff !important;
+    text-decoration: underline !important;
+}
+
+/* ── Barre de navigation latérale ── */
+#nav-sidebar {
+    background: #f8f9fa !important;
+    border-right: 1px solid #dee2e6 !important;
+    padding: 10px !important;
+}
+
+.toggle-nav-sidebar {
+    background: #f8f9fa !important;
+    border: 1px solid #dee2e6 !important;
+    color: #447e9b !important;
+}
+
+/* ── Titres de modules (sections) ── */
+.module caption,
+.module h2,
+.inline-group h2 {
     background: #79aec8 !important;
     color: #fff !important;
     padding: 8px 12px !important;
     font-size: 13px !important;
     font-weight: 600 !important;
     border-radius: 4px 4px 0 0 !important;
+    text-align: left !important;
 }
 
 .module {
     background: #fff !important;
-    border: 1px solid #e2e6ea !important;
+    border: 1px solid #dee2e6 !important;
     border-radius: 4px !important;
-    margin-bottom: 20px !important;
+    margin-bottom: 15px !important;
+    padding: 0 !important;
 }
 
-/* Liens */
-a:link, a:visited {
+/* ── Liste des apps sur le dashboard ── */
+.app-list .module {
+    border: 1px solid #dee2e6 !important;
+}
+
+.app-list .module table {
+    width: 100% !important;
+}
+
+.app-list .module th {
+    background: #f8f9fa !important;
+    padding: 10px 12px !important;
+    border-bottom: 1px solid #dee2e6 !important;
+}
+
+/* ── Liens ── */
+a:link,
+a:visited {
     color: #447e9b !important;
 }
 
@@ -48,36 +94,50 @@ a:hover {
     color: #036 !important;
 }
 
-/* Boutons */
-.button, input[type=submit], input[type=button], .submit-row input {
+a.section:link,
+a.section:visited {
+    color: #fff !important;
+}
+
+/* ── Boutons ── */
+.button,
+input[type="submit"],
+input[type="button"],
+.submit-row input {
     background: #79aec8 !important;
     border: none !important;
     color: #fff !important;
     padding: 10px 15px !important;
     border-radius: 4px !important;
     font-size: 13px !important;
+    cursor: pointer !important;
 }
 
-.button:hover, input[type=submit]:hover {
+.button:hover,
+input[type="submit"]:hover {
     background: #609ab6 !important;
 }
 
-.button.default, input[type=submit].default {
+.button.default,
+input[type="submit"].default {
     background: #417690 !important;
+    font-weight: 600 !important;
 }
 
 .button.default:hover {
     background: #305d7a !important;
 }
 
-/* Tableaux */
+/* ── Tableaux ── */
 #changelist table thead th {
     background: #f8f9fa !important;
     color: #333 !important;
-    border-bottom: 2px solid #e2e6ea !important;
+    border-bottom: 2px solid #dee2e6 !important;
+    padding: 10px 12px !important;
+    font-weight: 600 !important;
 }
 
-#changelist table tbody tr:nth-child(odd) {
+#changelist table tbody tr {
     background: #fff !important;
 }
 
@@ -85,72 +145,73 @@ a:hover {
     background: #f8f9fa !important;
 }
 
-/* Messages */
-.success {
+/* ── Messages flash ── */
+.messagelist li {
+    padding: 10px 14px !important;
+    border-radius: 4px !important;
+    margin-bottom: 8px !important;
+    font-size: 13px !important;
+}
+
+.messagelist li.success {
     background: #dff0d8 !important;
     border: 1px solid #d6e9c6 !important;
     color: #3c763d !important;
 }
 
-.warning {
+.messagelist li.warning {
     background: #fcf8e3 !important;
     border: 1px solid #faebcc !important;
     color: #8a6d3b !important;
 }
 
-.error {
+.messagelist li.error {
     background: #f2dede !important;
     border: 1px solid #ebccd1 !important;
     color: #a94442 !important;
 }
 
-/* Footer */
-#footer {
-    border-top: 1px solid #e2e6ea !important;
-    background: #f8f9fa !important;
-    padding: 10px !important;
-}
-
-/* Breadcrumbs */
-div.breadcrumbs {
+/* ── Breadcrumbs (fil d'Ariane) ── */
+.breadcrumbs {
     background: #79aec8 !important;
     color: #fff !important;
-    padding: 10px 40px !important;
+    padding: 10px 30px !important;
     font-size: 13px !important;
+    margin: 0 !important;
 }
 
-div.breadcrumbs a {
+.breadcrumbs a {
     color: #fff !important;
 }
 
-/* Object tools */
+/* ── Object tools (outils en haut des formulaires) ── */
 ul.object-tools a {
     background: #79aec8 !important;
     color: #fff !important;
     padding: 8px 14px !important;
     border-radius: 4px !important;
     font-size: 12px !important;
+    text-decoration: none !important;
 }
 
 ul.object-tools a:hover {
     background: #609ab6 !important;
 }
 
-/* Pagination */
+/* ── Pagination ── */
 .paginator {
-    border-top: 1px solid #e2e6ea !important;
-    padding: 10px !important;
+    border-top: 1px solid #dee2e6 !important;
+    padding: 15px 0 !important;
     background: #f8f9fa !important;
+    text-align: center !important;
 }
 
-.paginator a, .paginator span {
+.paginator a,
+.paginator span {
     padding: 6px 12px !important;
-    border: 1px solid #e2e6ea !important;
+    border: 1px solid #dee2e6 !important;
     border-radius: 3px !important;
-    margin: 0 2px !important;
-}
-
-.paginator a {
+    margin: 0 3px !important;
     background: #fff !important;
     color: #447e9b !important;
 }
@@ -159,4 +220,113 @@ ul.object-tools a:hover {
     background: #79aec8 !important;
     color: #fff !important;
     border-color: #79aec8 !important;
+}
+
+/* ── Pied de page ── */
+#footer {
+    border-top: 1px solid #dee2e6 !important;
+    background: #f8f9fa !important;
+    padding: 15px 30px !important;
+    color: #666 !important;
+    font-size: 12px !important;
+    clear: both !important;
+}
+
+/* ── Conteneur principal ── */
+#container {
+    background: #fff !important;
+}
+
+#content {
+    padding: 20px 30px !important;
+}
+
+/* ── Filtres ── */
+#changelist-filter {
+    background: #f8f9fa !important;
+    border: 1px solid #dee2e6 !important;
+    border-radius: 4px !important;
+}
+
+#changelist-filter h2,
+#changelist-filter h3 {
+    background: #79aec8 !important;
+    color: #fff !important;
+    padding: 8px 12px !important;
+    font-size: 13px !important;
+}
+
+/* ── Formulaires ── */
+.form-row {
+    border-bottom: 1px solid #eee !important;
+    padding: 12px 0 !important;
+}
+
+.aligned label {
+    color: #333 !important;
+    font-weight: 600 !important;
+    font-size: 13px !important;
+}
+
+.vTextField,
+.vLargeTextField,
+.vURLField {
+    border: 1px solid #ccc !important;
+    border-radius: 4px !important;
+    padding: 6px 10px !important;
+    font-size: 13px !important;
+}
+
+.vTextField:focus,
+.vLargeTextField:focus {
+    border-color: #79aec8 !important;
+    outline: none !important;
+    box-shadow: 0 0 4px rgba(121, 174, 200, 0.3) !important;
+}
+
+/* ── Forcer le thème clair (annuler dark mode Django 6) ── */
+[data-theme="dark"],
+[data-theme="auto"] {
+    --primary: #417690 !important;
+    --secondary: #79aec8 !important;
+    --accent: #f5dd5d !important;
+    --primary-fg: #fff !important;
+    --secondary-fg: #fff !important;
+    --body-bg: #fff !important;
+    --body-fg: #333 !important;
+    --body-quiet-color: #666 !important;
+    --body-loud-color: #000 !important;
+    --header-color: #fff !important;
+    --header-branding-color: #fff !important;
+    --header-bg: #417690 !important;
+    --header-link-color: #fff !important;
+    --breadcrumbs-bg: #79aec8 !important;
+    --breadcrumbs-fg: #fff !important;
+    --breadcrumbs-link-fg: #fff !important;
+    --link-fg: #447e9b !important;
+    --link-hover-color: #036 !important;
+    --link-selected-fg: #5b80b2 !important;
+    --hairline-color: #e8e8e8 !important;
+    --border-color: #ccc !important;
+    --error-fg: #ba2121 !important;
+    --message-success-bg: #dff0d8 !important;
+    --message-success-fg: #3c763d !important;
+    --message-warning-bg: #fcf8e3 !important;
+    --message-warning-fg: #8a6d3b !important;
+    --message-error-bg: #f2dede !important;
+    --message-error-fg: #a94442 !important;
+    --darkened-bg: #f8f9fa !important;
+    --selected-bg: #e4e4e4 !important;
+    --selected-row: #ffc !important;
+    --button-bg: #79aec8 !important;
+    --button-fg: #fff !important;
+    --button-hover-bg: #609ab6 !important;
+    --default-button-bg: #417690 !important;
+    --default-button-hover-bg: #305d7a !important;
+    --close-button-bg: #888 !important;
+    --close-button-hover-bg: #747474 !important;
+    --object-tools-bg: #79aec8 !important;
+    --object-tools-hover-bg: #609ab6 !important;
+    --font-family-primary: "Segoe UI", system-ui, Roboto, "Helvetica Neue", Arial, sans-serif !important;
+    --font-family-monospace: "Consolas", "Menlo", "Monaco", monospace !important;
 }
