@@ -95,12 +95,15 @@
                         </div>
                         <div>
                             <label class="block text-xs font-bold tracking-wider uppercase text-gray-500 mb-2">Année Académique</label>
-                            <select name="annee_academique" required
-                                    class="w-full px-4 py-3 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#0037B0] focus:border-[#0037B0] appearance-none">
+                            <input type="text" name="annee_academique" list="annees_list" required
+                                   value="{{ sujet.annee_academique }}"
+                                   placeholder="Ex: 2025-2026"
+                                   class="w-full px-4 py-3 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#0037B0] focus:border-[#0037B0]">
+                            <datalist id="annees_list">
                                 {% for a in annees %}
-                                <option value="{{ a }}" {% if sujet.annee_academique == a %}selected{% endif %}>{{ a }}</option>
+                                <option value="{{ a }}">
                                 {% endfor %}
-                            </select>
+                            </datalist>
                         </div>
                     </div>
 
