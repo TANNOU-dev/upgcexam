@@ -3,14 +3,14 @@
 {% block title %}Parametres | UPGCExam{% endblock %}
 {% block content %}
 <!-- ==================== MAIN ==================== -->
-    <main class="max-w-2xl mx-auto px-6 py-10">
+    <main class="max-w-2xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
         <div class="mb-8">
             <p class="text-sm font-semibold text-[#0037B0] tracking-wider">PARAMÈTRES</p>
             <h2 class="text-3xl font-black text-[#0B1C30] mt-1">Mon compte</h2>
             <p class="text-gray-500 mt-1">Modifiez vos informations personnelles</p>
         </div>
 
-        <div class="bg-white rounded-2xl shadow-sm p-8">
+        <div class="bg-white rounded-2xl shadow-sm p-4 sm:p-6 lg:p-8">
     
 
             <form method="post" class="space-y-5">
@@ -44,7 +44,7 @@
                 </button>
             </form>
 
-            <div class="mt-6 flex justify-between items-center">
+            <div class="mt-6 flex flex-col sm:flex-row justify-between items-center gap-3">
                 <a href="{% url 'tableau_de_bord' %}" class="text-sm text-gray-400 hover:text-gray-600">← Retour au tableau de bord</a>
                 {% include "core/includes/logout_form.html" with button_class="text-sm font-semibold text-red-500 hover:text-red-700 hover:underline bg-transparent border-0 cursor-pointer p-0" %}
             </div>

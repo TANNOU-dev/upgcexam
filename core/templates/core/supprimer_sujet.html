@@ -3,7 +3,7 @@
 {% block title %}Supprimer Sujet | UPGCExam{% endblock %}
 {% block content %}
 <!-- ============ MAIN ============ -->
-    <div class="py-14 px-6">
+    <div class="py-10 sm:py-14 px-4 sm:px-6">
         <div class="max-w-xl mx-auto">
 
             <!-- Messages -->
@@ -14,7 +14,7 @@
             {% include "core/includes/hidden_next.html" %}
 
             <!-- White card -->
-            <div class="bg-white rounded-2xl px-12 pt-12 pb-10 shadow-sm">
+            <div class="bg-white rounded-2xl px-4 sm:px-8 lg:px-12 pt-10 sm:pt-12 pb-8 sm:pb-10 shadow-sm">
 
                 <!-- Icon circle -->
                 <div class="flex justify-center mb-6">
@@ -57,13 +57,13 @@
                 </div>
 
                 <!-- Action buttons -->
-                <div class="flex gap-4 mb-5">
+                <div class="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-5">
                     <a href="{{ retour_url }}"
-                       class="flex-1 py-4 bg-[#8B9DD8] text-white rounded-xl text-sm font-semibold hover:bg-[#7B8FCB] transition text-center">
+                       class="flex-1 py-3 sm:py-4 bg-[#8B9DD8] text-white rounded-xl text-sm font-semibold hover:bg-[#7B8FCB] transition text-center">
                         Annuler
                     </a>
                     <button type="submit" name="confirmer" value="1"
-                            class="flex-1 py-4 bg-[#B52020] text-white rounded-xl text-sm font-bold hover:bg-[#9B1A1A] transition">
+                            class="flex-1 py-3 sm:py-4 bg-[#B52020] text-white rounded-xl text-sm font-bold hover:bg-[#9B1A1A] transition">
                         Confirmer la suppression
                     </button>
                 </div>
