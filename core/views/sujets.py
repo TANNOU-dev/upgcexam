@@ -297,7 +297,7 @@ def modifier_sujet(request, sujet_id):
         )
 
         if not a_change:
-            messages.info(request, "Aucune modification détectée.")
+            messages.warning(request, "Aucune modification détectée.")
             return redirect_apres_sujet(request, sujet=sujet, defaut="detail_sujet")
 
         sujet.statut = "en_attente"
