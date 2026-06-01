@@ -1,4 +1,4 @@
-Django>=5.2,<5.3
+Django>=6.0,<6.1
 python-dotenv>=1.0,<2
 django-allauth>=65,<66
 django-ratelimit>=4,<5
