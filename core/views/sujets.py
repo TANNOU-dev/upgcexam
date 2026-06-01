@@ -200,7 +200,7 @@ def ajouter_sujet(request):
                     admin,
                     "🆕 Nouveau sujet en attente",
                     f"{titre} — {nom_matiere}",
-                    url="/administration/sujets/",
+                    url=reverse("admin_sujets"),
                 )
             return redirect_apres_sujet(request)
 
@@ -310,7 +310,7 @@ def modifier_sujet(request, sujet_id):
                 admin,
                 "🔄 Sujet modifié — en attente",
                 f"{sujet.titre} — {sujet.matiere.nom}",
-                url="/administration/sujets/",
+                url=reverse("admin_sujets"),
             )
         return redirect(reverse("bibliotheque") + query_bibliotheque(request))
 

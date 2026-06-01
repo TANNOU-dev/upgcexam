@@ -12,7 +12,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
 
-from ..decorators import email_verifie_required
+from ..decorators import email_verifie_required, staff_required
 from ..models import (
     Activite,
     Filiere,
@@ -29,10 +29,8 @@ from .shared import _sujets_accessibles, _creer_code_verification, salutation
 
 
 @login_required
+@staff_required
 def admin_dashboard(request):
-    if not request.user.is_staff:
-        messages.error(request, "Accès réservé aux administrateurs.")
-        return redirect("tableau_de_bord")
 
     stats = {
         "total_sujets": Sujet.objects.count(),
@@ -330,10 +328,8 @@ def mon_activite_json(request):
 
 
 @login_required
+@staff_required
 def admin_utilisateurs(request):
-    if not request.user.is_staff:
-        messages.error(request, "Accès réservé aux administrateurs.")
-        return redirect("tableau_de_bord")
 
     if request.method == "POST":
         action = request.POST.get("action")
@@ -387,10 +383,8 @@ def admin_utilisateurs(request):
 
 
 @login_required
+@staff_required
 def admin_filieres(request):
-    if not request.user.is_staff:
-        messages.error(request, "Accès réservé aux administrateurs.")
-        return redirect("tableau_de_bord")
 
     if request.method == "POST":
         action = request.POST.get("action")
@@ -424,10 +418,8 @@ def admin_filieres(request):
 
 
 @login_required
+@staff_required
 def admin_matieres(request):
-    if not request.user.is_staff:
-        messages.error(request, "Accès réservé aux administrateurs.")
-        return redirect("tableau_de_bord")
 
     if request.method == "POST":
         action = request.POST.get("action")
@@ -459,10 +451,8 @@ def admin_matieres(request):
 
 
 @login_required
+@staff_required
 def admin_niveaux(request):
-    if not request.user.is_staff:
-        messages.error(request, "Accès réservé aux administrateurs.")
-        return redirect("tableau_de_bord")
 
     if request.method == "POST":
         action = request.POST.get("action")
@@ -483,10 +473,8 @@ def admin_niveaux(request):
 
 
 @login_required
+@staff_required
 def admin_logs(request):
-    if not request.user.is_staff:
-        messages.error(request, "Accès réservé aux administrateurs.")
-        return redirect("tableau_de_bord")
 
     activites = Activite.objects.select_related("utilisateur", "sujet__matiere").order_by("-cree_le")[:100]
     telechargements = (
@@ -501,10 +489,8 @@ def admin_logs(request):
 
 
 @login_required
+@staff_required
 def admin_sujets(request):
-    if not request.user.is_staff:
-        messages.error(request, "Accès réservé aux administrateurs.")
-        return redirect("tableau_de_bord")
 
     if request.method == "POST":
         action = request.POST.get("action")
@@ -651,19 +637,16 @@ def admin_sujets(request):
 
 
 @login_required
+@staff_required
 def admin_voir_sujet_pdf(request, sujet_id):
-    if not request.user.is_staff:
-        raise Http404()
     sujet = get_object_or_404(Sujet, id=sujet_id)
     return FileResponse(sujet.fichier_pdf.open("rb"), filename=f"{sujet.titre}.pdf")
 
 
 @login_required
+@staff_required
 def admin_presences(request):
     """Liste tous les étudiants avec leur temps de connexion."""
-    if not request.user.is_staff:
-        messages.error(request, "Accès réservé aux administrateurs.")
-        return redirect("tableau_de_bord")
 
     aujourdhui = timezone.now().replace(hour=0, minute=0, second=0, microsecond=0)
     cette_semaine = aujourdhui - timezone.timedelta(days=7)
@@ -737,10 +720,8 @@ def admin_presences(request):
 
 
 @login_required
+@staff_required
 def admin_verifications(request):
-    if not request.user.is_staff:
-        messages.error(request, "Accès réservé aux administrateurs.")
-        return redirect("tableau_de_bord")
 
     if request.method == "POST":
         action = request.POST.get("action")
