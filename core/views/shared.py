@@ -34,7 +34,7 @@ def _sujets_accessibles(request):
     return qs
 
 
-def _creer_code_verification(email, request=None):
+def creer_code_verification(email, request=None):
     Verification.objects.filter(email=email, utilise=False).update(utilise=True)
     code = generer_code_verification()
     Verification.objects.create(
@@ -94,7 +94,7 @@ def notifier_admins(titre, message, url=""):
 
 def _get_sujet_modifiable(request, sujet_id):
     """Retourne le sujet modifiable — les admins peuvent tout modifier,
-    les etudiants ne peuvent modifier que leurs propres sujets (actifs ou archivés)."""
+    les etudiants peuvent modifier leurs propres sujets (tout statut confondu)."""
     if request.user.is_staff:
         return get_object_or_404(Sujet, id=sujet_id)
     return get_object_or_404(

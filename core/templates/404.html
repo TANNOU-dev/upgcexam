@@ -1,0 +1,10 @@
+{% extends "core/base.html" %}
+{% block title %}Page introuvable | UPGCExam{% endblock %}
+{% block content %}
+<main class="max-w-4xl mx-auto px-6 py-20 text-center">
+    <h1 class="text-6xl font-black text-[#0037B0] mb-4">404</h1>
+    <h2 class="text-2xl font-bold text-[#0B1C30] mb-2">Page introuvable</h2>
+    <p class="text-gray-500 mb-8">La page que vous cherchez n'existe pas ou a été déplacée.</p>
+    <a href="{% url 'accueil' %}" class="inline-flex bg-[#0037B0] hover:bg-[#002A8A] text-white font-bold px-6 py-3 rounded-lg transition">Retour à l'accueil</a>
+</main>
+{% endblock %}

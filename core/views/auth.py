@@ -19,7 +19,7 @@ from django.views.decorators.http import require_POST
 from ..models import Filiere, Utilisateur, Verification
 
 from ..navigation import safe_next_url
-from .shared import _creer_code_verification
+from .shared import creer_code_verification
 
 
 def connexion(request):
@@ -86,7 +86,7 @@ def inscription(request):
                 except Filiere.DoesNotExist:
                     pass
             try:
-                _creer_code_verification(email, request)
+                creer_code_verification(email, request)
             except Exception:
                 messages.error(
                     request,
@@ -219,7 +219,7 @@ def password_reset_envoyer(request):
             messages.error(request, "Aucun compte trouvé avec cette adresse email.")
             return render(request, "core/password_reset.html")
 
-        code = _creer_code_verification(email, request)
+        code = creer_code_verification(email, request)
         request.session["reset_email"] = email
         messages.success(request, "Un code de vérification a été envoyé à votre adresse email.")
         return redirect("password_reset_code")

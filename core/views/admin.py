@@ -25,7 +25,7 @@ from ..models import (
     Verification,
 )
 from .pwa import envoyer_notification_push
-from .shared import _sujets_accessibles, _creer_code_verification, salutation, _annees_actives
+from .shared import _sujets_accessibles, creer_code_verification, salutation, _annees_actives
 
 
 @login_required
@@ -728,7 +728,7 @@ def admin_verifications(request):
             if email and User.objects.filter(email=email).exists():
                 user = User.objects.get(email=email)
                 try:
-                    _creer_code_verification(email, request)
+                    creer_code_verification(email, request)
                 except Exception:
                     messages.error(request, "Échec de l'envoi du code par email.")
                     return redirect("admin_verifications")

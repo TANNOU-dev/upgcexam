@@ -18,7 +18,7 @@ from ..navigation import (
     redirect_apres_sujet,
     safe_next_url,
 )
-from .shared import _sujets_accessibles, _get_sujet_modifiable, _creer_code_verification, _annees_actives, valider_fichier_pdf, notifier_admins
+from .shared import _sujets_accessibles, _get_sujet_modifiable, creer_code_verification, _annees_actives, valider_fichier_pdf, notifier_admins
 
 
 def accueil(request):
@@ -27,19 +27,7 @@ def accueil(request):
     total_filieres = Filiere.objects.count()
     annees_distinctes = sujets_qs.values_list("annee_academique", flat=True).distinct().count()
 
-    sujets_populaires = []
-    for sujet in sujets_qs.order_by("-vues")[:4]:
-        sujets_populaires.append(
-            {
-                "id": sujet.id,
-                "titre": sujet.titre,
-                "annee": sujet.annee_academique,
-                "vues": sujet.vues,
-                "matiere": sujet.matiere.nom,
-                "niveau": sujet.niveau.nom,
-                "filiere_code": sujet.filiere.code,
-            }
-        )
+    sujets_populaires = sujets_qs.select_related("filiere", "matiere", "niveau").order_by("-vues")[:4]
 
     return render(
         request,
