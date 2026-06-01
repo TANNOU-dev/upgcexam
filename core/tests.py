@@ -218,24 +218,22 @@ class CoreViewsTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
 
-    def test_admin_voir_pdf_returns_404_for_non_staff(self):
+    def test_admin_voir_pdf_redirects_non_staff(self):
         owner = User.objects.create_user(username="proprio", password="Pass12345")
         sujet = self._create_sujet(owner)
         self.client.force_login(owner)
 
         response = self.client.get(reverse("admin_voir_sujet_pdf", args=[sujet.id]))
 
-        self.assertEqual(response.status_code, 404)
+        self.assertRedirects(response, reverse("tableau_de_bord"))
 
-    def test_detail_sujet_requires_login(self):
+    def test_detail_sujet_publicly_accessible(self):
         owner = User.objects.create_user(username="proprio", password="Pass12345")
         sujet = self._create_sujet(owner)
 
         response = self.client.get(reverse("detail_sujet", args=[sujet.id]))
 
-        self.assertEqual(response.status_code, 302)
-        self.assertIn(reverse("connexion"), response["Location"])
-        self.assertIn(f"/sujets/{sujet.id}/", response["Location"])
+        self.assertEqual(response.status_code, 200)
 
     def test_detail_sujet_accessible_when_logged_in(self):
         owner = User.objects.create_user(username="proprio", password="Pass12345")
