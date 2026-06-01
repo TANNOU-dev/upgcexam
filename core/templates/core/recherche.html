@@ -83,6 +83,26 @@
     </div>
     {% endif %}
 
+    <!-- ==================== SEARCH BAR ==================== -->
+    <div class="max-w-7xl mx-auto px-6 pt-6">
+        <form method="get" action="{% url 'recherche' %}" class="flex flex-col sm:flex-row gap-3">
+            <div class="relative flex-1">
+                <span class="absolute inset-y-0 left-0 pl-4 flex items-center text-gray-400">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                    </svg>
+                </span>
+                <input type="text" name="q" value="{{ query }}"
+                       placeholder="Rechercher un examen, une thématique ou un auteur…"
+                       class="w-full pl-11 pr-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#0037B0] focus:border-[#0037B0] shadow-sm">
+            </div>
+            <button type="submit"
+                    class="bg-[#0037B0] hover:bg-[#002A8A] text-white font-bold text-sm px-6 py-2.5 rounded-lg transition shadow-sm whitespace-nowrap">
+                Rechercher
+            </button>
+        </form>
+    </div>
+
     <!-- ==================== SEARCH HEADER ==================== -->
     <div class="bg-white border-b border-gray-100">
         <div class="max-w-7xl mx-auto px-6 py-8">
@@ -186,7 +206,7 @@
                 <!-- Suggestions grid -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {% for sujet in suggestions %}
-                    <a href="{% url 'bibliotheque' %}?q={{ sujet.titre|urlencode }}" class="bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition p-4 block">
+                    <a href="{% url 'recherche' %}?q={{ sujet.titre|urlencode }}" class="bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition p-4 block">
                         <div class="flex items-start justify-between mb-3">
                             <div class="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center">
                                 <svg class="w-5 h-5 text-[#0037B0]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -215,7 +235,7 @@
                             </p>
                             <h3 class="text-2xl font-extrabold leading-tight mb-3 {{ forloop.counter|yesno:',text-white' }}">{{ doc.titre|truncatechars:30 }}</h3>
                             <p class="text-sm {% cycle 'text-blue-100' 'text-gray-500' %} leading-relaxed mb-6">{{ doc.matiere.nom }} · {{ doc.annee_academique }}</p>
-                            <a href="#" class="inline-block {% cycle 'border border-white text-white hover:bg-white hover:text-[#0037B0]' 'text-white' %} text-sm font-semibold px-5 py-2.5 rounded-full transition-all" style="{% if not forloop.first %}background:#0037B0;{% endif %}">
+                            <a href="{% detail_sujet_url doc.id %}" class="inline-block {% cycle 'border border-white text-white hover:bg-white hover:text-[#0037B0]' 'text-white' %} text-sm font-semibold px-5 py-2.5 rounded-full transition-all" style="{% if not forloop.first %}background:#0037B0;{% endif %}">
                                 {% cycle 'Explorer le cours' 'Télécharger PDF' %}
                             </a>
                         </div>
@@ -254,7 +274,7 @@
                         <div class="mt-auto">
                             <h3 class="text-white font-bold text-xl mb-2">Besoin d'aide ?</h3>
                             <p class="text-blue-100 text-sm leading-relaxed mb-4">Consultez nos guides méthodologiques pour réussir vos examens de fin d'année.</p>
-                            <a href="#" class="text-white text-sm font-semibold hover:text-blue-200 transition inline-flex items-center gap-1">
+                            <a href="{% url 'bibliotheque' %}" class="text-white text-sm font-semibold hover:text-blue-200 transition inline-flex items-center gap-1">
                                 Voir les guides
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
