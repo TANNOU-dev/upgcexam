@@ -134,7 +134,7 @@ def recherche(request):
         "core/recherche.html",
         {
             "query": query,
-            "resultats": resultats_page,
+            "resultats_page": resultats_page,
             "total_resultats": paginator.count,
             "filieres": filieres,
             "annees": annees,
