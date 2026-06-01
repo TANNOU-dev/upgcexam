@@ -65,7 +65,8 @@ class CoreViewsTests(TestCase):
             {"username": "etudiant", "password": "Motdepasse12345"},
         )
 
-        self.assertRedirects(response, reverse("tableau_de_bord"))
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, reverse("tableau_de_bord"))
 
     def test_registration_creates_user_profile_and_verification(self):
         response = self.client.post(
@@ -102,7 +103,8 @@ class CoreViewsTests(TestCase):
 
         response = self.client.post(reverse("verification"), {"code": "123456"})
 
-        self.assertRedirects(response, reverse("tableau_de_bord"))
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, reverse("tableau_de_bord"))
         user.refresh_from_db()
         self.assertTrue(user.profil.email_verifie)
         self.assertTrue(Verification.objects.get(email=user.email).utilise)
@@ -225,7 +227,8 @@ class CoreViewsTests(TestCase):
 
         response = self.client.get(reverse("admin_voir_sujet_pdf", args=[sujet.id]))
 
-        self.assertRedirects(response, reverse("tableau_de_bord"))
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, reverse("tableau_de_bord"))
 
     def test_detail_sujet_publicly_accessible(self):
         owner = User.objects.create_user(username="proprio", password="Pass12345")
