@@ -2,6 +2,8 @@ from datetime import timedelta
 import json
 from pathlib import Path
 import shutil
+from types import SimpleNamespace
+from unittest.mock import patch
 
 from django.contrib.auth.models import Group, User
 from django.core.exceptions import ValidationError
@@ -10,6 +12,7 @@ from django.test import TestCase, override_settings
 from django.urls import reverse
 from django.utils import timezone
 
+from .adapters import UPGCExamSocialAdapter
 from .models import Activite, Filiere, Matiere, Niveau, PushSubscription, Sujet, Utilisateur, Verification
 
 
@@ -81,6 +84,18 @@ class CoreViewsTests(TestCase):
 
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response.url, reverse("tableau_de_bord"))
+
+    @patch("allauth.socialaccount.adapter.DefaultSocialAccountAdapter.save_user")
+    def test_social_signup_marks_provider_verified_email_as_verified(self, mocked_save_user):
+        user = User.objects.create_user(username="google-user", email="google@example.com")
+        mocked_save_user.return_value = user
+        sociallogin = SimpleNamespace(
+            email_addresses=[SimpleNamespace(email=user.email, verified=True)]
+        )
+
+        UPGCExamSocialAdapter().save_user(None, sociallogin)
+
+        self.assertTrue(user.profil.email_verifie)
 
     def test_registration_creates_user_profile_and_verification(self):
         response = self.client.post(
