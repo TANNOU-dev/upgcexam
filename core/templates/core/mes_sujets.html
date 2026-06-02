@@ -5,34 +5,35 @@
 {% block content %}
     
 
-    <main class="max-w-7xl mx-auto px-6 py-8">
-        <div class="mb-8">
-            <h1 class="text-3xl md:text-4xl font-black text-[#0B1C30]">Mes sujets</h1>
-            <p class="text-gray-500 mt-2">Tous vos sujets soumis et leur statut de validation.</p>
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+        <div class="mb-6 sm:mb-8">
+            <h1 class="text-2xl sm:text-3xl md:text-4xl font-black text-[#0B1C30]">Mes sujets</h1>
+            <p class="text-gray-500 mt-2 text-xs sm:text-sm">Tous vos sujets soumis et leur statut de validation.</p>
         </div>
 
         {% if sujets %}
-        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <!-- Desktop table (hidden on mobile) -->
+        <div class="hidden sm:block bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
             <div class="overflow-x-auto">
-                <table class="w-full text-sm">
+                <table class="w-full text-xs sm:text-sm">
                     <thead>
                         <tr class="bg-gray-50 border-b border-gray-100">
-                            <th class="text-left px-6 py-4 font-semibold text-gray-600">Titre</th>
-                            <th class="text-left px-6 py-4 font-semibold text-gray-600">Filière</th>
-                            <th class="text-left px-6 py-4 font-semibold text-gray-600">Matière</th>
-                            <th class="text-left px-6 py-4 font-semibold text-gray-600">Date</th>
-                            <th class="text-left px-6 py-4 font-semibold text-gray-600">Statut</th>
-                            <th class="text-right px-6 py-4 font-semibold text-gray-600">Action</th>
+                            <th class="text-left px-4 sm:px-6 py-3 sm:py-4 font-semibold text-gray-600">Titre</th>
+                            <th class="text-left px-4 sm:px-6 py-3 sm:py-4 font-semibold text-gray-600">Filière</th>
+                            <th class="text-left px-4 sm:px-6 py-3 sm:py-4 font-semibold text-gray-600">Matière</th>
+                            <th class="text-left px-4 sm:px-6 py-3 sm:py-4 font-semibold text-gray-600">Date</th>
+                            <th class="text-left px-4 sm:px-6 py-3 sm:py-4 font-semibold text-gray-600">Statut</th>
+                            <th class="text-right px-4 sm:px-6 py-3 sm:py-4 font-semibold text-gray-600">Action</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-50">
                         {% for sujet in sujets %}
                         <tr class="hover:bg-gray-50 transition">
-                            <td class="px-6 py-4 font-medium text-[#0B1C30]">{{ sujet.titre|truncatechars:40 }}</td>
-                            <td class="px-6 py-4 text-gray-500">{{ sujet.filiere.code }}</td>
-                            <td class="px-6 py-4 text-gray-500">{{ sujet.matiere.nom|truncatechars:25 }}</td>
-                            <td class="px-6 py-4 text-gray-500">{{ sujet.cree_le|date:"d/m/Y" }}</td>
-                            <td class="px-6 py-4">
+                            <td class="px-4 sm:px-6 py-3 sm:py-4 font-medium text-[#0B1C30] truncate max-w-[160px] sm:max-w-none">{{ sujet.titre|truncatechars:40 }}</td>
+                            <td class="px-4 sm:px-6 py-3 sm:py-4 text-gray-500">{{ sujet.filiere.code }}</td>
+                            <td class="px-4 sm:px-6 py-3 sm:py-4 text-gray-500 truncate max-w-[120px] sm:max-w-none">{{ sujet.matiere.nom|truncatechars:25 }}</td>
+                            <td class="px-4 sm:px-6 py-3 sm:py-4 text-gray-500 whitespace-nowrap">{{ sujet.cree_le|date:"d/m/Y" }}</td>
+                            <td class="px-4 sm:px-6 py-3 sm:py-4">
                                 {% if sujet.statut == "actif" and sujet.visibilite == "visible" %}
                                 <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700">
                                     <span class="w-1.5 h-1.5 rounded-full bg-green-500"></span>
@@ -59,7 +60,7 @@
                                 </span>
                                 {% endif %}
                             </td>
-                            <td class="px-6 py-4 text-right space-x-3">
+                            <td class="px-4 sm:px-6 py-3 sm:py-4 text-right space-x-3 whitespace-nowrap">
                                 {% if sujet.statut != "archive" %}
                                 <a href="{% url 'modifier_sujet' sujet.id %}" class="text-xs font-semibold text-[#F59E0B] hover:underline">Modifier</a>
                                 {% endif %}
@@ -73,16 +74,66 @@
                 </table>
             </div>
         </div>
+
+        <!-- Mobile cards (visible only on mobile) -->
+        <div class="sm:hidden space-y-3">
+            {% for sujet in sujets %}
+            <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-4">
+                <div class="flex items-start justify-between mb-2">
+                    <h3 class="font-semibold text-sm text-[#0B1C30] truncate flex-1 mr-2">{{ sujet.titre }}</h3>
+                    <span class="text-xs text-gray-400 whitespace-nowrap">{{ sujet.cree_le|date:"d/m/Y" }}</span>
+                </div>
+                <div class="flex items-center gap-2 text-xs text-gray-500 mb-2">
+                    <span class="text-xs font-bold text-white bg-[#0037B0] px-2 py-0.5 rounded">{{ sujet.filiere.code }}</span>
+                    <span class="truncate">{{ sujet.matiere.nom|truncatechars:20 }}</span>
+                </div>
+                <div class="flex items-center justify-between">
+                    <div>
+                        {% if sujet.statut == "actif" and sujet.visibilite == "visible" %}
+                        <span class="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700">
+                            <span class="w-1.5 h-1.5 rounded-full bg-green-500"></span>
+                            Publié
+                        </span>
+                        {% elif sujet.statut == "actif" and sujet.visibilite == "restreint" %}
+                        <span class="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-700">
+                            <span class="w-1.5 h-1.5 rounded-full bg-yellow-500"></span>
+                            Restreint
+                        </span>
+                        {% elif sujet.statut == "en_attente" %}
+                        <span class="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold bg-orange-100 text-orange-700">
+                            <span class="w-1.5 h-1.5 rounded-full bg-orange-500"></span>
+                            En attente
+                        </span>
+                        {% elif sujet.statut == "archive" %}
+                        <span class="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-600">
+                            Archivé
+                        </span>
+                        {% else %}
+                        <span class="text-xs font-semibold text-gray-500">{{ sujet.statut }}</span>
+                        {% endif %}
+                    </div>
+                    <div class="flex items-center gap-3">
+                        {% if sujet.statut != "archive" %}
+                        <a href="{% url 'modifier_sujet' sujet.id %}" class="text-xs font-semibold text-[#F59E0B] hover:underline">Modifier</a>
+                        {% endif %}
+                        {% if sujet.statut == "actif" %}
+                        <a href="{% detail_sujet_url sujet.id %}" class="text-xs font-semibold text-[#0037B0] hover:underline">Voir →</a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
         {% else %}
-        <div class="bg-white rounded-2xl p-12 text-center">
-            <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg class="w-7 h-7 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div class="bg-white rounded-2xl p-8 sm:p-12 text-center">
+            <div class="w-12 h-12 sm:w-16 sm:h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg class="w-6 h-6 sm:w-7 sm:h-7 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
                 </svg>
             </div>
-            <h2 class="text-xl font-bold text-[#0B1C30] mb-2">Aucun sujet soumis</h2>
-            <p class="text-gray-500 text-sm mb-6">Vous n'avez encore ajouté aucun sujet à la bibliothèque.</p>
-            <a href="{% ajouter_sujet_url %}" class="inline-flex items-center gap-2 bg-[#0037B0] hover:bg-[#002A8A] text-white font-bold text-sm px-5 py-2.5 rounded-lg transition shadow-sm">
+            <h2 class="text-lg sm:text-xl font-bold text-[#0B1C30] mb-2">Aucun sujet soumis</h2>
+            <p class="text-gray-500 text-xs sm:text-sm mb-5 sm:mb-6">Vous n'avez encore ajouté aucun sujet à la bibliothèque.</p>
+            <a href="{% ajouter_sujet_url %}" class="inline-flex items-center gap-2 bg-[#0037B0] hover:bg-[#002A8A] text-white font-bold text-xs sm:text-sm px-4 sm:px-5 py-2 sm:py-2.5 rounded-lg transition shadow-sm">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/>
                 </svg>
@@ -93,7 +144,7 @@
 
         {% if sujets %}
         <div class="mt-6 text-center">
-            <a href="{% ajouter_sujet_url %}" class="inline-flex items-center gap-2 bg-[#0037B0] hover:bg-[#002A8A] text-white font-bold text-sm px-5 py-2.5 rounded-lg transition shadow-sm">
+            <a href="{% ajouter_sujet_url %}" class="inline-flex items-center gap-2 bg-[#0037B0] hover:bg-[#002A8A] text-white font-bold text-xs sm:text-sm px-4 sm:px-5 py-2 sm:py-2.5 rounded-lg transition shadow-sm">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/>
                 </svg>

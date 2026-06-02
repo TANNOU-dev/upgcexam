@@ -3,50 +3,50 @@
 {% block title %}Parametres | UPGCExam{% endblock %}
 {% block content %}
 <!-- ==================== MAIN ==================== -->
-    <main class="max-w-2xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
-        <div class="mb-8">
-            <p class="text-sm font-semibold text-[#0037B0] tracking-wider">PARAMÈTRES</p>
-            <h2 class="text-3xl font-black text-[#0B1C30] mt-1">Mon compte</h2>
-            <p class="text-gray-500 mt-1">Modifiez vos informations personnelles</p>
+    <main class="max-w-2xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
+        <div class="mb-6 sm:mb-8">
+            <p class="text-xs sm:text-sm font-semibold text-[#0037B0] tracking-wider">PARAMÈTRES</p>
+            <h2 class="text-2xl sm:text-3xl font-black text-[#0B1C30] mt-1">Mon compte</h2>
+            <p class="text-gray-500 mt-1 text-xs sm:text-sm">Modifiez vos informations personnelles</p>
         </div>
 
         <div class="bg-white rounded-2xl shadow-sm p-4 sm:p-6 lg:p-8">
     
 
-            <form method="post" class="space-y-5">
+            <form method="post" class="space-y-4 sm:space-y-5">
                 {% csrf_token %}
                 <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-1">Nom d'utilisateur</label>
+                    <label class="block text-xs sm:text-sm font-semibold text-gray-700 mb-1">Nom d'utilisateur</label>
                     <input type="text" name="username" value="{{ request.user.username }}"
-                           class="w-full px-4 py-2.5 bg-[#F8F9FF] border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-blue-600 outline-none transition text-sm">
+                           class="w-full px-3 sm:px-4 py-2 sm:py-2.5 bg-[#F8F9FF] border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-blue-600 outline-none transition text-xs sm:text-sm">
                 </div>
                 <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-1">Email</label>
+                    <label class="block text-xs sm:text-sm font-semibold text-gray-700 mb-1">Email</label>
                     <input type="email" name="email" value="{{ request.user.email }}"
-                           class="w-full px-4 py-2.5 bg-[#F8F9FF] border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-blue-600 outline-none transition text-sm">
+                           class="w-full px-3 sm:px-4 py-2 sm:py-2.5 bg-[#F8F9FF] border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-blue-600 outline-none transition text-xs sm:text-sm">
                 </div>
                 <hr class="border-gray-100">
-                <p class="text-sm text-gray-500">Vous pouvez modifier votre nom ou email sans changer le mot de passe. L'ancien mot de passe n'est requis que si vous définissez un nouveau.</p>
-                <p class="text-sm font-semibold text-gray-700">Changer le mot de passe (optionnel)</p>
+                <p class="text-xs sm:text-sm text-gray-500">Vous pouvez modifier votre nom ou email sans changer le mot de passe. L'ancien mot de passe n'est requis que si vous définissez un nouveau.</p>
+                <p class="text-xs sm:text-sm font-semibold text-gray-700">Changer le mot de passe (optionnel)</p>
                 <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-1">Ancien mot de passe</label>
+                    <label class="block text-xs sm:text-sm font-semibold text-gray-700 mb-1">Ancien mot de passe</label>
                     <input type="password" name="ancien_mot_de_passe"
-                           class="w-full px-4 py-2.5 bg-[#F8F9FF] border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-blue-600 outline-none transition text-sm">
+                           class="w-full px-3 sm:px-4 py-2 sm:py-2.5 bg-[#F8F9FF] border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-blue-600 outline-none transition text-xs sm:text-sm">
                 </div>
                 <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-1">Nouveau mot de passe</label>
+                    <label class="block text-xs sm:text-sm font-semibold text-gray-700 mb-1">Nouveau mot de passe</label>
                     <input type="password" name="nouveau_mot_de_passe"
-                           class="w-full px-4 py-2.5 bg-[#F8F9FF] border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-blue-600 outline-none transition text-sm">
+                           class="w-full px-3 sm:px-4 py-2 sm:py-2.5 bg-[#F8F9FF] border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-blue-600 outline-none transition text-xs sm:text-sm">
                 </div>
                 <button type="submit"
-                        class="w-full bg-[#0037B0] text-white py-2.5 rounded-lg font-bold hover:bg-[#002A8A] transition duration-200 text-sm">
+                        class="w-full bg-[#0037B0] text-white py-2.5 rounded-lg font-bold hover:bg-[#002A8A] transition duration-200 text-xs sm:text-sm">
                     Enregistrer les modifications
                 </button>
             </form>
 
-            <div class="mt-6 flex flex-col sm:flex-row justify-between items-center gap-3">
-                <a href="{% url 'tableau_de_bord' %}" class="text-sm text-gray-400 hover:text-gray-600">← Retour au tableau de bord</a>
-                {% include "core/includes/logout_form.html" with button_class="text-sm font-semibold text-red-500 hover:text-red-700 hover:underline bg-transparent border-0 cursor-pointer p-0" %}
+            <div class="mt-5 sm:mt-6 flex flex-col sm:flex-row justify-between items-center gap-3">
+                <a href="{% url 'tableau_de_bord' %}" class="text-xs sm:text-sm text-gray-400 hover:text-gray-600">← Retour au tableau de bord</a>
+                {% include "core/includes/logout_form.html" with button_class="text-xs sm:text-sm font-semibold text-red-500 hover:text-red-700 hover:underline bg-transparent border-0 cursor-pointer p-0" %}
             </div>
         </div>
     </main>

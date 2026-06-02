@@ -7,22 +7,22 @@
     
 
     <!-- ==================== MAIN CONTENT ==================== -->
-    <main class="max-w-7xl mx-auto px-6 py-8">
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
 
         <!-- Header section -->
-        <div class="mb-8">
-            <h1 class="text-3xl md:text-4xl font-black text-[#0B1C30]">Bibliothèque</h1>
-            <p class="text-gray-500 mt-2">Accédez à l'archive complète des examens de l'Université Peleforo Gon Coulibaly. Filtrez par filière, matière ou année pour trouver vos ressources d'étude.</p>
+        <div class="mb-6 sm:mb-8">
+            <h1 class="text-2xl sm:text-3xl md:text-4xl font-black text-[#0B1C30]">Bibliothèque</h1>
+            <p class="text-gray-500 mt-2 text-xs sm:text-sm">Accédez à l'archive complète des examens de l'Université Peleforo Gon Coulibaly. Filtrez par filière, matière ou année pour trouver vos ressources d'étude.</p>
             {% if not user.is_authenticated %}
-            <p class="mt-3 text-sm text-[#0037B0] bg-[#E8EEFF] border border-[#0037B0]/20 rounded-lg px-4 py-2 inline-block">
+            <p class="mt-3 text-xs sm:text-sm text-[#0037B0] bg-[#E8EEFF] border border-[#0037B0]/20 rounded-lg px-3 sm:px-4 py-2 inline-block">
                 Connectez-vous pour consulter le détail et télécharger les sujets trouvés.
             </p>
             {% endif %}
         </div>
 
         <!-- Search bar -->
-        <div class="mb-6">
-            <form method="get" action="{% url 'recherche' %}" class="flex flex-col sm:flex-row gap-3">
+        <div class="mb-5 sm:mb-6">
+            <form method="get" action="{% url 'recherche' %}" class="flex flex-col sm:flex-row gap-2 sm:gap-3">
                 <div class="relative flex-1">
                     <span class="absolute inset-y-0 left-0 pl-4 flex items-center text-gray-400">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -31,21 +31,21 @@
                     </span>
                     <input type="text" name="q" value="{{ query }}"
                            placeholder="Rechercher un examen, une thématique ou un auteur…"
-                           class="w-full pl-11 pr-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#0037B0] focus:border-[#0037B0] shadow-sm">
+                           class="w-full pl-11 pr-4 py-2.5 bg-white border border-gray-200 rounded-lg text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#0037B0] focus:border-[#0037B0] shadow-sm">
                 </div>
                 <button type="submit"
-                        class="bg-[#0037B0] hover:bg-[#002A8A] text-white font-bold text-sm px-6 py-2.5 rounded-lg transition shadow-sm whitespace-nowrap">
+                        class="bg-[#0037B0] hover:bg-[#002A8A] text-white font-bold text-xs sm:text-sm px-5 sm:px-6 py-2.5 rounded-lg transition shadow-sm whitespace-nowrap">
                     Rechercher
                 </button>
             </form>
         </div>
 
         <!-- Filters -->
-        <form method="get" action="{% url 'bibliotheque' %}" class="flex flex-wrap items-center gap-3 mb-8">
+        <form method="get" action="{% url 'bibliotheque' %}" class="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-2 sm:gap-3 mb-6 sm:mb-8">
             {% if query %}<input type="hidden" name="q" value="{{ query }}">{% endif %}
             <!-- Filière filter -->
-            <div class="relative">
-                <select name="filiere" onchange="this.form.submit()" class="appearance-none bg-white border border-gray-200 text-gray-700 text-sm font-medium px-4 py-2 pr-8 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0037B0] focus:border-[#0037B0] shadow-sm cursor-pointer">
+            <div class="relative w-full sm:w-auto">
+                <select name="filiere" onchange="this.form.submit()" class="appearance-none w-full bg-white border border-gray-200 text-gray-700 text-xs sm:text-sm font-medium px-3 sm:px-4 py-2 pr-8 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0037B0] focus:border-[#0037B0] shadow-sm cursor-pointer">
                     <option value="">Toutes les filières</option>
                     {% for f in filieres %}
                     <option value="{{ f.id }}" {% if filiere_id == f.id|stringformat:'s' %}selected{% endif %}>{{ f.nom }}</option>
@@ -59,8 +59,8 @@
             </div>
 
             <!-- Matière filter -->
-            <div class="relative">
-                <select name="matiere" onchange="this.form.submit()" class="appearance-none bg-white border border-gray-200 text-gray-700 text-sm font-medium px-4 py-2 pr-8 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0037B0] focus:border-[#0037B0] shadow-sm cursor-pointer">
+            <div class="relative w-full sm:w-auto">
+                <select name="matiere" onchange="this.form.submit()" class="appearance-none w-full bg-white border border-gray-200 text-gray-700 text-xs sm:text-sm font-medium px-3 sm:px-4 py-2 pr-8 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0037B0] focus:border-[#0037B0] shadow-sm cursor-pointer">
                     <option value="">Toutes les matières</option>
                     {% for m in matieres %}
                     <option value="{{ m.id }}" {% if matiere_id == m.id|stringformat:'s' %}selected{% endif %}>{{ m.nom }}</option>
@@ -74,8 +74,8 @@
             </div>
 
             <!-- Année filter -->
-            <div class="relative">
-                <select name="annee" onchange="this.form.submit()" class="appearance-none bg-white border border-gray-200 text-gray-700 text-sm font-medium px-4 py-2 pr-8 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0037B0] focus:border-[#0037B0] shadow-sm cursor-pointer">
+            <div class="relative w-full sm:w-auto">
+                <select name="annee" onchange="this.form.submit()" class="appearance-none w-full bg-white border border-gray-200 text-gray-700 text-xs sm:text-sm font-medium px-3 sm:px-4 py-2 pr-8 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0037B0] focus:border-[#0037B0] shadow-sm cursor-pointer">
                     <option value="">Toutes les années</option>
                     {% for a in annees %}
                     <option value="{{ a }}" {% if annee == a %}selected{% endif %}>{{ a }}</option>
@@ -90,7 +90,7 @@
 
             <!-- Reset button (visible only when filters active) -->
             {% if query or filiere_id or matiere_id or annee %}
-            <a href="{% url 'bibliotheque' %}" class="text-sm text-gray-500 hover:text-[#0037B0] font-medium underline transition">Réinitialiser</a>
+            <a href="{% url 'bibliotheque' %}" class="text-xs sm:text-sm text-gray-500 hover:text-[#0037B0] font-medium underline transition text-center sm:text-left">Réinitialiser</a>
             {% endif %}
         </form>
 
@@ -114,31 +114,31 @@
         </form>
         {% endif %}
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
             {% for sujet in sujets %}
             <a href="{% detail_sujet_url sujet.id %}" class="bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition overflow-hidden block group">
                 <div class="flex">
                     <!-- Left color strip -->
                     <div class="w-1.5 flex-shrink-0 {% cycle 'bg-[#0037B0]' 'bg-[#8B5CF6]' 'bg-[#10B981]' 'bg-[#F59E0B]' 'bg-[#EF4444]' 'bg-[#EC4899]' %}"></div>
-                    <div class="flex-1 p-4">
+                    <div class="flex-1 p-3 sm:p-4">
                         <!-- Badge filière + année -->
                         <div class="flex items-center justify-between mb-2">
-                            <span class="text-xs font-bold text-white bg-[#0037B0] px-2.5 py-0.5 rounded">{{ sujet.filiere.code }}</span>
+                            <span class="text-xs font-bold text-white bg-[#0037B0] px-2 py-0.5 rounded">{{ sujet.filiere.code }}</span>
                             <span class="text-xs text-gray-400">{{ sujet.annee_academique }}</span>
                         </div>
 
                         <!-- Titre -->
-                        <h3 class="font-bold text-sm text-[#0B1C30] leading-snug mb-1">{{ sujet.titre }}</h3>
+                        <h3 class="font-bold text-sm text-[#0B1C30] leading-snug mb-1 truncate">{{ sujet.titre }}</h3>
 
                         <!-- Méta -->
-                        <div class="flex items-center gap-3 text-xs text-gray-400 mb-1">
-                            <span>📄 {{ sujet.matiere.nom }}</span>
-                            <span>🎓 {{ sujet.niveau.nom }}</span>
+                        <div class="flex flex-col sm:flex-row sm:items-center gap-0 sm:gap-3 text-xs text-gray-400 mb-1">
+                            <span class="truncate">📄 {{ sujet.matiere.nom }}</span>
+                            <span class="truncate">🎓 {{ sujet.niveau.nom }}</span>
                         </div>
 
                         <!-- Auteur -->
                         {% if sujet.auteur_nom %}
-                        <p class="text-xs text-gray-400 mb-3">👨‍🏫 {{ sujet.auteur_nom }}</p>
+                        <p class="text-xs text-gray-400 mb-3 truncate">👨‍🏫 {{ sujet.auteur_nom }}</p>
                         {% endif %}
 
                         {% if sujet.description %}
@@ -159,8 +159,8 @@
                 </div>
             </a>
             {% empty %}
-            <div class="col-span-full text-center py-16">
-                <svg class="w-16 h-16 text-gray-200 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="col-span-full text-center py-12 sm:py-16">
+                <svg class="w-12 h-12 sm:w-16 sm:h-16 text-gray-200 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                 </svg>
                 <p class="text-gray-400 text-sm">Aucun sujet trouvé</p>
@@ -171,28 +171,28 @@
 
         <!-- Pagination -->
         {% if sujets.paginator.num_pages > 1 %}
-        <div class="flex items-center justify-center mt-10 gap-1">
+        <div class="flex items-center justify-center mt-8 sm:mt-10 gap-1">
             {% if sujets.has_previous %}
             <a href="?page=1{% if query %}&q={{ query }}{% endif %}{% if filiere_id %}&filiere={{ filiere_id }}{% endif %}{% if matiere_id %}&matiere={{ matiere_id }}{% endif %}{% if annee %}&annee={{ annee }}{% endif %}"
-               class="px-3 py-1.5 text-xs text-gray-500 hover:text-[#0037B0] border border-gray-200 rounded-lg hover:border-[#0037B0] transition">«</a>
+               class="px-2 sm:px-3 py-1.5 text-xs text-gray-500 hover:text-[#0037B0] border border-gray-200 rounded-lg hover:border-[#0037B0] transition">«</a>
             <a href="?page={{ sujets.previous_page_number }}{% if query %}&q={{ query }}{% endif %}{% if filiere_id %}&filiere={{ filiere_id }}{% endif %}{% if matiere_id %}&matiere={{ matiere_id }}{% endif %}{% if annee %}&annee={{ annee }}{% endif %}"
-               class="px-3 py-1.5 text-xs text-gray-500 hover:text-[#0037B0] border border-gray-200 rounded-lg hover:border-[#0037B0] transition">‹</a>
+               class="px-2 sm:px-3 py-1.5 text-xs text-gray-500 hover:text-[#0037B0] border border-gray-200 rounded-lg hover:border-[#0037B0] transition">‹</a>
             {% endif %}
 
             {% for i in sujets.paginator.page_range %}
                 {% if sujets.number == i %}
-                <span class="px-3 py-1.5 text-xs font-bold text-white bg-[#0037B0] rounded-lg">{{ i }}</span>
+                <span class="px-2 sm:px-3 py-1.5 text-xs font-bold text-white bg-[#0037B0] rounded-lg">{{ i }}</span>
                 {% elif i > sujets.number|add:'-3' and i < sujets.number|add:'3' %}
                 <a href="?page={{ i }}{% if query %}&q={{ query }}{% endif %}{% if filiere_id %}&filiere={{ filiere_id }}{% endif %}{% if matiere_id %}&matiere={{ matiere_id }}{% endif %}{% if annee %}&annee={{ annee }}{% endif %}"
-                   class="px-3 py-1.5 text-xs text-gray-500 hover:text-[#0037B0] border border-gray-200 rounded-lg hover:border-[#0037B0] transition">{{ i }}</a>
+                   class="px-2 sm:px-3 py-1.5 text-xs text-gray-500 hover:text-[#0037B0] border border-gray-200 rounded-lg hover:border-[#0037B0] transition">{{ i }}</a>
                 {% endif %}
             {% endfor %}
 
             {% if sujets.has_next %}
             <a href="?page={{ sujets.next_page_number }}{% if query %}&q={{ query }}{% endif %}{% if filiere_id %}&filiere={{ filiere_id }}{% endif %}{% if matiere_id %}&matiere={{ matiere_id }}{% endif %}{% if annee %}&annee={{ annee }}{% endif %}"
-               class="px-3 py-1.5 text-xs text-gray-500 hover:text-[#0037B0] border border-gray-200 rounded-lg hover:border-[#0037B0] transition">›</a>
+               class="px-2 sm:px-3 py-1.5 text-xs text-gray-500 hover:text-[#0037B0] border border-gray-200 rounded-lg hover:border-[#0037B0] transition">›</a>
             <a href="?page={{ sujets.paginator.num_pages }}{% if query %}&q={{ query }}{% endif %}{% if filiere_id %}&filiere={{ filiere_id }}{% endif %}{% if matiere_id %}&matiere={{ matiere_id }}{% endif %}{% if annee %}&annee={{ annee }}{% endif %}"
-               class="px-3 py-1.5 text-xs text-gray-500 hover:text-[#0037B0] border border-gray-200 rounded-lg hover:border-[#0037B0] transition">»</a>
+               class="px-2 sm:px-3 py-1.5 text-xs text-gray-500 hover:text-[#0037B0] border border-gray-200 rounded-lg hover:border-[#0037B0] transition">»</a>
             {% endif %}
         </div>
         {% endif %}
