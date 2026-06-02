@@ -8,6 +8,7 @@ import sys
 from io import StringIO
 
 from django.contrib.auth.models import User
+from django.contrib.auth.password_validation import validate_password as _validate_password
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import Client
 from django.urls import reverse
@@ -217,6 +218,7 @@ admin_user, created = User.objects.get_or_create(
     defaults={"email": "qa_admin@test.local", "is_staff": True},
 )
 if created:
+    _validate_password(_test_password("qaadmin"), user=admin_user)
     admin_user.set_password(_test_password("qaadmin"))
     admin_user.save()
     Utilisateur.objects.get_or_create(user=admin_user, defaults={"email_verifie": True})
