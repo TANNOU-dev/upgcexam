@@ -7,5 +7,7 @@ whitenoise>=6,<7
 pywebpush>=1,<2
 channels>=4,<5
 daphne>=4,<5
+channels-redis>=4,<5
+psycopg[binary]>=3,<4
 
 pyjwt>=2.9

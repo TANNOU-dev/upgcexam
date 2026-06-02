@@ -6,6 +6,7 @@ import logging
 import os
 
 from django.contrib.auth.decorators import login_required
+from django.contrib.staticfiles import finders
 from django.contrib.staticfiles.storage import staticfiles_storage
 from django.core.exceptions import ValidationError
 from django.core.validators import URLValidator
@@ -19,10 +20,14 @@ logger = logging.getLogger(__name__)
 
 def service_worker(request):
     """Sert le service worker à la racine afin qu'il puisse couvrir l'application."""
-    try:
-        worker_file = staticfiles_storage.open("pwa/sw.js")
-    except FileNotFoundError as exc:
-        raise Http404("Service worker introuvable.") from exc
+    worker_path = finders.find("pwa/sw.js")
+    if worker_path:
+        worker_file = open(worker_path, "rb")
+    else:
+        try:
+            worker_file = staticfiles_storage.open("pwa/sw.js")
+        except FileNotFoundError as exc:
+            raise Http404("Service worker introuvable.") from exc
     response = FileResponse(worker_file, content_type="application/javascript")
     response["Cache-Control"] = "no-cache"
     response["Service-Worker-Allowed"] = "/"
