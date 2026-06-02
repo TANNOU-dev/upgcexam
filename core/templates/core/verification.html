@@ -1,37 +1,22 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UPGCExam - Vérification</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <style>
-        * { font-family: 'Inter', sans-serif; }
-        .otp-input {
-            width: 48px;
-            height: 56px;
-            text-align: center;
-            font-size: 1.25rem;
-            font-weight: 700;
-        }
-        .otp-input:focus {
-            outline: none;
-            border-color: #0037B0;
-            box-shadow: 0 0 0 3px rgba(0, 55, 176, 0.15);
-        }
-    </style>
-{% include "core/includes/pwa_head.html" %}
-</head>
-<body class="min-h-screen bg-[#F0F4FF] flex items-center justify-center px-4">
+{% extends "core/base.html" %}
+{% block title %}UPGCExam - Vérification{% endblock %}
+{% block extra_css %}
+<style>
+    * { font-family: 'Inter', sans-serif; }
+    .otp-input { width: 48px; height: 56px; text-align: center; font-size: 1.25rem; font-weight: 700; }
+    .otp-input:focus { outline: none; border-color: #0037B0; box-shadow: 0 0 0 3px rgba(0, 55, 176, 0.15); }
+</style>
+{% endblock %}
+{% block body_class %}bg-[#F0F4FF]{% endblock %}
+{% block navbar %}{% endblock %}
+{% block footer %}{% endblock %}
+{% block body %}
+<div class="min-h-screen flex items-center justify-center px-4">
     <div class="w-full max-w-md">
-        <!-- Logo -->
         <div class="text-center mb-8">
             <h1 class="text-3xl font-black text-[#0037B0]">UPGCExam</h1>
             <p class="text-sm text-gray-500 mt-1">Excellence Académique &amp; Innovation</p>
         </div>
-
-        <!-- Carte de vérification -->
         <div class="bg-white rounded-2xl shadow-sm p-8">
             <div class="text-center mb-6">
                 <div class="w-14 h-14 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -43,9 +28,7 @@
                 <p class="text-sm text-gray-500">Un code de vérification a été envoyé à</p>
                 <p class="text-sm font-semibold text-gray-700">{{ email }}</p>
             </div>
-
-    {% include "core/includes/messages.html" %}
-
+            {% include "core/includes/messages.html" %}
             <form method="post" class="space-y-6">
                 {% csrf_token %}
                 <div>
@@ -60,13 +43,8 @@
                     </div>
                     <input type="hidden" name="code" id="codeHidden">
                 </div>
-
-                <button type="submit"
-                        class="w-full bg-[#0037B0] text-white py-2.5 rounded-lg font-bold hover:bg-[#002A8A] transition duration-200 text-sm">
-                    Vérifier
-                </button>
+                <button type="submit" class="w-full bg-[#0037B0] text-white py-2.5 rounded-lg font-bold hover:bg-[#002A8A] transition duration-200 text-sm">Vérifier</button>
             </form>
-
             <div class="text-center mt-6">
                 <p class="text-sm text-gray-500">
                     Vous n'avez pas reçu le code ?
@@ -75,34 +53,24 @@
             </div>
         </div>
     </div>
+</div>
 
-    <script>
-        function moveNext(input, index) {
-            const container = document.getElementById('otpContainer');
-            const inputs = container.querySelectorAll('input');
-            const hidden = document.getElementById('codeHidden');
-
-            // Auto-advance to next field
-            if (input.value.length === 1 && index < 5) {
-                inputs[index + 1].focus();
-            }
-
-            // Update hidden input with full code
-            let code = '';
-            inputs.forEach(inp => code += inp.value);
-            hidden.value = code;
+<script>
+function moveNext(input, index) {
+    const container = document.getElementById('otpContainer');
+    const inputs = container.querySelectorAll('input');
+    const hidden = document.getElementById('codeHidden');
+    if (input.value.length === 1 && index < 5) inputs[index + 1].focus();
+    let code = '';
+    inputs.forEach(inp => code += inp.value);
+    hidden.value = code;
+}
+document.querySelectorAll('.otp-input').forEach((input, index) => {
+    input.addEventListener('keydown', function(e) {
+        if (e.key === 'Backspace' && this.value === '' && index > 0) {
+            document.getElementById('otpContainer').querySelectorAll('input')[index - 1].focus();
         }
-
-        // Allow backspace to go to previous field
-        document.querySelectorAll('.otp-input').forEach((input, index) => {
-            input.addEventListener('keydown', function(e) {
-                if (e.key === 'Backspace' && this.value === '' && index > 0) {
-                    const inputs = document.getElementById('otpContainer').querySelectorAll('input');
-                    inputs[index - 1].focus();
-                }
-            });
-        });
-    </script>
-{% include "core/includes/pwa_footer.html" %}
-</body>
-</html>
+    });
+});
+</script>
+{% endblock %}

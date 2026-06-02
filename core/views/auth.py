@@ -30,7 +30,7 @@ def connexion(request):
 
     if request.method == "POST":
         username_input = request.POST.get("username", "")
-        password = request.POST.get("password", "")
+        password = request.POST.get("password", None)
         user = authenticate(request, username=username_input, password=password)
         if user:
             login(request, user)
@@ -62,7 +62,7 @@ def inscription(request):
     if request.method == "POST":
         username = request.POST.get("username", "").strip()
         email = request.POST.get("email", "").strip().lower()
-        password = request.POST.get("password", "")
+        password = request.POST.get("password", None)
         password2 = request.POST.get("password2", "")
         filiere_id = request.POST.get("filiere", "")
 
@@ -281,7 +281,7 @@ def password_reset_new(request):
         return redirect("password_reset")
 
     if request.method == "POST":
-        password = request.POST.get("password", "")
+        password = request.POST.get("password", None)
         password2 = request.POST.get("password2", "")
 
         if len(password) < 8:
