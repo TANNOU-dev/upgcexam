@@ -25,22 +25,7 @@
             <div>
                 <h2 class="text-base sm:text-lg font-bold text-gray-900 mb-3 sm:mb-4">📋 Activités (100 derniers)</h2>
                 <div class="bg-white rounded-xl shadow-sm overflow-hidden">
-                    <!-- Mobile cards -->
-                    <div class="sm:hidden divide-y divide-gray-100">
-                        {% for a in activites %}
-                        <div class="p-3 hover:bg-gray-50/50 transition">
-                            <div class="flex items-center justify-between mb-1">
-                                <span class="font-semibold text-xs text-gray-900">{{ a.utilisateur.username }}</span>
-                                <span class="text-[10px] text-gray-400">{{ a.cree_le|timesince }}</span>
-                            </div>
-                            <p class="text-xs text-gray-500 leading-relaxed">{{ a.description|truncatechars:80 }}</p>
-                        </div>
-                        {% empty %}
-                        <div class="p-6 text-center text-xs text-gray-400">Aucune activité.</div>
-                        {% endfor %}
-                    </div>
-                    <!-- Desktop table -->
-                    <div class="hidden sm:block overflow-x-auto">
+                    <div class="overflow-x-auto">
                         <table class="w-full text-sm">
                             <thead>
                                 <tr class="bg-gray-50 text-left text-[10px] sm:text-xs font-bold uppercase tracking-wider text-gray-500">
@@ -69,22 +54,7 @@
             <div>
                 <h2 class="text-base sm:text-lg font-bold text-gray-900 mb-3 sm:mb-4">⬇️ Téléchargements (100 derniers)</h2>
                 <div class="bg-white rounded-xl shadow-sm overflow-hidden">
-                    <!-- Mobile cards -->
-                    <div class="sm:hidden divide-y divide-gray-100">
-                        {% for t in telechargements %}
-                        <div class="p-3 hover:bg-gray-50/50 transition">
-                            <div class="flex items-center justify-between mb-1">
-                                <span class="font-semibold text-xs text-gray-900">{{ t.utilisateur.username }}</span>
-                                <span class="text-[10px] text-gray-400">{{ t.telecharge_le|timesince }}</span>
-                            </div>
-                            <p class="text-xs text-gray-500 truncate">{{ t.sujet.titre|truncatechars:60 }}</p>
-                        </div>
-                        {% empty %}
-                        <div class="p-6 text-center text-xs text-gray-400">Aucun téléchargement.</div>
-                        {% endfor %}
-                    </div>
-                    <!-- Desktop table -->
-                    <div class="hidden sm:block overflow-x-auto">
+                    <div class="overflow-x-auto">
                         <table class="w-full text-sm">
                             <thead>
                                 <tr class="bg-gray-50 text-left text-[10px] sm:text-xs font-bold uppercase tracking-wider text-gray-500">

@@ -15,22 +15,20 @@ from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.http import require_POST
-from django_ratelimit.decorators import ratelimit
 
 from ..models import Filiere, Utilisateur, Verification
 
 from ..navigation import safe_next_url
-from .shared import creer_code_verification, verifier_code_verification
+from .shared import creer_code_verification
 
 
-@ratelimit(key="ip", rate="10/m", method="POST", block=True)
 def connexion(request):
     if request.user.is_authenticated:
         return redirect("tableau_de_bord")
 
     if request.method == "POST":
         username_input = request.POST.get("username", "")
-        password = request.POST.get("password", None)
+        password = request.POST.get("password", "")
         user = authenticate(request, username=username_input, password=password)
         if user:
             login(request, user)
@@ -53,7 +51,6 @@ def connexion(request):
     )
 
 
-@ratelimit(key="ip", rate="5/m", method="POST", block=True)
 def inscription(request):
     if request.user.is_authenticated:
         return redirect("tableau_de_bord")
@@ -61,8 +58,8 @@ def inscription(request):
     filieres = Filiere.objects.all()
     if request.method == "POST":
         username = request.POST.get("username", "").strip()
-        email = request.POST.get("email", "").strip().lower()
-        password = request.POST.get("password", None)
+        email = request.POST.get("email", "").strip()
+        password = request.POST.get("password", "")
         password2 = request.POST.get("password2", "")
         filiere_id = request.POST.get("filiere", "")
 
@@ -86,7 +83,7 @@ def inscription(request):
                 try:
                     profil.filiere = Filiere.objects.get(id=filiere_id)
                     profil.save()
-                except (Filiere.DoesNotExist, ValueError):
+                except Filiere.DoesNotExist:
                     pass
             try:
                 creer_code_verification(email, request)
@@ -119,24 +116,31 @@ def verification(request):
 
     if request.method == "POST":
         code_saisi = request.POST.get("code", "").strip()
-        statut = verifier_code_verification(email, code_saisi, Verification.USAGE_EMAIL)
-        if statut == "valide":
-            request.session.pop("email_a_verifier", None)
-            user = User.objects.filter(email__iexact=email).first()
-            if user is not None:
-                user.backend = "django.contrib.auth.backends.ModelBackend"
-                login(request, user)
-                profil, _ = Utilisateur.objects.get_or_create(user=user)
-                profil.email_verifie = True
-                profil.save(update_fields=["email_verifie"])
-            messages.success(request, "Email vérifié avec succès.")
-            request.session.pop("verification_next", None)
-            return redirect(safe_next_url(next_url))
-        if statut == "bloque":
-            messages.error(request, "Trop de tentatives. Le code a été invalidé. Demandez-en un nouveau.")
-        elif statut == "expire":
-            messages.error(request, "Le code a expiré.")
-        else:
+        try:
+            verif = Verification.objects.get(email=email, code=code_saisi)
+            if verif.est_valide():
+                verif.utilise = True
+                verif.save()
+                request.session.pop("email_a_verifier", None)
+                try:
+                    user = User.objects.get(email=email)
+                    user.backend = "django.contrib.auth.backends.ModelBackend"
+                    login(request, user)
+                    profil, _ = Utilisateur.objects.get_or_create(user=user)
+                    profil.email_verifie = True
+                    profil.save()
+                except User.DoesNotExist:
+                    pass
+                messages.success(request, "Email vérifié avec succès.")
+                request.session.pop("verification_next", None)
+                return redirect(safe_next_url(next_url))
+            else:
+                bloque = verif.enregistrer_echec()
+                if bloque:
+                    messages.error(request, "Trop de tentatives. Le code a été invalidé. Demandez-en un nouveau.")
+                else:
+                    messages.error(request, "Code invalide.")
+        except Verification.DoesNotExist:
             messages.error(request, "Code invalide.")
 
     return render(
@@ -158,23 +162,18 @@ def parametres(request):
     if request.method == "POST":
         user = request.user
         nouveau_username = request.POST.get("username", "").strip()
-        nouvel_email = request.POST.get("email", "").strip().lower()
+        nouvel_email = request.POST.get("email", "").strip()
         ancien_mdp = request.POST.get("ancien_mot_de_passe", "")
-        nouveau_mdp = request.POST.get("nouveau_mot_de_passe", None)
+        nouveau_mdp = request.POST.get("nouveau_mot_de_passe", "")
 
         changer_mdp = bool(nouveau_mdp)
-        changer_email = bool(nouvel_email and nouvel_email != user.email)
         changer_profil = bool(
             (nouveau_username and nouveau_username != user.username)
-            or changer_email
+            or (nouvel_email and nouvel_email != user.email)
         )
 
         if not changer_mdp and not changer_profil:
             messages.warning(request, "Aucune modification détectée.")
-            return redirect("parametres")
-
-        if changer_email and (not ancien_mdp or not user.check_password(ancien_mdp)):
-            messages.error(request, "Mot de passe actuel requis pour modifier votre email.")
             return redirect("parametres")
 
         if changer_mdp:
@@ -193,7 +192,7 @@ def parametres(request):
                 return redirect("parametres")
             user.username = nouveau_username
 
-        if changer_email:
+        if nouvel_email and nouvel_email != user.email:
             if User.objects.filter(email=nouvel_email).exclude(id=user.id).exists():
                 messages.error(request, "Cet email est déjà utilisé")
                 return redirect("parametres")
@@ -204,19 +203,6 @@ def parametres(request):
             update_session_auth_hash(request, user)
 
         user.save()
-        if changer_email:
-            profil, _ = Utilisateur.objects.get_or_create(user=user)
-            profil.email_verifie = False
-            profil.save(update_fields=["email_verifie"])
-            try:
-                creer_code_verification(nouvel_email, request)
-            except Exception:
-                messages.error(request, "Email mis à jour, mais le code de vérification n'a pas pu être envoyé.")
-                return redirect("parametres")
-            request.session["email_a_verifier"] = nouvel_email
-            messages.info(request, "Un code de vérification a été envoyé à votre nouvelle adresse email.")
-            return redirect("verification")
-
         messages.success(request, "Informations mises à jour avec succès !")
         return redirect("parametres")
 
@@ -225,20 +211,17 @@ def parametres(request):
 
 # ─── Mot de passe oublié (flux avec code de vérification) ───────────────
 
-@ratelimit(key="ip", rate="5/m", method="POST", block=True)
 def password_reset_envoyer(request):
     """Étape 1 : saisir l'email, génère un code de vérification."""
     if request.method == "POST":
         email = request.POST.get("email", "").strip().lower()
-        request.session.pop("reset_code_verified", None)
-        request.session.pop("reset_code_verified_at", None)
+        if not User.objects.filter(email=email).exists():
+            messages.error(request, "Aucun compte trouvé avec cette adresse email.")
+            return render(request, "core/password_reset.html")
+
+        code = creer_code_verification(email, request)
         request.session["reset_email"] = email
-        if User.objects.filter(email__iexact=email).exists():
-            creer_code_verification(email, request, usage=Verification.USAGE_PASSWORD_RESET)
-        messages.success(
-            request,
-            "Si un compte correspond à cette adresse, un code de vérification a été envoyé.",
-        )
+        messages.success(request, "Un code de vérification a été envoyé à votre adresse email.")
         return redirect("password_reset_code")
 
     return render(request, "core/password_reset.html")
@@ -249,19 +232,22 @@ def password_reset_code(request):
     email = request.session.get("reset_email", "")
     if not email:
         return redirect("password_reset")
-
+    
     if request.method == "POST":
         code_saisi = request.POST.get("code", "").strip()
-        statut = verifier_code_verification(email, code_saisi, Verification.USAGE_PASSWORD_RESET)
-        if statut == "valide":
-            request.session["reset_code_verified"] = True
-            request.session["reset_code_verified_at"] = timezone.now().timestamp()
-            return redirect("password_reset_new")
-        if statut == "bloque":
-            messages.error(request, "Trop de tentatives. Le code a été invalidé.")
-        elif statut == "expire":
-            messages.error(request, "Le code a expiré.")
-        else:
+        try:
+            verif = Verification.objects.get(email=email, code=code_saisi)
+            if verif.est_valide():
+                verif.utilise = True
+                verif.save()
+                return redirect("password_reset_new")
+            else:
+                bloque = verif.enregistrer_echec()
+                if bloque:
+                    messages.error(request, "Trop de tentatives. Le code a été invalidé.")
+                else:
+                    messages.error(request, "Code invalide.")
+        except Verification.DoesNotExist:
             messages.error(request, "Code invalide.")
 
     return render(request, "core/password_reset_code.html", {"email": email})
@@ -270,18 +256,12 @@ def password_reset_code(request):
 def password_reset_new(request):
     """Étape 3 : choisir un nouveau mot de passe."""
     email = request.session.get("reset_email", "")
-    code_verified = request.session.get("reset_code_verified", False)
-    code_verified_at = request.session.get("reset_code_verified_at")
-    if (
-        not email
-        or not code_verified
-        or not code_verified_at
-        or timezone.now().timestamp() - code_verified_at > 10 * 60
-    ):
+    code_verified = request.session.pop("reset_code_verified", False)
+    if not email or not code_verified:
         return redirect("password_reset")
 
     if request.method == "POST":
-        password = request.POST.get("password", None)
+        password = request.POST.get("password", "")
         password2 = request.POST.get("password2", "")
 
         if len(password) < 8:
@@ -295,8 +275,6 @@ def password_reset_new(request):
                 user.set_password(password)
                 user.save()
                 request.session.pop("reset_email", None)
-                request.session.pop("reset_code_verified", None)
-                request.session.pop("reset_code_verified_at", None)
                 messages.success(request, "Mot de passe réinitialisé avec succès. Connectez-vous !")
                 return redirect("connexion")
             except ValidationError as erreurs:

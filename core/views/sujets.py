@@ -18,37 +18,7 @@ from ..navigation import (
     redirect_apres_sujet,
     safe_next_url,
 )
-from .shared import (
-    _annees_actives,
-    _get_sujet_modifiable,
-    _sujets_accessibles,
-    notifier_admins,
-    valider_fichier_pdf,
-)
-
-
-def _catalog_ids_are_valid(filiere_id, niveau_id):
-    """Vérifie et normalise les identifiants de catalogue reçus par formulaire."""
-    try:
-        filiere_id = int(filiere_id)
-        niveau_id = int(niveau_id)
-    except (TypeError, ValueError):
-        return None
-    if (
-        not Filiere.objects.filter(id=filiere_id).exists()
-        or not Niveau.objects.filter(id=niveau_id).exists()
-    ):
-        return None
-    return filiere_id, niveau_id
-
-
-def _academic_year_is_valid(value):
-    """Accepte uniquement une année universitaire au format 2025-2026."""
-    try:
-        first_year, second_year = (int(part) for part in value.split("-"))
-    except (TypeError, ValueError):
-        return False
-    return len(value) == 9 and second_year == first_year + 1
+from .shared import _sujets_accessibles, _get_sujet_modifiable, creer_code_verification, _annees_actives, valider_fichier_pdf, notifier_admins
 
 
 def accueil(request):
@@ -84,15 +54,9 @@ def bibliotheque(request):
             Q(titre__icontains=query) | Q(description__icontains=query)
         )
     if filiere_id:
-        try:
-            sujets = sujets.filter(filiere_id=int(filiere_id))
-        except ValueError:
-            sujets = sujets.none()
+        sujets = sujets.filter(filiere_id=filiere_id)
     if matiere_id:
-        try:
-            sujets = sujets.filter(matiere_id=int(matiere_id))
-        except ValueError:
-            sujets = sujets.none()
+        sujets = sujets.filter(matiere_id=matiere_id)
     if annee:
         sujets = sujets.filter(annee_academique=annee)
 
@@ -174,23 +138,9 @@ def ajouter_sujet(request):
 
         if not all([titre, filiere_id, nom_matiere, niveau_id, annee_academique, fichier]):
             messages.error(request, "Tous les champs sont obligatoires.")
-            return redirect("ajouter_sujet")
-        catalog_ids = _catalog_ids_are_valid(filiere_id, niveau_id)
-        if catalog_ids is None:
-            messages.error(request, "Filière ou niveau invalide.")
-            return redirect("ajouter_sujet")
-        filiere_id, niveau_id = catalog_ids
-        if (
-            len(titre) > 200
-            or len(nom_matiere) > 150
-            or not _academic_year_is_valid(annee_academique)
-        ):
-            messages.error(request, "Les informations du sujet sont invalides.")
-            return redirect("ajouter_sujet")
         ok, err = valider_fichier_pdf(fichier)
         if not ok:
             messages.error(request, err)
-            return redirect("ajouter_sujet")
         else:
             matiere, _ = Matiere.objects.get_or_create(
                 nom__iexact=nom_matiere,
@@ -215,11 +165,12 @@ def ajouter_sujet(request):
                 description=f"Ajout du sujet : {titre}",
             )
             messages.success(request, "✅ Sujet ajouté avec succès ! En attente.")
+            # Notifier les admins
             notifier_admins(
-                "🆕 Nouveau sujet en attente",
-                f"{titre} — {nom_matiere}",
-                url=reverse("admin_sujets"),
-            )
+                    "🆕 Nouveau sujet en attente",
+                    f"{titre} — {nom_matiere}",
+                    url=reverse("admin_sujets"),
+                )
             return redirect_apres_sujet(request)
 
     return render(
@@ -239,6 +190,7 @@ def modifier_sujet(request, sujet_id):
     sujet = _get_sujet_modifiable(request, sujet_id)
 
     filieres = Filiere.objects.all()
+    matieres = Matiere.objects.all()
     niveaux = Niveau.objects.all()
     annees = _annees_actives()
 
@@ -257,28 +209,9 @@ def modifier_sujet(request, sujet_id):
         nom_matiere = request.POST.get("matiere", "").strip()
         niveau_id = request.POST.get("niveau")
         annee_academique = request.POST.get("annee_academique", "").strip()
-        description = request.POST.get("description", "").strip()
+        description = request.POST.get("description", "")
         fichier = request.FILES.get("fichier_pdf")
         visibilite = request.POST.get("visibilite", "visible")
-
-        if not all([titre, filiere_id, nom_matiere, niveau_id, annee_academique]):
-            messages.error(request, "Tous les champs obligatoires doivent être remplis.")
-            return redirect("modifier_sujet", sujet_id=sujet.id)
-        catalog_ids = _catalog_ids_are_valid(filiere_id, niveau_id)
-        if catalog_ids is None:
-            messages.error(request, "Filière ou niveau invalide.")
-            return redirect("modifier_sujet", sujet_id=sujet.id)
-        filiere_id, niveau_id = catalog_ids
-        if (
-            len(titre) > 200
-            or len(nom_matiere) > 150
-            or not _academic_year_is_valid(annee_academique)
-        ):
-            messages.error(request, "Les informations du sujet sont invalides.")
-            return redirect("modifier_sujet", sujet_id=sujet.id)
-        if request.user.is_staff and visibilite not in dict(Sujet.VISIBILITE_CHOICES):
-            messages.error(request, "Visibilité invalide.")
-            return redirect("modifier_sujet", sujet_id=sujet.id)
 
         if titre:
             sujet.titre = titre
@@ -332,11 +265,12 @@ def modifier_sujet(request, sujet_id):
         sujet.statut = "en_attente"
         sujet.save()
         messages.success(request, "✅ Modifications enregistrées. En attente de validation.")
+        # Notifier les admins
         notifier_admins(
-            "🔄 Sujet modifié — en attente",
-            f"{sujet.titre} — {sujet.matiere.nom}",
-            url=reverse("admin_sujets"),
-        )
+                "🔄 Sujet modifié — en attente",
+                f"{sujet.titre} — {sujet.matiere.nom}",
+                url=reverse("admin_sujets"),
+            )
         return redirect(reverse("bibliotheque") + query_bibliotheque(request))
 
     retour = ctx_retour(request)
@@ -349,6 +283,7 @@ def modifier_sujet(request, sujet_id):
         {
             "sujet": sujet,
             "filieres": filieres,
+            "matieres": matieres,
             "niveaux": niveaux,
             "annees": annees,
             **retour,

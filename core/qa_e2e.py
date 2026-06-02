@@ -8,19 +8,9 @@ import sys
 from io import StringIO
 
 from django.contrib.auth.models import User
-from django.contrib.auth.password_validation import validate_password as _validate_password
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import Client
 from django.urls import reverse
-
-
-import hashlib
-
-def _test_password(username="default"):
-    """Generate deterministic test password without hardcoded secrets"""
-    raw = f"upgx_qa::{username}::2026"
-    return hashlib.sha256(raw.encode()).hexdigest()[:24]
-
 from django.utils import timezone
 
 from core.models import Filiere, Matiere, Niveau, Sujet, Utilisateur, Verification
@@ -92,8 +82,8 @@ r = client_anon.post(
     {
         "username": "qa_etudiant",
         "email": "qa_etudiant@test.local",
-        "password": _test_password("qatest"),
-        "password2": _test_password("qatest"),
+        "password": "QaTest12345!",
+        "password2": "QaTest12345!",
     },
 )
 loc = r.headers.get("Location", "") if r.status_code == 302 else ""
@@ -124,7 +114,7 @@ check("Mauvais mot de passe → reste sur connexion", r.status_code == 200)
 
 r = client.post(
     f"{reverse('connexion')}?next=https://evil.com",
-    {"username": "qa_etudiant", "password": _test_password("qatest")},
+    {"username": "qa_etudiant", "password": "QaTest12345!"},
 )
 loc = r.headers.get("Location", "")
 check("Open redirect bloqué", r.status_code == 302 and "evil.com" not in loc)
@@ -136,7 +126,7 @@ r = client.post(reverse("deconnexion"))
 check("Déconnexion POST → redirect accueil", r.status_code == 302 and reverse("accueil") in r.headers.get("Location", ""))
 
 # Re-login
-client.post(reverse("connexion"), {"username": "qa_etudiant", "password": _test_password("qatest")})
+client.post(reverse("connexion"), {"username": "qa_etudiant", "password": "QaTest12345!"})
 
 # --- 5. Ajout sujet ---
 section("5. Ajout de sujet (étudiant)")
@@ -218,8 +208,7 @@ admin_user, created = User.objects.get_or_create(
     defaults={"email": "qa_admin@test.local", "is_staff": True},
 )
 if created:
-    _validate_password(_test_password("qaadmin"), user=admin_user)
-    admin_user.set_password(_test_password("qaadmin"))
+    admin_user.set_password("QaAdmin12345!")
     admin_user.save()
     Utilisateur.objects.get_or_create(user=admin_user, defaults={"email_verifie": True})
 

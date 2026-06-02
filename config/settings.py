@@ -17,14 +17,10 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
-def env_bool(name, default="false"):
-    return os.environ.get(name, default).lower() in ("1", "true", "yes")
-
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
-DEBUG = env_bool("DJANGO_DEBUG", os.environ.get("DEBUG", "false"))
+DEBUG = os.environ.get("DJANGO_DEBUG", "false").lower() in ("1", "true", "yes")
 
 SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY")
 if not SECRET_KEY:
@@ -39,11 +35,6 @@ ALLOWED_HOSTS = [
     h.strip()
     for h in os.environ.get("DJANGO_ALLOWED_HOSTS", "localhost,127.0.0.1,testserver").split(",")
     if h.strip()
-]
-CSRF_TRUSTED_ORIGINS = [
-    origin.strip()
-    for origin in os.environ.get("DJANGO_CSRF_TRUSTED_ORIGINS", "").split(",")
-    if origin.strip()
 ]
 
 
@@ -70,7 +61,6 @@ SITE_ID = 1
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
-    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -92,7 +82,6 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
-                "core.context_processors.pwa_settings",
             ],
         },
     },
@@ -101,61 +90,23 @@ TEMPLATES = [
 WSGI_APPLICATION = "config.wsgi.application"
 ASGI_APPLICATION = "config.asgi.application"
 
-DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
-
 # Couche de communication Channels (dev : InMemory, prod : Redis)
-REDIS_URL = os.environ.get("REDIS_URL", "")
-if REDIS_URL:
-    CHANNEL_LAYERS = {
-        "default": {
-            "BACKEND": "channels_redis.core.RedisChannelLayer",
-            "CONFIG": {"hosts": [REDIS_URL]},
-        },
-    }
-    CACHES = {
-        "default": {
-            "BACKEND": "django.core.cache.backends.redis.RedisCache",
-            "LOCATION": REDIS_URL,
-        },
-    }
-else:
-    CHANNEL_LAYERS = {
-        "default": {
-            "BACKEND": "channels.layers.InMemoryChannelLayer",
-        },
-    }
-    CACHES = {
-        "default": {
-            "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
-            "LOCATION": "upgcexam-cache",
-        },
-    }
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels.layers.InMemoryChannelLayer",
+    },
+}
 
 
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
-POSTGRES_DB = os.environ.get("POSTGRES_DB", "")
-if POSTGRES_DB:
-    DATABASES = {
-        "default": {
-            "ENGINE": "django.db.backends.postgresql",
-            "NAME": POSTGRES_DB,
-            "USER": os.environ.get("POSTGRES_USER", ""),
-            "PASSWORD": os.environ.get("POSTGRES_PASSWORD", ""),
-            "HOST": os.environ.get("POSTGRES_HOST", "localhost"),
-            "PORT": os.environ.get("POSTGRES_PORT", "5432"),
-            "CONN_MAX_AGE": 60,
-            "CONN_HEALTH_CHECKS": True,
-        }
+DATABASES = {
+    "default": {
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": BASE_DIR / "db.sqlite3",
     }
-else:
-    DATABASES = {
-        "default": {
-            "ENGINE": "django.db.backends.sqlite3",
-            "NAME": BASE_DIR / "db.sqlite3",
-        }
-    }
+}
 
 
 # Password validation
@@ -194,10 +145,10 @@ EMAIL_HOST = os.environ.get("DJANGO_EMAIL_HOST", "")
 EMAIL_PORT = int(os.environ.get("DJANGO_EMAIL_PORT", "587"))
 EMAIL_HOST_USER = os.environ.get("DJANGO_EMAIL_HOST_USER", "")
 EMAIL_HOST_PASSWORD = os.environ.get("DJANGO_EMAIL_HOST_PASSWORD", "")
-EMAIL_USE_TLS = env_bool("DJANGO_EMAIL_USE_TLS", "true")
+EMAIL_USE_TLS = os.environ.get("DJANGO_EMAIL_USE_TLS", "true").lower() in ("1", "true", "yes")
 
 # Sécurité HTTPS (production — activer explicitement avec DJANGO_SECURE_SSL=true)
-if env_bool("DJANGO_SECURE_SSL"):
+if os.environ.get("DJANGO_SECURE_SSL", "false").lower() in ("1", "true", "yes"):
     SECURE_SSL_REDIRECT = True
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
@@ -209,22 +160,10 @@ if env_bool("DJANGO_SECURE_SSL"):
 FILE_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024  # 10 Mo
 
 # Logging
+import os
+
 LOG_DIR = BASE_DIR / "logs"
-LOG_HANDLERS = ["console"]
-LOGGING_HANDLERS = {
-    "console": {
-        "class": "logging.StreamHandler",
-        "formatter": "verbose",
-    },
-}
-if env_bool("DJANGO_LOG_TO_FILE"):
-    os.makedirs(LOG_DIR, exist_ok=True)
-    LOG_HANDLERS.append("file")
-    LOGGING_HANDLERS["file"] = {
-        "class": "logging.FileHandler",
-        "filename": str(LOG_DIR / "upgcexam.log"),
-        "formatter": "verbose",
-    }
+os.makedirs(LOG_DIR, exist_ok=True)
 
 LOGGING = {
     "version": 1,
@@ -235,19 +174,29 @@ LOGGING = {
             "style": "{",
         },
     },
-    "handlers": LOGGING_HANDLERS,
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "formatter": "verbose",
+        },
+        "file": {
+            "class": "logging.FileHandler",
+            "filename": str(LOG_DIR / "upgcexam.log"),
+            "formatter": "verbose",
+        },
+    },
     "root": {
-        "handlers": LOG_HANDLERS,
+        "handlers": ["console", "file"],
         "level": "ERROR",
     },
     "loggers": {
         "django": {
-            "handlers": LOG_HANDLERS,
+            "handlers": ["console", "file"],
             "level": "ERROR",
             "propagate": False,
         },
         "core": {
-            "handlers": LOG_HANDLERS,
+            "handlers": ["console", "file"],
             "level": "WARNING",
             "propagate": False,
         },
@@ -281,26 +230,27 @@ SOCIALACCOUNT_PROVIDERS = {
 }
 
 # Redirection après connexion sociale
-SOCIALACCOUNT_LOGIN_ON_GET = False
+SOCIALACCOUNT_LOGIN_ON_GET = True
 SOCIALACCOUNT_AUTO_SIGNUP = True
 ACCOUNT_SIGNUP_FIELDS = ["email*", "username*", "password1*", "password2*"]
 ACCOUNT_EMAIL_VERIFICATION = "none"
 LOGIN_REDIRECT_URL = "/tableau-de-bord/"
 LOGOUT_REDIRECT_URL = "/"
 
+
+# Cache (optionnel — désactivé si redis non disponible)
+# CACHES = {
+#     "default": {
+#         "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+#         "LOCATION": "upgcexam-cache",
+#     }
+# }
+
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
-STATIC_URL = "/static/"
+STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
-STORAGES = {
-    "default": {
-        "BACKEND": "django.core.files.storage.FileSystemStorage",
-    },
-    "staticfiles": {
-        "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage",
-    },
-}
 
 # Media files (uploaded PDFs)
 MEDIA_URL = "/media/"

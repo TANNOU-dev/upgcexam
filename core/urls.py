@@ -41,6 +41,5 @@ urlpatterns = [
     path('administration/verifications/', admin.admin_verifications, name='admin_verifications'),
     path('administration/groupes/', admin.admin_groupes, name='admin_groupes'),
     path('administration/sessions-presence/', admin.admin_sessions_presence, name='admin_sessions_presence'),
-    path('sw.js', pwa.service_worker, name='service_worker'),
     path('pwa/subscribe/', pwa.push_subscribe, name='push_subscribe'),
 ]

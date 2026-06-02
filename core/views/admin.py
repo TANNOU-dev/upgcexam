@@ -3,17 +3,16 @@ Vues administration : dashboard, gestion CRUD, logs.
 """
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.models import Group, Permission, User
+from django.contrib.auth.models import User
 from django.core.paginator import Paginator
-from django.db import IntegrityError
-from django.db.models import Avg, Count, Max, Prefetch, Q, Sum
+from django.db.models import Avg, Count, Q
 from django.db.models.functions import ExtractWeekDay
 from django.http import FileResponse, Http404, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
 
-from ..decorators import email_verifie_required, staff_required, superuser_required
+from ..decorators import email_verifie_required, staff_required
 from ..models import (
     Activite,
     Filiere,
@@ -32,6 +31,8 @@ from .shared import _sujets_accessibles, creer_code_verification, salutation, _a
 @login_required
 @staff_required
 def admin_dashboard(request):
+
+    from django.contrib.auth.models import Group
 
     stats = {
         "total_sujets": Sujet.objects.count(),
@@ -66,6 +67,7 @@ def admin_dashboard(request):
         sessions_semaine.values("utilisateur").distinct().count()
     )
 
+    from django.db.models import Sum
     temps_total_ajd = sessions_aujourdhui.aggregate(total=Sum("secondes"))["total"] or 0
     temps_total_semaine = sessions_semaine.aggregate(total=Sum("secondes"))["total"] or 0
 
@@ -141,7 +143,7 @@ def admin_dashboard(request):
                     url=reverse("detail_sujet", args=[sujet.id]),
                 )
             messages.success(request, f"Sujet « {sujet.titre} » validé et publié.")
-        except (Sujet.DoesNotExist, ValueError):
+        except Sujet.DoesNotExist:
             messages.error(request, "Sujet introuvable ou déjà traité.")
         return redirect("admin_dashboard")
 
@@ -337,53 +339,16 @@ def mon_activite_json(request):
     })
 
 
-def _parse_subject_ids(values):
-    """Convertit une sélection de sujets en identifiants entiers uniques."""
-    subject_ids = []
-    for value in values:
-        try:
-            subject_id = int(value)
-        except (TypeError, ValueError):
-            continue
-        if subject_id not in subject_ids:
-            subject_ids.append(subject_id)
-    return subject_ids
-
-
-def _update_subjects_with_activity(user, subject_ids, filters, changes, activity_type, label):
-    """Met à jour des sujets existants et journalise uniquement les lignes modifiées."""
-    updated_ids = list(
-        Sujet.objects.filter(id__in=subject_ids, **filters).values_list("id", flat=True)
-    )
-    Sujet.objects.filter(id__in=updated_ids).update(**changes)
-    Activite.objects.bulk_create(
-        [
-            Activite(
-                utilisateur=user,
-                type=activity_type,
-                sujet_id=subject_id,
-                description=f"{label} du sujet #{subject_id}",
-            )
-            for subject_id in updated_ids
-        ]
-    )
-    return len(updated_ids)
-
-
 @login_required
 @staff_required
 def admin_utilisateurs(request):
 
     if request.method == "POST":
-        if not request.user.is_superuser:
-            messages.error(request, "Action réservée aux superutilisateurs.")
-            return redirect("admin_utilisateurs")
-
         action = request.POST.get("action")
         user_id = request.POST.get("user_id")
         try:
             target = User.objects.get(id=user_id) if user_id else None
-        except (User.DoesNotExist, ValueError):
+        except User.DoesNotExist:
             messages.error(request, "Utilisateur introuvable.")
             return redirect("admin_utilisateurs")
 
@@ -438,40 +403,27 @@ def admin_filieres(request):
         if action == "ajouter":
             nom = request.POST.get("nom", "").strip()
             code = request.POST.get("code", "").strip().upper()
-            if nom and code and len(nom) <= 100 and len(code) <= 10:
-                try:
-                    Filiere.objects.create(nom=nom, code=code)
-                    messages.success(request, f"Filière {code} - {nom} ajoutée.")
-                except IntegrityError:
-                    messages.error(request, "Ce code de filière existe déjà.")
+            if nom and code:
+                Filiere.objects.create(nom=nom, code=code)
+                messages.success(request, f"Filière {code} - {nom} ajoutée.")
             else:
-                messages.error(request, "Nom ou code de filière invalide.")
+                messages.error(request, "Nom et code requis.")
         elif action == "modifier":
             fid = request.POST.get("filiere_id")
             nom = request.POST.get("nom", "").strip()
             code = request.POST.get("code", "").strip().upper()
-            if fid and nom and code and len(nom) <= 100 and len(code) <= 10:
-                try:
-                    updated = Filiere.objects.filter(id=fid).update(nom=nom, code=code)
-                    if updated:
-                        messages.success(request, "Filière modifiée.")
-                except (IntegrityError, ValueError):
-                    messages.error(request, "Modification de filière invalide.")
+            if fid and nom and code:
+                Filiere.objects.filter(id=fid).update(nom=nom, code=code)
+                messages.success(request, "Filière modifiée.")
         elif action == "supprimer":
             fid = request.POST.get("filiere_id")
             if fid:
-                try:
-                    Filiere.objects.filter(id=fid).delete()
-                    messages.success(request, "Filière supprimée.")
-                except ValueError:
-                    messages.error(request, "Filière invalide.")
+                Filiere.objects.filter(id=fid).delete()
+                messages.success(request, "Filière supprimée.")
         return redirect("admin_filieres")
 
     filieres = (
-        Filiere.objects.annotate(
-            nb_sujets=Count("sujets", distinct=True),
-            nb_etudiants=Count("etudiants", distinct=True),
-        )
+        Filiere.objects.annotate(nb_sujets=Count("sujets"), nb_etudiants=Count("etudiants"))
         .order_by("code")
     )
     return render(request, "core/admin/filieres.html", {"filieres": filieres})
@@ -486,30 +438,16 @@ def admin_matieres(request):
         if action == "ajouter":
             nom = request.POST.get("nom", "").strip()
             filiere_id = request.POST.get("filiere_id")
-            if nom and filiere_id and len(nom) <= 150:
-                try:
-                    filiere = Filiere.objects.get(id=filiere_id)
-                    _, created = Matiere.objects.get_or_create(
-                        nom__iexact=nom,
-                        filiere=filiere,
-                        defaults={"nom": nom},
-                    )
-                    if created:
-                        messages.success(request, f"Matière {nom} ajoutée.")
-                    else:
-                        messages.error(request, "Cette matière existe déjà pour cette filière.")
-                except (Filiere.DoesNotExist, IntegrityError, ValueError):
-                    messages.error(request, "Matière ou filière invalide.")
+            if nom and filiere_id:
+                Matiere.objects.create(nom=nom, filiere_id=filiere_id)
+                messages.success(request, f"Matière {nom} ajoutée.")
             else:
-                messages.error(request, "Nom ou filière invalide.")
+                messages.error(request, "Nom et filière requis.")
         elif action == "supprimer":
             mid = request.POST.get("matiere_id")
             if mid:
-                try:
-                    Matiere.objects.filter(id=mid).delete()
-                    messages.success(request, "Matière supprimée.")
-                except ValueError:
-                    messages.error(request, "Matière invalide.")
+                Matiere.objects.filter(id=mid).delete()
+                messages.success(request, "Matière supprimée.")
         return redirect("admin_matieres")
 
     matieres = (
@@ -532,25 +470,14 @@ def admin_niveaux(request):
         action = request.POST.get("action")
         if action == "ajouter":
             nom = request.POST.get("nom", "").strip()
-            if nom and len(nom) <= 20:
-                try:
-                    _, created = Niveau.objects.get_or_create(nom__iexact=nom, defaults={"nom": nom})
-                    if created:
-                        messages.success(request, f"Niveau {nom} ajouté.")
-                    else:
-                        messages.error(request, "Ce niveau existe déjà.")
-                except IntegrityError:
-                    messages.error(request, "Ce niveau existe déjà.")
-            else:
-                messages.error(request, "Nom de niveau invalide.")
+            if nom:
+                Niveau.objects.create(nom=nom)
+                messages.success(request, f"Niveau {nom} ajouté.")
         elif action == "supprimer":
             nid = request.POST.get("niveau_id")
             if nid:
-                try:
-                    Niveau.objects.filter(id=nid).delete()
-                    messages.success(request, "Niveau supprimé.")
-                except ValueError:
-                    messages.error(request, "Niveau invalide.")
+                Niveau.objects.filter(id=nid).delete()
+                messages.success(request, "Niveau supprimé.")
         return redirect("admin_niveaux")
 
     niveaux = Niveau.objects.annotate(nb_sujets=Count("sujets")).order_by("nom")
@@ -587,17 +514,12 @@ def admin_sujets(request):
                 messages.error(request, "Aucun sujet sélectionné.")
                 return redirect("admin_sujets")
 
-            ids_list = _parse_subject_ids(sujets_ids or [sujet_id])
-            if not ids_list:
-                messages.error(request, "Aucun sujet valide sélectionné.")
-                return redirect("admin_sujets")
+            ids_list = sujets_ids or [sujet_id]
+            ids_list = [int(x) for x in ids_list if x]
 
             if action == "valider":
-                sujets_a_valider = list(
-                    Sujet.objects.filter(id__in=ids_list, statut="en_attente")
-                    .select_related("publie_par")
-                )
-                Sujet.objects.filter(id__in=[s.id for s in sujets_a_valider]).update(statut="actif")
+                sujets_a_valider = Sujet.objects.filter(id__in=ids_list, statut="en_attente").select_related("publie_par")
+                updated = sujets_a_valider.update(statut="actif")
                 for sujet_valide in sujets_a_valider:
                     Activite.objects.create(
                         utilisateur=request.user,
@@ -613,74 +535,66 @@ def admin_sujets(request):
                             f"Votre sujet « {sujet_valide.titre} » a été validé et publié sur la bibliothèque.",
                             url=reverse("detail_sujet", args=[sujet_valide.id]),
                         )
-                messages.success(request, f"{len(sujets_a_valider)} sujet(s) validé(s) et publié(s).")
+                messages.success(request, f"{updated} sujet(s) validé(s) et publié(s).")
             elif action == "archiver":
-                updated = _update_subjects_with_activity(
-                    request.user,
-                    ids_list,
-                    {"statut": "actif"},
-                    {"statut": "archive"},
-                    "archivage",
-                    "Archivage",
-                )
+                updated = Sujet.objects.filter(id__in=ids_list, statut="actif").update(statut="archive")
+                for sid in ids_list:
+                    Activite.objects.create(
+                        utilisateur=request.user,
+                        type="archivage",
+                        sujet_id=sid,
+                        description=f"Archivage du sujet #{sid}",
+                    )
                 messages.success(request, f"{updated} sujet(s) archivé(s).")
             elif action == "reactiver":
-                updated = _update_subjects_with_activity(
-                    request.user,
-                    ids_list,
-                    {"statut": "archive"},
-                    {"statut": "actif"},
-                    "validation",
-                    "Réactivation",
-                )
+                updated = Sujet.objects.filter(id__in=ids_list, statut="archive").update(statut="actif")
+                for sid in ids_list:
+                    Activite.objects.create(
+                        utilisateur=request.user,
+                        type="validation",
+                        sujet_id=sid,
+                        description=f"Réactivation du sujet #{sid}",
+                    )
                 messages.success(request, f"{updated} sujet(s) réactivé(s).")
             elif action == "rendre_visible":
-                updated = _update_subjects_with_activity(
-                    request.user,
-                    ids_list,
-                    {"visibilite": "restreint"},
-                    {"visibilite": "visible"},
-                    "validation",
-                    "Activation de la visibilité",
-                )
+                updated = Sujet.objects.filter(id__in=ids_list, visibilite="restreint").update(visibilite="visible")
+                for sid in ids_list:
+                    Activite.objects.create(
+                        utilisateur=request.user,
+                        type="validation",
+                        sujet_id=sid,
+                        description=f"Visibilité activée sur le sujet #{sid}",
+                    )
                 messages.success(request, f"{updated} sujet(s) désormais visible(s) par tous.")
             elif action == "restreindre":
-                updated = _update_subjects_with_activity(
-                    request.user,
-                    ids_list,
-                    {"visibilite": "visible"},
-                    {"visibilite": "restreint"},
-                    "archivage",
-                    "Restriction de la visibilité",
-                )
+                updated = Sujet.objects.filter(id__in=ids_list, visibilite="visible").update(visibilite="restreint")
+                for sid in ids_list:
+                    Activite.objects.create(
+                        utilisateur=request.user,
+                        type="archivage",
+                        sujet_id=sid,
+                        description=f"Visibilité restreinte sur le sujet #{sid}",
+                    )
                 messages.success(request, f"{updated} sujet(s) passé(s) en accès restreint.")
             elif action == "supprimer":
-                existing_ids = list(
-                    Sujet.objects.filter(id__in=ids_list).values_list("id", flat=True)
-                )
-                Activite.objects.bulk_create(
-                    [
-                        Activite(
-                            utilisateur=request.user,
-                            type="archivage",
-                            description=f"Suppression du sujet #{sid}",
-                        )
-                        for sid in existing_ids
-                    ]
-                )
-                Sujet.objects.filter(id__in=existing_ids).delete()
-                messages.success(request, f"{len(existing_ids)} sujet(s) supprimé(s) définitivement.")
+                n = len(ids_list)
+                for sid in ids_list:
+                    Activite.objects.create(
+                        utilisateur=request.user,
+                        type="archivage",
+                        description=f"Suppression du sujet #{sid}",
+                    )
+                Sujet.objects.filter(id__in=ids_list).delete()
+                messages.success(request, f"{n} sujet(s) supprimé(s) définitivement.")
         else:
-            ids_list = _parse_subject_ids([sujet_id])
-            sujet = Sujet.objects.filter(id__in=ids_list).first()
-            if sujet is None:
-                messages.error(request, "Sujet invalide ou introuvable.")
-            elif sujet.visibilite == "restreint":
-                Sujet.objects.filter(id=sujet.id).update(visibilite="visible")
-                messages.success(request, "Sujet désormais visible par tous.")
-            else:
-                Sujet.objects.filter(id=sujet.id).update(visibilite="restreint")
-                messages.success(request, "Sujet passé en accès restreint.")
+            if sujet_id:
+                sujet = get_object_or_404(Sujet, id=sujet_id)
+                if sujet.visibilite == "restreint":
+                    Sujet.objects.filter(id=sujet_id).update(visibilite="visible")
+                    messages.success(request, "Sujet désormais visible par tous.")
+                else:
+                    Sujet.objects.filter(id=sujet_id).update(visibilite="restreint")
+                    messages.success(request, "Sujet passé en accès restreint.")
 
         return redirect("admin_sujets")
 
@@ -701,10 +615,7 @@ def admin_sujets(request):
     if filtre_statut:
         sujets = sujets.filter(statut=filtre_statut)
     if filtre_filiere:
-        try:
-            sujets = sujets.filter(filiere_id=int(filtre_filiere))
-        except ValueError:
-            sujets = sujets.none()
+        sujets = sujets.filter(filiere_id=filtre_filiere)
     if filtre_annee:
         sujets = sujets.filter(annee_academique=filtre_annee)
     if filtre_visibilite:
@@ -749,6 +660,8 @@ def admin_presences(request):
 
     aujourdhui = timezone.now().replace(hour=0, minute=0, second=0, microsecond=0)
     cette_semaine = aujourdhui - timezone.timedelta(days=7)
+
+    from django.db.models import Sum, Max
 
     # Agrégation : temps total et dernière activité par utilisateur
     aggs = (
@@ -824,8 +737,8 @@ def admin_verifications(request):
         action = request.POST.get("action")
         if action == "renvoyer":
             email = request.POST.get("email", "").strip()
-            user = User.objects.filter(email__iexact=email).first()
-            if email and user is not None:
+            if email and User.objects.filter(email=email).exists():
+                user = User.objects.get(email=email)
                 try:
                     creer_code_verification(email, request)
                 except Exception:
@@ -840,15 +753,11 @@ def admin_verifications(request):
         elif action == "forcer_verification":
             user_id = request.POST.get("user_id")
             if user_id:
-                try:
-                    user = User.objects.get(id=user_id)
-                except (User.DoesNotExist, ValueError):
-                    messages.error(request, "Utilisateur invalide ou introuvable.")
-                else:
-                    profil, _ = Utilisateur.objects.get_or_create(user=user)
-                    profil.email_verifie = True
-                    profil.save()
-                    messages.success(request, f"Email de {user.username} vérifié manuellement.")
+                user = get_object_or_404(User, id=user_id)
+                profil, _ = Utilisateur.objects.get_or_create(user=user)
+                profil.email_verifie = True
+                profil.save()
+                messages.success(request, f"Email de {user.username} vérifié manuellement.")
         return redirect("admin_verifications")
 
     codes = Verification.objects.filter(utilise=False, expire_le__gte=timezone.now()).order_by("-expire_le")
@@ -868,21 +777,21 @@ def admin_verifications(request):
 # ============================================================
 # Groupes (auth.Group)
 # ============================================================
-@superuser_required
+@login_required
+@staff_required
 def admin_groupes(request):
+    from django.contrib.auth.models import Group, Permission
+
     if request.method == "POST":
         action = request.POST.get("action")
 
         if action == "ajouter":
             nom = request.POST.get("nom", "").strip()
-            if nom and len(nom) <= 150:
-                _, created = Group.objects.get_or_create(name=nom)
-                if created:
-                    messages.success(request, f"Groupe « {nom} » créé.")
-                else:
-                    messages.error(request, "Ce groupe existe déjà.")
+            if nom:
+                Group.objects.create(name=nom)
+                messages.success(request, f"Groupe « {nom} » créé.")
             else:
-                messages.error(request, "Nom du groupe invalide.")
+                messages.error(request, "Nom du groupe requis.")
 
         elif action == "supprimer":
             gid = request.POST.get("groupe_id")
@@ -892,35 +801,28 @@ def admin_groupes(request):
                     nom = groupe.name
                     groupe.delete()
                     messages.success(request, f"Groupe « {nom} » supprimé.")
-                except (Group.DoesNotExist, ValueError):
+                except Group.DoesNotExist:
                     messages.error(request, "Groupe introuvable.")
 
         elif action == "renommer":
             gid = request.POST.get("groupe_id")
             nom = request.POST.get("nom", "").strip()
-            if gid and nom and len(nom) <= 150:
+            if gid and nom:
                 try:
                     groupe = Group.objects.get(id=gid)
                     groupe.name = nom
                     groupe.save()
                     messages.success(request, "Groupe renommé.")
-                except (Group.DoesNotExist, ValueError):
+                except Group.DoesNotExist:
                     messages.error(request, "Groupe introuvable.")
-                except IntegrityError:
-                    messages.error(request, "Ce nom de groupe existe déjà.")
 
         elif action == "modifier_permissions":
             gid = request.POST.get("groupe_id")
             if gid:
-                try:
-                    groupe = Group.objects.get(id=gid)
-                    perm_ids = {int(perm_id) for perm_id in request.POST.getlist("permissions")}
-                    if Permission.objects.filter(id__in=perm_ids).count() != len(perm_ids):
-                        raise ValueError
-                    groupe.permissions.set(perm_ids)
-                    messages.success(request, f"Permissions de « {groupe.name} » mises à jour.")
-                except (Group.DoesNotExist, IntegrityError, ValueError):
-                    messages.error(request, "Groupe ou permissions invalides.")
+                groupe = get_object_or_404(Group, id=gid)
+                perm_ids = request.POST.getlist("permissions")
+                groupe.permissions.set(perm_ids)
+                messages.success(request, f"Permissions de « {groupe.name} » mises à jour.")
 
         elif action == "ajouter_utilisateur":
             gid = request.POST.get("groupe_id")
@@ -931,7 +833,7 @@ def admin_groupes(request):
                     user = User.objects.get(id=uid)
                     user.groups.add(groupe)
                     messages.success(request, f"{user.username} ajouté au groupe « {groupe.name} ».")
-                except (Group.DoesNotExist, User.DoesNotExist, ValueError):
+                except (Group.DoesNotExist, User.DoesNotExist):
                     messages.error(request, "Erreur.")
 
         elif action == "retirer_utilisateur":
@@ -943,19 +845,14 @@ def admin_groupes(request):
                     user = User.objects.get(id=uid)
                     user.groups.remove(groupe)
                     messages.success(request, f"{user.username} retiré du groupe « {groupe.name} ».")
-                except (Group.DoesNotExist, User.DoesNotExist, ValueError):
+                except (Group.DoesNotExist, User.DoesNotExist):
                     messages.error(request, "Erreur.")
 
         return redirect("admin_groupes")
 
-    groupes = (
-        Group.objects.annotate(nb_utilisateurs=Count("user", distinct=True))
-        .prefetch_related(
-            "permissions",
-            Prefetch("user_set", queryset=User.objects.order_by("username")),
-        )
-        .order_by("name")
-    )
+    groupes = Group.objects.annotate(
+        nb_utilisateurs=Count("user")
+    ).order_by("name")
     permissions = Permission.objects.select_related("content_type").order_by(
         "content_type__app_label", "codename"
     )
@@ -974,8 +871,8 @@ def admin_groupes(request):
     for g in groupes:
         groupes_data.append({
             "groupe": g,
-            "permissions_ids": [permission.id for permission in g.permissions.all()],
-            "utilisateurs": g.user_set.all(),
+            "permissions_ids": list(g.permissions.values_list("id", flat=True)),
+            "utilisateurs": g.user_set.all().order_by("username"),
             "nb_utilisateurs": g.nb_utilisateurs,
         })
 

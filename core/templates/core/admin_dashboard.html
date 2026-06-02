@@ -152,10 +152,10 @@
                 <span class="text-xl sm:text-2xl">📊</span>
                 <p class="text-[10px] sm:text-xs lg:text-sm font-semibold text-gray-700 group-hover:text-[#0037B0] mt-1 sm:mt-2">Logs</p>
             </a>
-            {% if request.user.is_superuser %}<a href="{% url 'admin_groupes' %}" class="bg-white rounded-xl shadow-sm p-3 sm:p-4 lg:p-5 text-center hover:shadow-md hover:-translate-y-0.5 transition-all group">
+            <a href="{% url 'admin_groupes' %}" class="bg-white rounded-xl shadow-sm p-3 sm:p-4 lg:p-5 text-center hover:shadow-md hover:-translate-y-0.5 transition-all group">
                 <span class="text-xl sm:text-2xl">🔐</span>
                 <p class="text-[10px] sm:text-xs lg:text-sm font-semibold text-gray-700 group-hover:text-[#0037B0] mt-1 sm:mt-2">Groupes</p>
-            </a>{% endif %}
+            </a>
         </div>
 
 

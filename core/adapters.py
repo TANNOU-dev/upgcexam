@@ -7,13 +7,6 @@ class UPGCExamSocialAdapter(DefaultSocialAccountAdapter):
 
     def save_user(self, request, sociallogin, form=None):
         user = super().save_user(request, sociallogin, form=form)
-        email = user.email.lower()
-        email_is_verified = any(
-            address.verified and address.email.lower() == email
-            for address in sociallogin.email_addresses
-        )
-        Utilisateur.objects.get_or_create(
-            user=user,
-            defaults={"filiere": None, "email_verifie": email_is_verified},
-        )
+        # Créer le profil Utilisateur s'il n'existe pas
+        Utilisateur.objects.get_or_create(user=user, defaults={"filiere": None})
         return user

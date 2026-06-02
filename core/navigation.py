@@ -3,17 +3,12 @@ from urllib.parse import urlencode
 
 from django.shortcuts import redirect
 from django.urls import reverse
-from django.utils.http import url_has_allowed_host_and_scheme
 
 
 def safe_next_url(next_url, default=None):
     if default is None:
         default = reverse("tableau_de_bord")
-    if (
-        next_url
-        and next_url.startswith("/")
-        and url_has_allowed_host_and_scheme(next_url, allowed_hosts=None)
-    ):
+    if next_url and next_url.startswith("/") and not next_url.startswith("//"):
         return next_url
     return default
 

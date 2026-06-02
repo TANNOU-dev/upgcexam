@@ -1,12 +1,13 @@
 <script>
-var vapidPublicKey = '{{ vapid_public_key|escapejs }}';
-
 if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/sw.js', { scope: '/' }).catch(function() {});
+    navigator.serviceWorker.register('/static/pwa/sw.js', { scope: '/' }).then(function(reg) {
+        console.log('PWA prête ✅');
+    }).catch(function() {});
 }
 
+// Subscription aux notifications push
 function abonnerPush() {
-    if (!vapidPublicKey || !('Notification' in window) || !('PushManager' in window)) return;
+    if (!('Notification' in window) || !('PushManager' in window)) return;
     if (Notification.permission === 'denied') return;
 
     Notification.requestPermission().then(function(perm) {
@@ -15,7 +16,7 @@ function abonnerPush() {
         navigator.serviceWorker.ready.then(function(reg) {
             reg.pushManager.subscribe({
                 userVisibleOnly: true,
-                applicationServerKey: urlBase64ToUint8Array(vapidPublicKey)
+                applicationServerKey: null  // Clé VAPID publique à renseigner
             }).then(function(sub) {
                 fetch('/pwa/subscribe/', {
                     method: 'POST',
@@ -25,13 +26,6 @@ function abonnerPush() {
             }).catch(function() {});
         });
     });
-}
-
-function urlBase64ToUint8Array(base64String) {
-    var padding = '='.repeat((4 - base64String.length % 4) % 4);
-    var base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
-    var rawData = window.atob(base64);
-    return Uint8Array.from(rawData, function(character) { return character.charCodeAt(0); });
 }
 
 function getCSRF() {
@@ -44,17 +38,19 @@ function getCSRF() {
     return '';
 }
 
+// Bannière pour activer les notifications
 window.addEventListener('load', function() {
-    var authenticated = document.querySelector('meta[name="user-authenticated"]');
-    if (vapidPublicKey && authenticated && 'Notification' in window && Notification.permission === 'default') {
+    if ('Notification' in window && Notification.permission === 'default') {
+        // Petite bannière discrète après 3 secondes
         setTimeout(function() {
             var banner = document.createElement('div');
             banner.className = 'fixed bottom-4 right-4 bg-[#0037B0] text-white text-sm px-4 py-3 rounded-lg shadow-lg z-50 cursor-pointer hover:bg-[#002A8A] transition';
-            banner.textContent = '🔔 Activer les notifications UPGCExam';
+            banner.innerHTML = '🔔 Activer les notifications <strong>UPGCExam</strong>';
             banner.onclick = function() {
                 abonnerPush();
                 banner.remove();
             };
+            // Fermeture au clic sur X
             var closeBtn = document.createElement('span');
             closeBtn.className = 'ml-3 text-white/60 hover:text-white cursor-pointer';
             closeBtn.textContent = '✕';

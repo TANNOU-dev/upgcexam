@@ -1,14 +1,19 @@
-{% extends "core/base.html" %}
-{% load nav_tags %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UPGCExam - Sujets</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>* { font-family: 'Inter', sans-serif; } body { background: #f5f7fa; }</style>
+{% include "core/includes/pwa_head.html" %}
+</head>
+<body>
+    {% include 'core/includes/admin_header.html' %}
 
-{% block title %}UPGCExam - Sujets{% endblock %}
-
-{% block navbar %}
-{% include "core/includes/admin_header.html" %}
-{% endblock %}
-
-{% block content %}
-<div class="flex items-center justify-between mb-6 sm:mb-8">
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+        <div class="flex items-center justify-between mb-6 sm:mb-8">
             <div>
                 <h1 class="text-2xl sm:text-3xl font-black text-[#0B1C30]">📄 Sujets</h1>
                 <p class="text-sm text-gray-500 mt-1">{{ stats.total }} total · {{ stats.actifs }} actifs · {{ stats.en_attente }} en attente · {{ stats.restreints }} 🔒 restreints</p>
@@ -392,4 +397,7 @@
         form.submit();
     }
     </script>
-{% endblock %}
+{% include "core/includes/footer.html" %}
+{% include "core/includes/pwa_footer.html" %}
+</body>
+</html>
