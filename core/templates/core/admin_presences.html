@@ -5,52 +5,78 @@
 
 {% block body %}
 
-<!-- HEADER -->
-<div class="max-w-7xl mx-auto px-4 sm:px-6 py-8">
-    <a href="{% url 'admin_dashboard' %}" class="inline-flex items-center gap-1 text-sm text-gray-400 hover:text-gray-600 mb-4">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+    <a href="{% url 'admin_dashboard' %}" class="inline-flex items-center gap-1 text-xs sm:text-sm text-gray-400 hover:text-gray-600 mb-3 sm:mb-4">
         ← Retour à l'administration
     </a>
 
-    <div class="mb-8">
-        <span class="inline-flex items-center gap-1.5 bg-purple-100 text-purple-700 text-xs font-bold tracking-widest uppercase px-3 py-1.5 rounded-full mb-4">
+    <div class="mb-6 sm:mb-8">
+        <span class="inline-flex items-center gap-1.5 bg-purple-100 text-purple-700 text-[10px] sm:text-xs font-bold tracking-widest uppercase px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full mb-3 sm:mb-4">
             Suivi des connexions
         </span>
-        <h1 class="text-3xl font-black text-[#0B1C30]">Présences étudiants</h1>
-        <p class="text-gray-400 mt-1">
+        <h1 class="text-2xl sm:text-3xl font-black text-[#0B1C30]">Présences étudiants</h1>
+        <p class="text-xs sm:text-sm text-gray-400 mt-0.5 sm:mt-1">
             <strong class="font-semibold text-gray-600">{{ actifs_semaine }}</strong> actifs cette semaine sur <strong class="font-semibold text-gray-600">{{ total_utilisateurs }}</strong> inscrits
         </p>
     </div>
 
     <!-- TABLEAU -->
     <div class="bg-white rounded-2xl shadow-sm border border-gray-50 overflow-hidden">
-        <div class="overflow-x-auto">
+        <!-- Mobile : cards -->
+        <div class="sm:hidden divide-y divide-gray-50">
+            {% for u in page_obj %}
+            <div class="p-4 hover:bg-gray-50 transition">
+                <div class="flex items-center justify-between mb-2">
+                    <div class="flex items-center gap-2.5">
+                        <div class="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold {% if u.secondes > 0 %}bg-[#0037B0]{% else %}bg-gray-300{% endif %} flex-shrink-0">
+                            {{ u.username|first|upper }}
+                        </div>
+                        <div>
+                            <p class="text-sm font-medium text-[#0B1C30]">{{ u.username }}</p>
+                            <p class="text-[10px] text-gray-400 truncate max-w-[200px]">{{ u.email }}</p>
+                        </div>
+                    </div>
+                    <div class="text-right flex-shrink-0 ml-2">
+                        <p class="text-sm font-bold {% if u.secondes > 0 %}text-[#0037B0]{% else %}text-gray-300{% endif %}">{{ u.temps }}</p>
+                        <p class="text-[10px] text-gray-400">{% if u.is_staff %}<span class="text-purple-600 font-semibold">Admin</span>{% else %}Étudiant{% endif %}</p>
+                    </div>
+                </div>
+                <p class="text-[10px] text-gray-400">Dernière activité : {{ u.derniere_activite }}</p>
+            </div>
+            {% empty %}
+            <div class="p-8 text-center text-gray-400 text-sm">Aucun utilisateur</div>
+            {% endfor %}
+        </div>
+
+        <!-- Desktop : table -->
+        <div class="hidden sm:block overflow-x-auto">
             <table class="w-full text-left">
                 <thead>
-                    <tr class="border-b border-gray-100 text-xs uppercase tracking-wider text-gray-400 font-semibold">
-                        <th class="px-5 py-3">Utilisateur</th>
-                        <th class="px-5 py-3">Email</th>
-                        <th class="px-5 py-3 text-right">Temps cette semaine</th>
-                        <th class="px-5 py-3 text-right">Dernière activité</th>
-                        <th class="px-5 py-3 text-center">Rôle</th>
+                    <tr class="border-b border-gray-100 text-[10px] sm:text-xs uppercase tracking-wider text-gray-400 font-semibold">
+                        <th class="px-4 sm:px-5 py-3">Utilisateur</th>
+                        <th class="px-4 sm:px-5 py-3">Email</th>
+                        <th class="px-4 sm:px-5 py-3 text-right">Temps cette semaine</th>
+                        <th class="px-4 sm:px-5 py-3 text-right">Dernière activité</th>
+                        <th class="px-4 sm:px-5 py-3 text-center">Rôle</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-50">
                     {% for u in page_obj %}
-                    <tr class="hover:bg-gray-50 transition text-sm">
-                        <td class="px-5 py-3.5">
-                            <div class="flex items-center gap-3">
-                                <div class="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold {% if u.secondes > 0 %}bg-[#0037B0]{% else %}bg-gray-300{% endif %}">
+                    <tr class="hover:bg-gray-50 transition text-xs sm:text-sm">
+                        <td class="px-4 sm:px-5 py-3 sm:py-3.5">
+                            <div class="flex items-center gap-2.5 sm:gap-3">
+                                <div class="w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-white text-[10px] sm:text-xs font-bold {% if u.secondes > 0 %}bg-[#0037B0]{% else %}bg-gray-300{% endif %} flex-shrink-0">
                                     {{ u.username|first|upper }}
                                 </div>
-                                <span class="font-medium text-[#0B1C30]">{{ u.username }}</span>
+                                <span class="font-medium text-[#0B1C30] truncate max-w-[150px] lg:max-w-none">{{ u.username }}</span>
                             </div>
                         </td>
-                        <td class="px-5 py-3.5 text-gray-500">{{ u.email }}</td>
-                        <td class="px-5 py-3.5 text-right font-bold {% if u.secondes > 0 %}text-[#0037B0]{% else %}text-gray-300{% endif %}">
+                        <td class="px-4 sm:px-5 py-3 sm:py-3.5 text-gray-500 truncate max-w-[180px] lg:max-w-none">{{ u.email }}</td>
+                        <td class="px-4 sm:px-5 py-3 sm:py-3.5 text-right font-bold {% if u.secondes > 0 %}text-[#0037B0]{% else %}text-gray-300{% endif %} whitespace-nowrap">
                             {{ u.temps }}
                         </td>
-                        <td class="px-5 py-3.5 text-right text-gray-400">{{ u.derniere_activite }}</td>
-                        <td class="px-5 py-3.5 text-center">
+                        <td class="px-4 sm:px-5 py-3 sm:py-3.5 text-right text-gray-400 whitespace-nowrap">{{ u.derniere_activite }}</td>
+                        <td class="px-4 sm:px-5 py-3 sm:py-3.5 text-center">
                             {% if u.is_staff %}
                             <span class="inline-block text-[10px] px-2 py-0.5 rounded-full bg-purple-50 text-purple-600 font-semibold">Admin</span>
                             {% else %}
@@ -67,27 +93,27 @@
 
         <!-- PAGINATION -->
         {% if page_obj.paginator.num_pages > 1 %}
-        <div class="flex items-center justify-between px-5 py-4 border-t border-gray-100">
-            <p class="text-sm text-gray-400">
+        <div class="flex flex-col sm:flex-row items-center justify-between px-4 sm:px-5 py-4 border-t border-gray-100 gap-3 sm:gap-0">
+            <p class="text-xs sm:text-sm text-gray-400">
                 Page {{ page_obj.number }} sur {{ page_obj.paginator.num_pages }}
             </p>
-            <div class="flex items-center gap-2">
+            <div class="flex items-center gap-1.5 sm:gap-2">
                 {% if page_obj.has_previous %}
-                <a href="?page=1" class="px-3 py-1.5 text-xs font-medium rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-200 transition">&laquo;</a>
-                <a href="?page={{ page_obj.previous_page_number }}" class="px-3 py-1.5 text-xs font-medium rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-200 transition">‹</a>
+                <a href="?page=1" class="px-2 sm:px-3 py-1 sm:py-1.5 text-[10px] sm:text-xs font-medium rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-200 transition">&laquo;</a>
+                <a href="?page={{ page_obj.previous_page_number }}" class="px-2 sm:px-3 py-1 sm:py-1.5 text-[10px] sm:text-xs font-medium rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-200 transition">‹</a>
                 {% endif %}
 
                 {% for p in page_obj.paginator.page_range %}
                     {% if p == page_obj.number %}
-                    <span class="px-3 py-1.5 text-xs font-bold rounded-lg bg-[#0037B0] text-white">{{ p }}</span>
+                    <span class="px-2 sm:px-3 py-1 sm:py-1.5 text-[10px] sm:text-xs font-bold rounded-lg bg-[#0037B0] text-white">{{ p }}</span>
                     {% elif p >= page_obj.number|add:'-2' and p <= page_obj.number|add:'2' %}
-                    <a href="?page={{ p }}" class="px-3 py-1.5 text-xs font-medium rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-200 transition">{{ p }}</a>
+                    <a href="?page={{ p }}" class="px-2 sm:px-3 py-1 sm:py-1.5 text-[10px] sm:text-xs font-medium rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-200 transition">{{ p }}</a>
                     {% endif %}
                 {% endfor %}
 
                 {% if page_obj.has_next %}
-                <a href="?page={{ page_obj.next_page_number }}" class="px-3 py-1.5 text-xs font-medium rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-200 transition">›</a>
-                <a href="?page={{ page_obj.paginator.num_pages }}" class="px-3 py-1.5 text-xs font-medium rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-200 transition">&raquo;</a>
+                <a href="?page={{ page_obj.next_page_number }}" class="px-2 sm:px-3 py-1 sm:py-1.5 text-[10px] sm:text-xs font-medium rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-200 transition">›</a>
+                <a href="?page={{ page_obj.paginator.num_pages }}" class="px-2 sm:px-3 py-1 sm:py-1.5 text-[10px] sm:text-xs font-medium rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-200 transition">&raquo;</a>
                 {% endif %}
             </div>
         </div>
