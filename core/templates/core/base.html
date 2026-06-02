@@ -16,18 +16,15 @@
     {% include "core/includes/pwa_head.html" %}
     {% block extra_head %}{% endblock %}
 </head>
-<body class="{% block body_class %}bg-[#F5F7FA] min-h-screen{% endblock %} flex flex-col">
+<body class="{% block body_class %}bg-[#F5F7FA] min-h-screen{% endblock %}">
 
-{% block body %}
     {% block navbar %}
     {% include "core/includes/navbar.html" %}
     {% endblock %}
 
     {% include "core/includes/messages.html" %}
 
-    <main class="flex-1 container mx-auto px-4 py-6">
-        {% block content %}{% endblock %}
-    </main>
+    {% block content %}{% endblock %}
 
     {% block footer %}
     {% include "core/includes/footer.html" %}
@@ -36,6 +33,5 @@
     {% include "core/includes/presence_tracker.html" %}
     {% include "core/includes/pwa_footer.html" %}
     {% block extra_js %}{% endblock %}
-{% endblock body %}
 </body>
 </html>
