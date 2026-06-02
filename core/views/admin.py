@@ -906,18 +906,13 @@ def admin_push_subscriptions(request):
                 messages.error(request, "Abonnement introuvable.")
         return redirect("admin_push_subscriptions")
 
-    subs = PushSubscription.objects.select_related("user").order_by("-created_at")
+    subs = PushSubscription.objects.select_related("utilisateur").order_by("-cree_le")
     total = subs.count()
-    # Compter par navigateur
-    browsers = {}
-    for s in subs:
-        ua = (s.user_agent or "Inconnu")[:30]
-        browsers[ua] = browsers.get(ua, 0) + 1
 
     return render(
         request,
         "core/admin/push_subscriptions.html",
-        {"subscriptions": subs, "total": total, "browsers": browsers},
+        {"subscriptions": subs, "total": total},
     )
 
 
