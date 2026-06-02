@@ -4,8 +4,11 @@ WebSocket consumer — tracking temps réel de la présence.
 import json
 from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.db import database_sync_to_async
+from django.db.models import F
 from django.utils import timezone
 from .models import PresenceSession
+
+MAX_PRESENCE_DELTA_SECONDS = 30
 
 
 class PresenceConsumer(AsyncWebsocketConsumer):
@@ -17,18 +20,24 @@ class PresenceConsumer(AsyncWebsocketConsumer):
             return
 
         await self.accept()
+        self.last_presence_tick = timezone.now()
 
     async def receive(self, text_data=None, bytes_data=None):
         if not self.user.is_authenticated:
             return
 
         try:
-            data = json.loads(text_data)
-            secondes = int(data.get("seconds", 0))
-        except (json.JSONDecodeError, TypeError, ValueError):
+            json.loads(text_data)
+        except (json.JSONDecodeError, TypeError):
             return
 
-        if secondes < 0:
+        maintenant = timezone.now()
+        secondes = min(
+            int((maintenant - self.last_presence_tick).total_seconds()),
+            MAX_PRESENCE_DELTA_SECONDS,
+        )
+        self.last_presence_tick = maintenant
+        if secondes <= 0:
             return
 
         await self.enregistrer_presence(secondes)
@@ -46,13 +55,10 @@ class PresenceConsumer(AsyncWebsocketConsumer):
         )
 
         if derniere and (maintenant - derniere.debut).total_seconds() < 15 * 60:
-            # Le client envoie des deltas (secondes écoulées depuis le
-            # dernier envoi). On les accumule dans la session en cours.
-            # → Pas de sessionStorage : chaque utilisateur (même en
-            #   changeant de compte dans le même onglet) a son compteur.
-            derniere.secondes += secondes
-            derniere.fin = maintenant
-            derniere.save(update_fields=["secondes", "fin"])
+            PresenceSession.objects.filter(pk=derniere.pk).update(
+                secondes=F("secondes") + secondes,
+                fin=maintenant,
+            )
         else:
             PresenceSession.objects.create(
                 utilisateur=self.user,

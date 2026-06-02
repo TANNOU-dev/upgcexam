@@ -7,11 +7,12 @@ import secrets
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.models import User
+from django.core.exceptions import ValidationError
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 
 from ..models import Sujet, Verification
-from ..utils import envoyer_code_verification, est_fichier_pdf, generer_code_verification
+from ..utils import envoyer_code_verification, generer_code_verification, valider_pdf_upload
 
 
 def salutation():
@@ -87,14 +88,12 @@ def _annees_actives(sujets_qs=None):
 
 
 
-def valider_fichier_pdf(fichier, taille_max=10):
+def valider_fichier_pdf(fichier):
     """Valide un fichier PDF (taille + contenu). Retourne (ok, message)."""
-    if not fichier:
-        return False, "Un fichier PDF est requis."
-    if fichier.size > taille_max * 1024 * 1024:
-        return False, f"Le fichier PDF ne doit pas dépasser {taille_max} Mo."
-    if not est_fichier_pdf(fichier):
-        return False, "Seuls les fichiers PDF valides sont acceptés."
+    try:
+        valider_pdf_upload(fichier)
+    except ValidationError as exc:
+        return False, exc.messages[0]
     return True, ""
 
 
