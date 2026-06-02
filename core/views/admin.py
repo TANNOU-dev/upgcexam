@@ -5,7 +5,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.core.paginator import Paginator
-from django.db.models import Count, Q
+from django.db.models import Avg, Count, Q
 from django.db.models.functions import ExtractWeekDay
 from django.http import FileResponse, Http404, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -19,6 +19,7 @@ from ..models import (
     Matiere,
     Niveau,
     PresenceSession,
+    PushSubscription,
     Sujet,
     Telechargement,
     Utilisateur,
@@ -32,6 +33,8 @@ from .shared import _sujets_accessibles, creer_code_verification, salutation, _a
 @staff_required
 def admin_dashboard(request):
 
+    from django.contrib.auth.models import Group
+
     stats = {
         "total_sujets": Sujet.objects.count(),
         "sujets_actifs": Sujet.objects.filter(statut="actif").count(),
@@ -39,6 +42,17 @@ def admin_dashboard(request):
         "sujets_restreints": Sujet.objects.filter(statut="actif", visibilite="restreint").count(),
         "total_utilisateurs": User.objects.count(),
         "total_telechargements": Telechargement.objects.count(),
+        "total_filieres": Filiere.objects.count(),
+        "total_matieres": Matiere.objects.count(),
+        "total_niveaux": Niveau.objects.count(),
+        "total_groupes": Group.objects.count(),
+        "total_activites": Activite.objects.count(),
+        "total_push": PushSubscription.objects.count(),
+        "total_sessions_presence": PresenceSession.objects.count(),
+        "total_verifications": Verification.objects.count(),
+        "total_codes_actifs": Verification.objects.filter(
+            utilise=False, expire_le__gte=timezone.now()
+        ).count(),
     }
 
     # ---- Statistiques de présence agrégées (tous les utilisateurs) ----
@@ -759,4 +773,188 @@ def admin_verifications(request):
         request,
         "core/admin/verifications.html",
         {"codes": codes, "non_verifies": non_verifies},
+    )
+
+
+# ============================================================
+# Groupes (auth.Group)
+# ============================================================
+@login_required
+@staff_required
+def admin_groupes(request):
+    from django.contrib.auth.models import Group, Permission
+
+    if request.method == "POST":
+        action = request.POST.get("action")
+
+        if action == "ajouter":
+            nom = request.POST.get("nom", "").strip()
+            if nom:
+                Group.objects.create(name=nom)
+                messages.success(request, f"Groupe « {nom} » créé.")
+            else:
+                messages.error(request, "Nom du groupe requis.")
+
+        elif action == "supprimer":
+            gid = request.POST.get("groupe_id")
+            if gid:
+                try:
+                    groupe = Group.objects.get(id=gid)
+                    nom = groupe.name
+                    groupe.delete()
+                    messages.success(request, f"Groupe « {nom} » supprimé.")
+                except Group.DoesNotExist:
+                    messages.error(request, "Groupe introuvable.")
+
+        elif action == "renommer":
+            gid = request.POST.get("groupe_id")
+            nom = request.POST.get("nom", "").strip()
+            if gid and nom:
+                try:
+                    groupe = Group.objects.get(id=gid)
+                    groupe.name = nom
+                    groupe.save()
+                    messages.success(request, "Groupe renommé.")
+                except Group.DoesNotExist:
+                    messages.error(request, "Groupe introuvable.")
+
+        elif action == "modifier_permissions":
+            gid = request.POST.get("groupe_id")
+            if gid:
+                groupe = get_object_or_404(Group, id=gid)
+                perm_ids = request.POST.getlist("permissions")
+                groupe.permissions.set(perm_ids)
+                messages.success(request, f"Permissions de « {groupe.name} » mises à jour.")
+
+        elif action == "ajouter_utilisateur":
+            gid = request.POST.get("groupe_id")
+            uid = request.POST.get("user_id")
+            if gid and uid:
+                try:
+                    groupe = Group.objects.get(id=gid)
+                    user = User.objects.get(id=uid)
+                    user.groups.add(groupe)
+                    messages.success(request, f"{user.username} ajouté au groupe « {groupe.name} ».")
+                except (Group.DoesNotExist, User.DoesNotExist):
+                    messages.error(request, "Erreur.")
+
+        elif action == "retirer_utilisateur":
+            gid = request.POST.get("groupe_id")
+            uid = request.POST.get("user_id")
+            if gid and uid:
+                try:
+                    groupe = Group.objects.get(id=gid)
+                    user = User.objects.get(id=uid)
+                    user.groups.remove(groupe)
+                    messages.success(request, f"{user.username} retiré du groupe « {groupe.name} ».")
+                except (Group.DoesNotExist, User.DoesNotExist):
+                    messages.error(request, "Erreur.")
+
+        return redirect("admin_groupes")
+
+    groupes = Group.objects.annotate(
+        nb_utilisateurs=Count("user")
+    ).order_by("name")
+    permissions = Permission.objects.select_related("content_type").order_by(
+        "content_type__app_label", "codename"
+    )
+    utilisateurs = User.objects.order_by("username")
+
+    # Grouper les permissions par app_label
+    perms_par_app = {}
+    for p in permissions:
+        app = p.content_type.app_label
+        if app not in perms_par_app:
+            perms_par_app[app] = []
+        perms_par_app[app].append(p)
+
+    # Pour chaque groupe, récupérer les permissions et utilisateurs actuels
+    groupes_data = []
+    for g in groupes:
+        groupes_data.append({
+            "groupe": g,
+            "permissions_ids": list(g.permissions.values_list("id", flat=True)),
+            "utilisateurs": g.user_set.all().order_by("username"),
+            "nb_utilisateurs": g.nb_utilisateurs,
+        })
+
+    return render(
+        request,
+        "core/admin/groupes.html",
+        {
+            "groupes_data": groupes_data,
+            "permissions_par_app": perms_par_app,
+            "utilisateurs": utilisateurs,
+        },
+    )
+
+
+# ============================================================
+# Abonnements Push
+# ============================================================
+@login_required
+@staff_required
+def admin_push_subscriptions(request):
+    if request.method == "POST":
+        sub_id = request.POST.get("subscription_id")
+        if sub_id:
+            try:
+                sub = PushSubscription.objects.get(id=sub_id)
+                sub.delete()
+                messages.success(request, "Abonnement push supprimé.")
+            except PushSubscription.DoesNotExist:
+                messages.error(request, "Abonnement introuvable.")
+        return redirect("admin_push_subscriptions")
+
+    subs = PushSubscription.objects.select_related("user").order_by("-created_at")
+    total = subs.count()
+    # Compter par navigateur
+    browsers = {}
+    for s in subs:
+        ua = (s.user_agent or "Inconnu")[:30]
+        browsers[ua] = browsers.get(ua, 0) + 1
+
+    return render(
+        request,
+        "core/admin/push_subscriptions.html",
+        {"subscriptions": subs, "total": total, "browsers": browsers},
+    )
+
+
+# ============================================================
+# Sessions de présence
+# ============================================================
+@login_required
+@staff_required
+def admin_sessions_presence(request):
+    today = timezone.now().replace(hour=0, minute=0, second=0, microsecond=0)
+    sessions = PresenceSession.objects.select_related("utilisateur").order_by("-debut")
+
+    # Stats
+    total = sessions.count()
+    aujourdhui = sessions.filter(debut__gte=today).count()
+    moyenne = round(
+        sessions.aggregate(avg=Avg("secondes"))["avg"] or 0
+    )
+
+    def ft(sec):
+        h, m = sec // 3600, (sec % 3600) // 60
+        return f"{h}h{m:02d}" if h > 0 else f"{m} min" if m > 0 else "—"
+
+    paginator = Paginator(sessions, 50)
+    page_number = request.GET.get("page", 1)
+    page_obj = paginator.get_page(page_number)
+
+    for s in page_obj:
+        s.temps_format = ft(s.secondes)
+
+    return render(
+        request,
+        "core/admin/sessions_presence.html",
+        {
+            "page_obj": page_obj,
+            "total": total,
+            "aujourdhui": aujourdhui,
+            "moyenne": ft(moyenne),
+        },
     )

@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <title>UPGCExam - Sessions de présence</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>* { font-family: 'Inter', sans-serif; } html, body { height: 100%; margin: 0; } body { background: #f5f7fa; }</style>
+{% include "core/includes/pwa_head.html" %}
+</head>
+<body>
+    {% include 'core/includes/admin_header.html' %}
+
+    <main class="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+        <div class="mb-6 sm:mb-8">
+            <h1 class="text-2xl sm:text-3xl font-black text-[#0B1C30]">⏱️ Sessions de présence</h1>
+            <p class="text-xs sm:text-sm text-gray-500 mt-0.5 sm:mt-1">{{ total }} session{{ total|pluralize }} au total</p>
+        </div>
+
+        {% if messages %}
+        <div class="mb-4 sm:mb-6 space-y-2">
+            {% for message in messages %}
+            <div class="p-2.5 sm:p-3 rounded-lg text-xs sm:text-sm {% if message.tags == 'error' %}bg-red-50 text-red-600 border border-red-200{% else %}bg-green-50 text-green-600 border border-green-200{% endif %}">{{ message }}</div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Stats cards -->
+        <div class="grid grid-cols-3 gap-2 sm:gap-4 mb-6 sm:mb-8">
+            <div class="bg-white rounded-xl shadow-sm p-3 sm:p-5 text-center">
+                <p class="text-xl sm:text-2xl lg:text-3xl font-black text-[#0037B0]">{{ total }}</p>
+                <p class="text-[10px] sm:text-sm text-gray-400">Total</p>
+            </div>
+            <div class="bg-white rounded-xl shadow-sm p-3 sm:p-5 text-center">
+                <p class="text-xl sm:text-2xl lg:text-3xl font-black text-[#10B981]">{{ aujourdhui }}</p>
+                <p class="text-[10px] sm:text-sm text-gray-400">Aujourd'hui</p>
+            </div>
+            <div class="bg-white rounded-xl shadow-sm p-3 sm:p-5 text-center">
+                <p class="text-xl sm:text-2xl lg:text-3xl font-black text-[#8B5CF6]">{{ moyenne }}</p>
+                <p class="text-[10px] sm:text-sm text-gray-400">Moyenne</p>
+            </div>
+        </div>
+
+        <!-- Liste des sessions -->
+        <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+            <!-- Mobile cards -->
+            <div class="sm:hidden divide-y divide-gray-100">
+                {% for s in page_obj %}
+                <div class="p-4 hover:bg-gray-50/50 transition">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="font-semibold text-sm text-gray-900 truncate">{{ s.utilisateur.username }}</span>
+                    </div>
+                    <p class="text-xs text-gray-500">{{ s.debut|date:'d/m/Y H:i' }}</p>
+                    <p class="text-xs text-gray-400 mt-1">Durée : <span class="font-medium text-gray-600">{{ s.temps_format }}</span></p>
+                </div>
+                {% empty %}
+                <div class="p-8 text-center text-gray-400 text-sm">Aucune session de présence.</div>
+                {% endfor %}
+            </div>
+
+            <!-- Desktop table -->
+            <div class="hidden sm:block overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead>
+                        <tr class="bg-gray-50 text-left text-[10px] sm:text-xs font-bold uppercase tracking-wider text-gray-500">
+                            <th class="px-4 sm:px-5 py-3">Utilisateur</th>
+                            <th class="px-4 sm:px-5 py-3">Début</th>
+                            <th class="px-4 sm:px-5 py-3">Durée</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100">
+                        {% for s in page_obj %}
+                        <tr class="hover:bg-gray-50/50 text-xs sm:text-sm">
+                            <td class="px-4 sm:px-5 py-3 font-semibold text-gray-900 whitespace-nowrap">{{ s.utilisateur.username }}</td>
+                            <td class="px-4 sm:px-5 py-3 text-[10px] sm:text-xs text-gray-500 whitespace-nowrap">{{ s.debut|date:'d/m/Y H:i' }}</td>
+                            <td class="px-4 sm:px-5 py-3 text-gray-600 whitespace-nowrap font-medium">{{ s.temps_format }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="3" class="px-5 py-10 text-center text-gray-400">Aucune session de présence.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Pagination -->
+        {% if page_obj.paginator.num_pages > 1 %}
+        <div class="mt-6 sm:mt-8 flex flex-col sm:flex-row items-center justify-between gap-3">
+            <p class="text-xs sm:text-sm text-gray-500">
+                Page {{ page_obj.number }} sur {{ page_obj.paginator.num_pages }}
+                ({{ page_obj.paginator.count }} session{{ page_obj.paginator.count|pluralize }})
+            </p>
+            <div class="flex items-center gap-1">
+                {% if page_obj.has_previous %}
+                <a href="?page=1"
+                   class="px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm rounded bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 font-medium">
+                    ««
+                </a>
+                <a href="?page={{ page_obj.previous_page_number }}"
+                   class="px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm rounded bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 font-medium">
+                    «
+                </a>
+                {% endif %}
+
+                {% for num in page_obj.paginator.page_range %}
+                    {% if num == page_obj.number %}
+                    <span class="px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm rounded bg-[#0037B0] text-white font-bold">{{ num }}</span>
+                    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                    <a href="?page={{ num }}"
+                       class="px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm rounded bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 font-medium">
+                        {{ num }}
+                    </a>
+                    {% endif %}
+                {% endfor %}
+
+                {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}"
+                   class="px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm rounded bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 font-medium">
+                    »
+                </a>
+                <a href="?page={{ page_obj.paginator.num_pages }}"
+                   class="px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm rounded bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 font-medium">
+                    »»
+                </a>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </main>
+{% include "core/includes/footer.html" %}
+{% include "core/includes/pwa_footer.html" %}
+</body>
+</html>

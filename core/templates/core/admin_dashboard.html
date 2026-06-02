@@ -131,7 +131,7 @@
         </div>
 
         <!-- ===== NAVIGATION RAPIDE ADMIN ===== -->
-        <div class="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-7 gap-2 sm:gap-3 lg:gap-4 mb-6 sm:mb-8">
+        <div class="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-8 gap-2 sm:gap-3 lg:gap-4 mb-6 sm:mb-8">
             <a href="{% url 'admin_utilisateurs' %}" class="bg-white rounded-xl shadow-sm p-3 sm:p-4 lg:p-5 text-center hover:shadow-md hover:-translate-y-0.5 transition-all group">
                 <span class="text-xl sm:text-2xl">👥</span>
                 <p class="text-[10px] sm:text-xs lg:text-sm font-semibold text-gray-700 group-hover:text-[#0037B0] mt-1 sm:mt-2">Utilisateurs</p>
@@ -160,6 +160,184 @@
                 <span class="text-xl sm:text-2xl">📊</span>
                 <p class="text-[10px] sm:text-xs lg:text-sm font-semibold text-gray-700 group-hover:text-[#0037B0] mt-1 sm:mt-2">Logs</p>
             </a>
+            <a href="{% url 'admin_groupes' %}" class="bg-white rounded-xl shadow-sm p-3 sm:p-4 lg:p-5 text-center hover:shadow-md hover:-translate-y-0.5 transition-all group">
+                <span class="text-xl sm:text-2xl">🔐</span>
+                <p class="text-[10px] sm:text-xs lg:text-sm font-semibold text-gray-700 group-hover:text-[#0037B0] mt-1 sm:mt-2">Groupes</p>
+            </a>
+            <a href="{% url 'admin_push_subscriptions' %}" class="bg-white rounded-xl shadow-sm p-3 sm:p-4 lg:p-5 text-center hover:shadow-md hover:-translate-y-0.5 transition-all group">
+                <span class="text-xl sm:text-2xl">🔔</span>
+                <p class="text-[10px] sm:text-xs lg:text-sm font-semibold text-gray-700 group-hover:text-[#0037B0] mt-1 sm:mt-2">Push</p>
+            </a>
+        </div>
+
+        <!-- ===== TOUS LES MODÈLES (comme admin Django) ===== -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-50 overflow-hidden mb-6 sm:mb-8">
+            <div class="flex items-center justify-between p-4 sm:p-5 lg:p-6 border-b border-gray-50">
+                <h2 class="font-bold text-sm sm:text-base text-[#0B1C30]">📋 Administration des modèles</h2>
+                <a href="/admin/" target="_blank" class="text-[10px] sm:text-xs text-[#0037B0] font-semibold hover:underline">Admin Django →</a>
+            </div>
+            <div class="p-4 sm:p-6">
+                <!-- Auth -->
+                <div class="mb-4 sm:mb-6">
+                    <h3 class="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-gray-400 mb-2 sm:mb-3">🔐 Authentification et autorisation</h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3">
+                        <a href="{% url 'admin_groupes' %}" class="flex items-center justify-between px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl bg-gray-50 hover:bg-gray-100 transition group">
+                            <div class="flex items-center gap-2 sm:gap-3 min-w-0">
+                                <span class="text-base">👥</span>
+                                <span class="text-xs sm:text-sm font-semibold text-gray-700 group-hover:text-[#0037B0]">Groupes</span>
+                            </div>
+                            <div class="flex items-center gap-1.5 sm:gap-2 flex-shrink-0 ml-2">
+                                <span class="text-[10px] sm:text-xs font-bold text-[#0037B0] bg-blue-50 px-1.5 sm:px-2 py-0.5 rounded">{{ stats.total_groupes }}</span>
+                                <span class="text-[10px] text-gray-400 hover:text-[#0037B0]">Gérer →</span>
+                            </div>
+                        </a>
+                        <a href="{% url 'admin_utilisateurs' %}" class="flex items-center justify-between px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl bg-gray-50 hover:bg-gray-100 transition group">
+                            <div class="flex items-center gap-2 sm:gap-3 min-w-0">
+                                <span class="text-base">👤</span>
+                                <span class="text-xs sm:text-sm font-semibold text-gray-700 group-hover:text-[#0037B0]">Utilisateurs</span>
+                            </div>
+                            <div class="flex items-center gap-1.5 sm:gap-2 flex-shrink-0 ml-2">
+                                <span class="text-[10px] sm:text-xs font-bold text-[#0037B0] bg-blue-50 px-1.5 sm:px-2 py-0.5 rounded">{{ stats.total_utilisateurs }}</span>
+                                <span class="text-[10px] text-gray-400 hover:text-[#0037B0]">Gérer →</span>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Core -->
+                <div class="mb-4 sm:mb-6">
+                    <h3 class="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-gray-400 mb-2 sm:mb-3">📦 Core</h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3">
+                        <a href="{% url 'admin_filieres' %}" class="flex items-center justify-between px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl bg-gray-50 hover:bg-gray-100 transition group">
+                            <div class="flex items-center gap-2 sm:gap-3 min-w-0">
+                                <span class="text-base">📚</span>
+                                <span class="text-xs sm:text-sm font-semibold text-gray-700 group-hover:text-[#0037B0]">Filières</span>
+                            </div>
+                            <div class="flex items-center gap-1.5 sm:gap-2 flex-shrink-0 ml-2">
+                                <span class="text-[10px] sm:text-xs font-bold text-[#0037B0] bg-blue-50 px-1.5 sm:px-2 py-0.5 rounded">{{ stats.total_filieres }}</span>
+                                <span class="text-[10px] text-gray-400 hover:text-[#0037B0]">Gérer →</span>
+                            </div>
+                        </a>
+                        <a href="{% url 'admin_matieres' %}" class="flex items-center justify-between px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl bg-gray-50 hover:bg-gray-100 transition group">
+                            <div class="flex items-center gap-2 sm:gap-3 min-w-0">
+                                <span class="text-base">📖</span>
+                                <span class="text-xs sm:text-sm font-semibold text-gray-700 group-hover:text-[#0037B0]">Matières</span>
+                            </div>
+                            <div class="flex items-center gap-1.5 sm:gap-2 flex-shrink-0 ml-2">
+                                <span class="text-[10px] sm:text-xs font-bold text-[#0037B0] bg-blue-50 px-1.5 sm:px-2 py-0.5 rounded">{{ stats.total_matieres }}</span>
+                                <span class="text-[10px] text-gray-400 hover:text-[#0037B0]">Gérer →</span>
+                            </div>
+                        </a>
+                        <a href="{% url 'admin_niveaux' %}" class="flex items-center justify-between px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl bg-gray-50 hover:bg-gray-100 transition group">
+                            <div class="flex items-center gap-2 sm:gap-3 min-w-0">
+                                <span class="text-base">🎓</span>
+                                <span class="text-xs sm:text-sm font-semibold text-gray-700 group-hover:text-[#0037B0]">Niveaux</span>
+                            </div>
+                            <div class="flex items-center gap-1.5 sm:gap-2 flex-shrink-0 ml-2">
+                                <span class="text-[10px] sm:text-xs font-bold text-[#0037B0] bg-blue-50 px-1.5 sm:px-2 py-0.5 rounded">{{ stats.total_niveaux }}</span>
+                                <span class="text-[10px] text-gray-400 hover:text-[#0037B0]">Gérer →</span>
+                            </div>
+                        </a>
+                        <a href="{% url 'admin_sujets' %}" class="flex items-center justify-between px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl bg-gray-50 hover:bg-gray-100 transition group">
+                            <div class="flex items-center gap-2 sm:gap-3 min-w-0">
+                                <span class="text-base">📄</span>
+                                <span class="text-xs sm:text-sm font-semibold text-gray-700 group-hover:text-[#0037B0]">Sujets</span>
+                            </div>
+                            <div class="flex items-center gap-1.5 sm:gap-2 flex-shrink-0 ml-2">
+                                <span class="text-[10px] sm:text-xs font-bold text-[#0037B0] bg-blue-50 px-1.5 sm:px-2 py-0.5 rounded">{{ stats.total_sujets }}</span>
+                                <span class="text-[10px] text-gray-400 hover:text-[#0037B0]">Gérer →</span>
+                            </div>
+                        </a>
+                        <a href="{% url 'admin_logs' %}" class="flex items-center justify-between px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl bg-gray-50 hover:bg-gray-100 transition group">
+                            <div class="flex items-center gap-2 sm:gap-3 min-w-0">
+                                <span class="text-base">📋</span>
+                                <span class="text-xs sm:text-sm font-semibold text-gray-700 group-hover:text-[#0037B0]">Activités</span>
+                            </div>
+                            <div class="flex items-center gap-1.5 sm:gap-2 flex-shrink-0 ml-2">
+                                <span class="text-[10px] sm:text-xs font-bold text-[#0037B0] bg-blue-50 px-1.5 sm:px-2 py-0.5 rounded">{{ stats.total_activites }}</span>
+                                <span class="text-[10px] text-gray-400 hover:text-[#0037B0]">Gérer →</span>
+                            </div>
+                        </a>
+                        <a href="{% url 'admin_presences' %}" class="flex items-center justify-between px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl bg-gray-50 hover:bg-gray-100 transition group">
+                            <div class="flex items-center gap-2 sm:gap-3 min-w-0">
+                                <span class="text-base">👁️</span>
+                                <span class="text-xs sm:text-sm font-semibold text-gray-700 group-hover:text-[#0037B0]">Présences</span>
+                            </div>
+                            <div class="flex items-center gap-1.5 sm:gap-2 flex-shrink-0 ml-2">
+                                <span class="text-[10px] sm:text-xs font-bold text-[#0037B0] bg-blue-50 px-1.5 sm:px-2 py-0.5 rounded">{{ stats.total_sessions_presence }}</span>
+                                <span class="text-[10px] text-gray-400 hover:text-[#0037B0]">Gérer →</span>
+                            </div>
+                        </a>
+                        <a href="{% url 'admin_verifications' %}" class="flex items-center justify-between px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl bg-gray-50 hover:bg-gray-100 transition group">
+                            <div class="flex items-center gap-2 sm:gap-3 min-w-0">
+                                <span class="text-base">🔑</span>
+                                <span class="text-xs sm:text-sm font-semibold text-gray-700 group-hover:text-[#0037B0]">Vérifications</span>
+                            </div>
+                            <div class="flex items-center gap-1.5 sm:gap-2 flex-shrink-0 ml-2">
+                                <span class="text-[10px] sm:text-xs font-bold text-[#0037B0] bg-blue-50 px-1.5 sm:px-2 py-0.5 rounded">{{ stats.total_verifications }}</span>
+                                <span class="text-[10px] text-gray-400 hover:text-[#0037B0]">Gérer →</span>
+                            </div>
+                        </a>
+                        <a href="{% url 'admin_push_subscriptions' %}" class="flex items-center justify-between px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl bg-gray-50 hover:bg-gray-100 transition group">
+                            <div class="flex items-center gap-2 sm:gap-3 min-w-0">
+                                <span class="text-base">🔔</span>
+                                <span class="text-xs sm:text-sm font-semibold text-gray-700 group-hover:text-[#0037B0]">Abonnements Push</span>
+                            </div>
+                            <div class="flex items-center gap-1.5 sm:gap-2 flex-shrink-0 ml-2">
+                                <span class="text-[10px] sm:text-xs font-bold text-[#0037B0] bg-blue-50 px-1.5 sm:px-2 py-0.5 rounded">{{ stats.total_push }}</span>
+                                <span class="text-[10px] text-gray-400 hover:text-[#0037B0]">Gérer →</span>
+                            </div>
+                        </a>
+                        <a href="{% url 'admin_sessions_presence' %}" class="flex items-center justify-between px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl bg-gray-50 hover:bg-gray-100 transition group">
+                            <div class="flex items-center gap-2 sm:gap-3 min-w-0">
+                                <span class="text-base">🕐</span>
+                                <span class="text-xs sm:text-sm font-semibold text-gray-700 group-hover:text-[#0037B0]">Sessions présence</span>
+                            </div>
+                            <div class="flex items-center gap-1.5 sm:gap-2 flex-shrink-0 ml-2">
+                                <span class="text-[10px] sm:text-xs font-bold text-[#0037B0] bg-blue-50 px-1.5 sm:px-2 py-0.5 rounded">{{ stats.total_sessions_presence }}</span>
+                                <span class="text-[10px] text-gray-400 hover:text-[#0037B0]">Gérer →</span>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Comptes sociaux (alliases admin Django) -->
+                <div>
+                    <h3 class="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-gray-400 mb-2 sm:mb-3">🌐 Comptes sociaux</h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3">
+                        <a href="/admin/account/emailaddress/" target="_blank" class="flex items-center justify-between px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl bg-gray-50 hover:bg-gray-100 transition group">
+                            <span class="text-xs sm:text-sm font-semibold text-gray-700 group-hover:text-[#0037B0]">Adresses e-mail</span>
+                            <span class="text-[10px] text-gray-400 hover:text-[#0037B0] flex-shrink-0 ml-2">Admin →</span>
+                        </a>
+                        <a href="/admin/socialaccount/socialaccount/" target="_blank" class="flex items-center justify-between px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl bg-gray-50 hover:bg-gray-100 transition group">
+                            <span class="text-xs sm:text-sm font-semibold text-gray-700 group-hover:text-[#0037B0]">Comptes sociaux</span>
+                            <span class="text-[10px] text-gray-400 hover:text-[#0037B0] flex-shrink-0 ml-2">Admin →</span>
+                        </a>
+                        <a href="/admin/socialaccount/socialapp/" target="_blank" class="flex items-center justify-between px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl bg-gray-50 hover:bg-gray-100 transition group">
+                            <span class="text-xs sm:text-sm font-semibold text-gray-700 group-hover:text-[#0037B0]">Applications sociales</span>
+                            <span class="text-[10px] text-gray-400 hover:text-[#0037B0] flex-shrink-0 ml-2">Admin →</span>
+                        </a>
+                        <a href="/admin/socialaccount/socialtoken/" target="_blank" class="flex items-center justify-between px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl bg-gray-50 hover:bg-gray-100 transition group">
+                            <span class="text-xs sm:text-sm font-semibold text-gray-700 group-hover:text-[#0037B0]">Jetons sociaux</span>
+                            <span class="text-[10px] text-gray-400 hover:text-[#0037B0] flex-shrink-0 ml-2">Admin →</span>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Sites -->
+                <div class="mt-4 sm:mt-6">
+                    <h3 class="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-gray-400 mb-2 sm:mb-3">🌍 Sites</h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3">
+                        <a href="/admin/sites/site/" target="_blank" class="flex items-center justify-between px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl bg-gray-50 hover:bg-gray-100 transition group">
+                            <div class="flex items-center gap-2 sm:gap-3 min-w-0">
+                                <span class="text-base">🌐</span>
+                                <span class="text-xs sm:text-sm font-semibold text-gray-700 group-hover:text-[#0037B0]">Sites</span>
+                            </div>
+                            <span class="text-[10px] text-gray-400 hover:text-[#0037B0] flex-shrink-0 ml-2">Admin Django →</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- ===== SUJETS RÉCENTS + UTILISATEURS RÉCENTS ===== -->
