@@ -13,3 +13,6 @@ sujets/
 
 # Logs
 logs/
+
+# Screenshots
+*.png
