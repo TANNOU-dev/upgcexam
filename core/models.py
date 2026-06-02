@@ -180,9 +180,16 @@ class PushSubscription(models.Model):
 
 class Verification(models.Model):
     MAX_TENTATIVES = 5
+    USAGE_EMAIL = "email"
+    USAGE_PASSWORD_RESET = "password_reset"
+    USAGE_CHOICES = [
+        (USAGE_EMAIL, "Vérification email"),
+        (USAGE_PASSWORD_RESET, "Réinitialisation du mot de passe"),
+    ]
 
     email = models.EmailField(db_index=True)
     code = models.CharField(max_length=6)
+    usage = models.CharField(max_length=20, choices=USAGE_CHOICES, default=USAGE_EMAIL)
     expire_le = models.DateTimeField(db_index=True)
     utilise = models.BooleanField(default=False)
     tentatives = models.PositiveSmallIntegerField(default=0)
@@ -201,5 +208,7 @@ class Verification(models.Model):
     def enregistrer_echec(self):
         """Incrémente le compteur d'échecs et invalide si max atteint."""
         self.tentatives += 1
-        self.save(update_fields=["tentatives"])
+        if self.tentatives >= self.MAX_TENTATIVES:
+            self.utilise = True
+        self.save(update_fields=["tentatives", "utilise"])
         return self.tentatives >= self.MAX_TENTATIVES

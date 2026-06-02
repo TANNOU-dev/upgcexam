@@ -18,7 +18,13 @@ from ..navigation import (
     redirect_apres_sujet,
     safe_next_url,
 )
-from .shared import _sujets_accessibles, _get_sujet_modifiable, creer_code_verification, _annees_actives, valider_fichier_pdf, notifier_admins
+from .shared import (
+    _annees_actives,
+    _get_sujet_modifiable,
+    _sujets_accessibles,
+    notifier_admins,
+    valider_fichier_pdf,
+)
 
 
 def accueil(request):
@@ -138,9 +144,14 @@ def ajouter_sujet(request):
 
         if not all([titre, filiere_id, nom_matiere, niveau_id, annee_academique, fichier]):
             messages.error(request, "Tous les champs sont obligatoires.")
+            return redirect("ajouter_sujet")
+        if not Filiere.objects.filter(id=filiere_id).exists() or not Niveau.objects.filter(id=niveau_id).exists():
+            messages.error(request, "Filière ou niveau invalide.")
+            return redirect("ajouter_sujet")
         ok, err = valider_fichier_pdf(fichier)
         if not ok:
             messages.error(request, err)
+            return redirect("ajouter_sujet")
         else:
             matiere, _ = Matiere.objects.get_or_create(
                 nom__iexact=nom_matiere,
@@ -165,12 +176,11 @@ def ajouter_sujet(request):
                 description=f"Ajout du sujet : {titre}",
             )
             messages.success(request, "✅ Sujet ajouté avec succès ! En attente.")
-            # Notifier les admins
             notifier_admins(
-                    "🆕 Nouveau sujet en attente",
-                    f"{titre} — {nom_matiere}",
-                    url=reverse("admin_sujets"),
-                )
+                "🆕 Nouveau sujet en attente",
+                f"{titre} — {nom_matiere}",
+                url=reverse("admin_sujets"),
+            )
             return redirect_apres_sujet(request)
 
     return render(
@@ -190,7 +200,6 @@ def modifier_sujet(request, sujet_id):
     sujet = _get_sujet_modifiable(request, sujet_id)
 
     filieres = Filiere.objects.all()
-    matieres = Matiere.objects.all()
     niveaux = Niveau.objects.all()
     annees = _annees_actives()
 
@@ -209,9 +218,19 @@ def modifier_sujet(request, sujet_id):
         nom_matiere = request.POST.get("matiere", "").strip()
         niveau_id = request.POST.get("niveau")
         annee_academique = request.POST.get("annee_academique", "").strip()
-        description = request.POST.get("description", "")
+        description = request.POST.get("description", "").strip()
         fichier = request.FILES.get("fichier_pdf")
         visibilite = request.POST.get("visibilite", "visible")
+
+        if not all([titre, filiere_id, nom_matiere, niveau_id, annee_academique]):
+            messages.error(request, "Tous les champs obligatoires doivent être remplis.")
+            return redirect("modifier_sujet", sujet_id=sujet.id)
+        if not Filiere.objects.filter(id=filiere_id).exists() or not Niveau.objects.filter(id=niveau_id).exists():
+            messages.error(request, "Filière ou niveau invalide.")
+            return redirect("modifier_sujet", sujet_id=sujet.id)
+        if request.user.is_staff and visibilite not in dict(Sujet.VISIBILITE_CHOICES):
+            messages.error(request, "Visibilité invalide.")
+            return redirect("modifier_sujet", sujet_id=sujet.id)
 
         if titre:
             sujet.titre = titre
@@ -265,12 +284,11 @@ def modifier_sujet(request, sujet_id):
         sujet.statut = "en_attente"
         sujet.save()
         messages.success(request, "✅ Modifications enregistrées. En attente de validation.")
-        # Notifier les admins
         notifier_admins(
-                "🔄 Sujet modifié — en attente",
-                f"{sujet.titre} — {sujet.matiere.nom}",
-                url=reverse("admin_sujets"),
-            )
+            "🔄 Sujet modifié — en attente",
+            f"{sujet.titre} — {sujet.matiere.nom}",
+            url=reverse("admin_sujets"),
+        )
         return redirect(reverse("bibliotheque") + query_bibliotheque(request))
 
     retour = ctx_retour(request)
@@ -283,7 +301,6 @@ def modifier_sujet(request, sujet_id):
         {
             "sujet": sujet,
             "filieres": filieres,
-            "matieres": matieres,
             "niveaux": niveaux,
             "annees": annees,
             **retour,

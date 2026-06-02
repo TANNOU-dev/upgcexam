@@ -2,6 +2,7 @@
 Fonctions partagées entre les modules de vues UPGCExam.
 """
 from datetime import timedelta
+import secrets
 
 from django.conf import settings
 from django.contrib import messages
@@ -9,10 +10,8 @@ from django.contrib.auth.models import User
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 
-from ..models import Activite, Sujet, Verification
-from django.db.models import Q
-
-from ..utils import envoyer_code_verification, generer_code_verification
+from ..models import Sujet, Verification
+from ..utils import envoyer_code_verification, est_fichier_pdf, generer_code_verification
 
 
 def salutation():
@@ -34,12 +33,14 @@ def _sujets_accessibles(request):
     return qs
 
 
-def creer_code_verification(email, request=None):
-    Verification.objects.filter(email=email, utilise=False).update(utilise=True)
+def creer_code_verification(email, request=None, usage=Verification.USAGE_EMAIL):
+    """Crée un OTP unique pour un email et un usage donnés."""
+    Verification.objects.filter(email=email, usage=usage, utilise=False).update(utilise=True)
     code = generer_code_verification()
     Verification.objects.create(
         email=email,
         code=code,
+        usage=usage,
         expire_le=timezone.now() + timedelta(minutes=10),
     )
     try:
@@ -52,6 +53,24 @@ def creer_code_verification(email, request=None):
         else:
             raise
     return code
+
+def verifier_code_verification(email, code_saisi, usage):
+    """Valide un OTP et compte aussi les tentatives portant sur un mauvais code."""
+    verification = (
+        Verification.objects.filter(email=email, usage=usage, utilise=False)
+        .order_by("-expire_le")
+        .first()
+    )
+    if verification is None:
+        return "invalide"
+    if not verification.est_valide():
+        return "bloque" if verification.tentatives >= verification.MAX_TENTATIVES else "expire"
+    if not secrets.compare_digest(verification.code, code_saisi):
+        return "bloque" if verification.enregistrer_echec() else "invalide"
+
+    verification.utilise = True
+    verification.save(update_fields=["utilise"])
+    return "valide"
 
 
 def _annees_actives(sujets_qs=None):
@@ -70,9 +89,10 @@ def _annees_actives(sujets_qs=None):
 
 def valider_fichier_pdf(fichier, taille_max=10):
     """Valide un fichier PDF (taille + contenu). Retourne (ok, message)."""
+    if not fichier:
+        return False, "Un fichier PDF est requis."
     if fichier.size > taille_max * 1024 * 1024:
         return False, f"Le fichier PDF ne doit pas dépasser {taille_max} Mo."
-    from ..utils import est_fichier_pdf
     if not est_fichier_pdf(fichier):
         return False, "Seuls les fichiers PDF valides sont acceptés."
     return True, ""
@@ -91,6 +111,7 @@ def notifier_admins(titre, message, url=""):
             message,
             url=url,
         )
+
 
 def _get_sujet_modifiable(request, sujet_id):
     """Retourne le sujet modifiable — les admins peuvent tout modifier,

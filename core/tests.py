@@ -260,3 +260,73 @@ class CoreViewsTests(TestCase):
         )
 
         self.assertRedirects(response, detail_url)
+
+    def test_wrong_verification_code_increments_attempt_counter(self):
+        verification = Verification.objects.create(
+            email="nouveau@example.com",
+            code="123456",
+            expire_le=timezone.now() + timedelta(minutes=10),
+        )
+        session = self.client.session
+        session["email_a_verifier"] = verification.email
+        session.save()
+
+        response = self.client.post(reverse("verification"), {"code": "000000"})
+
+        self.assertEqual(response.status_code, 200)
+        verification.refresh_from_db()
+        self.assertEqual(verification.tentatives, 1)
+
+    def test_password_reset_code_allows_form_get_then_password_update(self):
+        user = User.objects.create_user(
+            username="reset-user",
+            email="reset@example.com",
+            password="AncienMotdepasse12345!",
+        )
+        Verification.objects.create(
+            email=user.email,
+            code="123456",
+            usage=Verification.USAGE_PASSWORD_RESET,
+            expire_le=timezone.now() + timedelta(minutes=10),
+        )
+        session = self.client.session
+        session["reset_email"] = user.email
+        session.save()
+
+        response = self.client.post(reverse("password_reset_code"), {"code": "123456"})
+        self.assertRedirects(response, reverse("password_reset_new"))
+
+        response = self.client.get(reverse("password_reset_new"))
+        self.assertEqual(response.status_code, 200)
+
+        response = self.client.post(
+            reverse("password_reset_new"),
+            {
+                "password": "NouveauMotdepasse12345!",
+                "password2": "NouveauMotdepasse12345!",
+            },
+        )
+        self.assertRedirects(response, reverse("connexion"))
+        user.refresh_from_db()
+        self.assertTrue(user.check_password("NouveauMotdepasse12345!"))
+
+    def test_add_subject_without_pdf_is_rejected_without_server_error(self):
+        user = User.objects.create_user(username="etudiant", password="Motdepasse12345")
+        Utilisateur.objects.create(user=user, email_verifie=True)
+        filiere = Filiere.objects.create(nom="Informatique", code="INFO")
+        niveau = Niveau.objects.create(nom="L1")
+        self.client.force_login(user)
+
+        response = self.client.post(
+            reverse("ajouter_sujet"),
+            {
+                "titre": "Sujet incomplet",
+                "filiere": str(filiere.id),
+                "matiere": "Algorithmique",
+                "niveau": str(niveau.id),
+                "annee_academique": "2025-2026",
+            },
+        )
+
+        self.assertRedirects(response, reverse("ajouter_sujet"))
+        self.assertFalse(Sujet.objects.filter(titre="Sujet incomplet").exists())

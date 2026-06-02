@@ -90,6 +90,8 @@ TEMPLATES = [
 WSGI_APPLICATION = "config.wsgi.application"
 ASGI_APPLICATION = "config.asgi.application"
 
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
 # Couche de communication Channels (dev : InMemory, prod : Redis)
 CHANNEL_LAYERS = {
     "default": {
