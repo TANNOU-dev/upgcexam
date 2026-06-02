@@ -1,4 +1,5 @@
 from datetime import timedelta
+import json
 import shutil
 
 from django.contrib.auth.models import User
@@ -7,7 +8,7 @@ from django.test import TestCase, override_settings
 from django.urls import reverse
 from django.utils import timezone
 
-from .models import Filiere, Matiere, Niveau, Sujet, Utilisateur, Verification
+from .models import Activite, Filiere, Matiere, Niveau, PushSubscription, Sujet, Utilisateur, Verification
 
 
 @override_settings(ALLOWED_HOSTS=["testserver"], MEDIA_ROOT="/tmp/upgcexam-test-media")
@@ -330,3 +331,119 @@ class CoreViewsTests(TestCase):
 
         self.assertRedirects(response, reverse("ajouter_sujet"))
         self.assertFalse(Sujet.objects.filter(titre="Sujet incomplet").exists())
+
+    def test_staff_cannot_mutate_another_user_account(self):
+        staff = User.objects.create_user(username="staff", password="Pass12345", is_staff=True)
+        target = User.objects.create_user(username="target", password="Pass12345")
+        self.client.force_login(staff)
+
+        response = self.client.post(
+            reverse("admin_utilisateurs"),
+            {"action": "toggle_active", "user_id": target.id},
+        )
+
+        self.assertRedirects(response, reverse("admin_utilisateurs"))
+        target.refresh_from_db()
+        self.assertTrue(target.is_active)
+
+    def test_superuser_can_mutate_another_user_account(self):
+        admin = User.objects.create_superuser(
+            username="superadmin",
+            email="superadmin@example.com",
+            password="Pass12345",
+        )
+        target = User.objects.create_user(username="target", password="Pass12345")
+        self.client.force_login(admin)
+
+        response = self.client.post(
+            reverse("admin_utilisateurs"),
+            {"action": "toggle_active", "user_id": target.id},
+        )
+
+        self.assertRedirects(response, reverse("admin_utilisateurs"))
+        target.refresh_from_db()
+        self.assertFalse(target.is_active)
+
+    def test_group_management_requires_superuser(self):
+        staff = User.objects.create_user(username="staff", password="Pass12345", is_staff=True)
+        self.client.force_login(staff)
+
+        response = self.client.get(reverse("admin_groupes"))
+
+        self.assertRedirects(response, reverse("admin_dashboard"))
+
+    def test_admin_bulk_archive_ignores_invalid_and_unknown_ids(self):
+        owner = User.objects.create_user(username="owner", password="Pass12345")
+        admin = User.objects.create_user(username="staff", password="Pass12345", is_staff=True)
+        sujet = self._create_sujet(owner)
+        self.client.force_login(admin)
+
+        response = self.client.post(
+            reverse("admin_sujets"),
+            {"action": "archiver", "sujets_ids": [str(sujet.id), "invalid", "999999"]},
+        )
+
+        self.assertRedirects(response, reverse("admin_sujets"))
+        sujet.refresh_from_db()
+        self.assertEqual(sujet.statut, "archive")
+        self.assertEqual(
+            Activite.objects.filter(type="archivage", sujet=sujet).count(),
+            1,
+        )
+
+    def test_admin_bulk_validation_creates_activity(self):
+        owner = User.objects.create_user(username="owner", password="Pass12345")
+        admin = User.objects.create_user(username="staff", password="Pass12345", is_staff=True)
+        sujet = self._create_sujet(owner)
+        sujet.statut = "en_attente"
+        sujet.save(update_fields=["statut"])
+        self.client.force_login(admin)
+
+        response = self.client.post(
+            reverse("admin_sujets"),
+            {"action": "valider", "sujets_ids": [str(sujet.id)]},
+        )
+
+        self.assertRedirects(response, reverse("admin_sujets"))
+        sujet.refresh_from_db()
+        self.assertEqual(sujet.statut, "actif")
+        self.assertTrue(Activite.objects.filter(type="validation", sujet=sujet).exists())
+
+    def test_push_subscription_rejects_invalid_payload_without_leaking_details(self):
+        user = User.objects.create_user(username="push-user", password="Pass12345")
+        self.client.force_login(user)
+
+        response = self.client.post(
+            reverse("push_subscribe"),
+            data=json.dumps({"endpoint": "invalid", "keys": {}}),
+            content_type="application/json",
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.json(), {"ok": False, "error": "Abonnement push invalide."})
+
+    def test_push_subscription_accepts_valid_payload(self):
+        user = User.objects.create_user(username="push-user", password="Pass12345")
+        self.client.force_login(user)
+        payload = {
+            "endpoint": "https://push.example.com/subscription",
+            "keys": {"auth": "auth-key", "p256dh": "public-key"},
+        }
+
+        response = self.client.post(
+            reverse("push_subscribe"),
+            data=json.dumps(payload),
+            content_type="application/json",
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(PushSubscription.objects.filter(utilisateur=user).exists())
+
+    def test_service_worker_is_served_from_root_scope(self):
+        response = self.client.get(reverse("service_worker"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response["Content-Type"], "application/javascript")
+        self.assertEqual(response["Cache-Control"], "no-cache")
+        self.assertEqual(response["Service-Worker-Allowed"], "/")
+        response.close()

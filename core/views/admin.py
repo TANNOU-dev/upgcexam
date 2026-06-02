@@ -3,16 +3,16 @@ Vues administration : dashboard, gestion CRUD, logs.
 """
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.models import User
+from django.contrib.auth.models import Group, Permission, User
 from django.core.paginator import Paginator
-from django.db.models import Avg, Count, Q
+from django.db.models import Avg, Count, Max, Prefetch, Q, Sum
 from django.db.models.functions import ExtractWeekDay
 from django.http import FileResponse, Http404, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
 
-from ..decorators import email_verifie_required, staff_required
+from ..decorators import email_verifie_required, staff_required, superuser_required
 from ..models import (
     Activite,
     Filiere,
@@ -31,8 +31,6 @@ from .shared import _sujets_accessibles, creer_code_verification, salutation, _a
 @login_required
 @staff_required
 def admin_dashboard(request):
-
-    from django.contrib.auth.models import Group
 
     stats = {
         "total_sujets": Sujet.objects.count(),
@@ -67,7 +65,6 @@ def admin_dashboard(request):
         sessions_semaine.values("utilisateur").distinct().count()
     )
 
-    from django.db.models import Sum
     temps_total_ajd = sessions_aujourdhui.aggregate(total=Sum("secondes"))["total"] or 0
     temps_total_semaine = sessions_semaine.aggregate(total=Sum("secondes"))["total"] or 0
 
@@ -339,11 +336,48 @@ def mon_activite_json(request):
     })
 
 
+def _parse_subject_ids(values):
+    """Convertit une sélection de sujets en identifiants entiers uniques."""
+    subject_ids = []
+    for value in values:
+        try:
+            subject_id = int(value)
+        except (TypeError, ValueError):
+            continue
+        if subject_id not in subject_ids:
+            subject_ids.append(subject_id)
+    return subject_ids
+
+
+def _update_subjects_with_activity(user, subject_ids, filters, changes, activity_type, label):
+    """Met à jour des sujets existants et journalise uniquement les lignes modifiées."""
+    updated_ids = list(
+        Sujet.objects.filter(id__in=subject_ids, **filters).values_list("id", flat=True)
+    )
+    Sujet.objects.filter(id__in=updated_ids).update(**changes)
+    Activite.objects.bulk_create(
+        [
+            Activite(
+                utilisateur=user,
+                type=activity_type,
+                sujet_id=subject_id,
+                description=f"{label} du sujet #{subject_id}",
+            )
+            for subject_id in updated_ids
+        ]
+    )
+    return len(updated_ids)
+
+
 @login_required
 @staff_required
 def admin_utilisateurs(request):
 
     if request.method == "POST":
+        if not request.user.is_superuser:
+            messages.error(request, "Action réservée aux superutilisateurs.")
+            return redirect("admin_utilisateurs")
+
         action = request.POST.get("action")
         user_id = request.POST.get("user_id")
         try:
@@ -423,7 +457,10 @@ def admin_filieres(request):
         return redirect("admin_filieres")
 
     filieres = (
-        Filiere.objects.annotate(nb_sujets=Count("sujets"), nb_etudiants=Count("etudiants"))
+        Filiere.objects.annotate(
+            nb_sujets=Count("sujets", distinct=True),
+            nb_etudiants=Count("etudiants", distinct=True),
+        )
         .order_by("code")
     )
     return render(request, "core/admin/filieres.html", {"filieres": filieres})
@@ -514,12 +551,17 @@ def admin_sujets(request):
                 messages.error(request, "Aucun sujet sélectionné.")
                 return redirect("admin_sujets")
 
-            ids_list = sujets_ids or [sujet_id]
-            ids_list = [int(x) for x in ids_list if x]
+            ids_list = _parse_subject_ids(sujets_ids or [sujet_id])
+            if not ids_list:
+                messages.error(request, "Aucun sujet valide sélectionné.")
+                return redirect("admin_sujets")
 
             if action == "valider":
-                sujets_a_valider = Sujet.objects.filter(id__in=ids_list, statut="en_attente").select_related("publie_par")
-                updated = sujets_a_valider.update(statut="actif")
+                sujets_a_valider = list(
+                    Sujet.objects.filter(id__in=ids_list, statut="en_attente")
+                    .select_related("publie_par")
+                )
+                Sujet.objects.filter(id__in=[s.id for s in sujets_a_valider]).update(statut="actif")
                 for sujet_valide in sujets_a_valider:
                     Activite.objects.create(
                         utilisateur=request.user,
@@ -535,57 +577,63 @@ def admin_sujets(request):
                             f"Votre sujet « {sujet_valide.titre} » a été validé et publié sur la bibliothèque.",
                             url=reverse("detail_sujet", args=[sujet_valide.id]),
                         )
-                messages.success(request, f"{updated} sujet(s) validé(s) et publié(s).")
+                messages.success(request, f"{len(sujets_a_valider)} sujet(s) validé(s) et publié(s).")
             elif action == "archiver":
-                updated = Sujet.objects.filter(id__in=ids_list, statut="actif").update(statut="archive")
-                for sid in ids_list:
-                    Activite.objects.create(
-                        utilisateur=request.user,
-                        type="archivage",
-                        sujet_id=sid,
-                        description=f"Archivage du sujet #{sid}",
-                    )
+                updated = _update_subjects_with_activity(
+                    request.user,
+                    ids_list,
+                    {"statut": "actif"},
+                    {"statut": "archive"},
+                    "archivage",
+                    "Archivage",
+                )
                 messages.success(request, f"{updated} sujet(s) archivé(s).")
             elif action == "reactiver":
-                updated = Sujet.objects.filter(id__in=ids_list, statut="archive").update(statut="actif")
-                for sid in ids_list:
-                    Activite.objects.create(
-                        utilisateur=request.user,
-                        type="validation",
-                        sujet_id=sid,
-                        description=f"Réactivation du sujet #{sid}",
-                    )
+                updated = _update_subjects_with_activity(
+                    request.user,
+                    ids_list,
+                    {"statut": "archive"},
+                    {"statut": "actif"},
+                    "validation",
+                    "Réactivation",
+                )
                 messages.success(request, f"{updated} sujet(s) réactivé(s).")
             elif action == "rendre_visible":
-                updated = Sujet.objects.filter(id__in=ids_list, visibilite="restreint").update(visibilite="visible")
-                for sid in ids_list:
-                    Activite.objects.create(
-                        utilisateur=request.user,
-                        type="validation",
-                        sujet_id=sid,
-                        description=f"Visibilité activée sur le sujet #{sid}",
-                    )
+                updated = _update_subjects_with_activity(
+                    request.user,
+                    ids_list,
+                    {"visibilite": "restreint"},
+                    {"visibilite": "visible"},
+                    "validation",
+                    "Activation de la visibilité",
+                )
                 messages.success(request, f"{updated} sujet(s) désormais visible(s) par tous.")
             elif action == "restreindre":
-                updated = Sujet.objects.filter(id__in=ids_list, visibilite="visible").update(visibilite="restreint")
-                for sid in ids_list:
-                    Activite.objects.create(
-                        utilisateur=request.user,
-                        type="archivage",
-                        sujet_id=sid,
-                        description=f"Visibilité restreinte sur le sujet #{sid}",
-                    )
+                updated = _update_subjects_with_activity(
+                    request.user,
+                    ids_list,
+                    {"visibilite": "visible"},
+                    {"visibilite": "restreint"},
+                    "archivage",
+                    "Restriction de la visibilité",
+                )
                 messages.success(request, f"{updated} sujet(s) passé(s) en accès restreint.")
             elif action == "supprimer":
-                n = len(ids_list)
-                for sid in ids_list:
-                    Activite.objects.create(
-                        utilisateur=request.user,
-                        type="archivage",
-                        description=f"Suppression du sujet #{sid}",
-                    )
-                Sujet.objects.filter(id__in=ids_list).delete()
-                messages.success(request, f"{n} sujet(s) supprimé(s) définitivement.")
+                existing_ids = list(
+                    Sujet.objects.filter(id__in=ids_list).values_list("id", flat=True)
+                )
+                Activite.objects.bulk_create(
+                    [
+                        Activite(
+                            utilisateur=request.user,
+                            type="archivage",
+                            description=f"Suppression du sujet #{sid}",
+                        )
+                        for sid in existing_ids
+                    ]
+                )
+                Sujet.objects.filter(id__in=existing_ids).delete()
+                messages.success(request, f"{len(existing_ids)} sujet(s) supprimé(s) définitivement.")
         else:
             if sujet_id:
                 sujet = get_object_or_404(Sujet, id=sujet_id)
@@ -660,8 +708,6 @@ def admin_presences(request):
 
     aujourdhui = timezone.now().replace(hour=0, minute=0, second=0, microsecond=0)
     cette_semaine = aujourdhui - timezone.timedelta(days=7)
-
-    from django.db.models import Sum, Max
 
     # Agrégation : temps total et dernière activité par utilisateur
     aggs = (
@@ -777,11 +823,8 @@ def admin_verifications(request):
 # ============================================================
 # Groupes (auth.Group)
 # ============================================================
-@login_required
-@staff_required
+@superuser_required
 def admin_groupes(request):
-    from django.contrib.auth.models import Group, Permission
-
     if request.method == "POST":
         action = request.POST.get("action")
 
@@ -850,9 +893,14 @@ def admin_groupes(request):
 
         return redirect("admin_groupes")
 
-    groupes = Group.objects.annotate(
-        nb_utilisateurs=Count("user")
-    ).order_by("name")
+    groupes = (
+        Group.objects.annotate(nb_utilisateurs=Count("user", distinct=True))
+        .prefetch_related(
+            "permissions",
+            Prefetch("user_set", queryset=User.objects.order_by("username")),
+        )
+        .order_by("name")
+    )
     permissions = Permission.objects.select_related("content_type").order_by(
         "content_type__app_label", "codename"
     )
@@ -871,8 +919,8 @@ def admin_groupes(request):
     for g in groupes:
         groupes_data.append({
             "groupe": g,
-            "permissions_ids": list(g.permissions.values_list("id", flat=True)),
-            "utilisateurs": g.user_set.all().order_by("username"),
+            "permissions_ids": [permission.id for permission in g.permissions.all()],
+            "utilisateurs": g.user_set.all(),
             "nb_utilisateurs": g.nb_utilisateurs,
         })
 

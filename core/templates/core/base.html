@@ -31,15 +31,6 @@
     {% endblock %}
 
     {% include "core/includes/presence_tracker.html" %}
-    <script>
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('/static/pwa/sw.js', { scope: '/' }).then(function(reg) {
-                console.log('PWA prête ✅', reg.scope);
-            }).catch(function(err) {
-                console.log('PWA non disponible:', err);
-            });
-        }
-    </script>
     {% include "core/includes/pwa_footer.html" %}
     {% block extra_js %}{% endblock %}
 </body>
