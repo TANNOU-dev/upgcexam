@@ -160,7 +160,7 @@ def parametres(request):
         nouveau_username = request.POST.get("username", "").strip()
         nouvel_email = request.POST.get("email", "").strip().lower()
         ancien_mdp = request.POST.get("ancien_mot_de_passe", "")
-        nouveau_mdp = request.POST.get("nouveau_mot_de_passe", "")
+        nouveau_mdp = request.POST.get("nouveau_mot_de_passe", None)
 
         changer_mdp = bool(nouveau_mdp)
         changer_email = bool(nouvel_email and nouvel_email != user.email)
