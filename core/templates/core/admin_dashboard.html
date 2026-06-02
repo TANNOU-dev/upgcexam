@@ -1,24 +1,14 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>UPGCExam - Administration</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <style>
-        * { font-family: 'Inter', sans-serif; }
-    </style>
-{% include "core/includes/pwa_head.html" %}
-<meta name="user-authenticated" content="true">
-{% include "core/includes/presence_tracker.html" %}
-</head>
-<body class="bg-[#F5F7FA] min-h-screen">
+{% extends "core/base.html" %}
+{% load nav_tags %}
 
-    <!-- ==================== HEADER ==================== -->
-    {% include "core/includes/navbar.html" %}
+{% block title %}UPGCExam - Administration{% endblock %}
 
-    <!-- ==================== MAIN ==================== -->
+{% block navbar %}
+{% include "core/includes/admin_header.html" %}
+{% endblock %}
+
+{% block content %}
+<!-- ==================== MAIN ==================== -->
     <main class="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
 
         <!-- Header -->
@@ -493,5 +483,4 @@
 
     {% include "core/includes/footer.html" %}
 {% include "core/includes/pwa_footer.html" %}
-</body>
-</html>
+{% endblock %}
