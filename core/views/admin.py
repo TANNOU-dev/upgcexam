@@ -19,7 +19,6 @@ from ..models import (
     Matiere,
     Niveau,
     PresenceSession,
-    PushSubscription,
     Sujet,
     Telechargement,
     Utilisateur,
@@ -47,7 +46,6 @@ def admin_dashboard(request):
         "total_niveaux": Niveau.objects.count(),
         "total_groupes": Group.objects.count(),
         "total_activites": Activite.objects.count(),
-        "total_push": PushSubscription.objects.count(),
         "total_sessions_presence": PresenceSession.objects.count(),
         "total_verifications": Verification.objects.count(),
         "total_codes_actifs": Verification.objects.filter(
@@ -892,28 +890,7 @@ def admin_groupes(request):
 # ============================================================
 # Abonnements Push
 # ============================================================
-@login_required
-@staff_required
-def admin_push_subscriptions(request):
-    if request.method == "POST":
-        sub_id = request.POST.get("subscription_id")
-        if sub_id:
-            try:
-                sub = PushSubscription.objects.get(id=sub_id)
-                sub.delete()
-                messages.success(request, "Abonnement push supprimé.")
-            except PushSubscription.DoesNotExist:
-                messages.error(request, "Abonnement introuvable.")
-        return redirect("admin_push_subscriptions")
 
-    subs = PushSubscription.objects.select_related("utilisateur").order_by("-cree_le")
-    total = subs.count()
-
-    return render(
-        request,
-        "core/admin/push_subscriptions.html",
-        {"subscriptions": subs, "total": total},
-    )
 
 
 # ============================================================

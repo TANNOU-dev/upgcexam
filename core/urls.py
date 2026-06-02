@@ -40,7 +40,6 @@ urlpatterns = [
     path('administration/presences/', admin.admin_presences, name='admin_presences'),
     path('administration/verifications/', admin.admin_verifications, name='admin_verifications'),
     path('administration/groupes/', admin.admin_groupes, name='admin_groupes'),
-    path('administration/push/', admin.admin_push_subscriptions, name='admin_push_subscriptions'),
     path('administration/sessions-presence/', admin.admin_sessions_presence, name='admin_sessions_presence'),
     path('pwa/subscribe/', pwa.push_subscribe, name='push_subscribe'),
 ]
