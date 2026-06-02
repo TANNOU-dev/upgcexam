@@ -1,21 +1,51 @@
-<header class="bg-white border-b border-gray-200">
-    <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-        <a href="{% url 'admin_dashboard' %}" class="text-xl font-black text-[#0037B0] tracking-tight flex-shrink-0">UPGCExam</a>
-        <nav class="hidden md:flex items-center space-x-6">
-            <a href="{% url 'admin_dashboard' %}" class="text-gray-500 hover:text-gray-800 font-medium text-sm">Dashboard</a>
-            <a href="{% url 'admin_utilisateurs' %}" class="text-gray-500 hover:text-gray-800 font-medium text-sm">👥 Utilisateurs</a>
-            <a href="{% url 'admin_filieres' %}" class="text-gray-500 hover:text-gray-800 font-medium text-sm">📚 Filières</a>
-            <a href="{% url 'admin_matieres' %}" class="text-gray-500 hover:text-gray-800 font-medium text-sm">📖 Matières</a>
-            <a href="{% url 'admin_niveaux' %}" class="text-gray-500 hover:text-gray-800 font-medium text-sm">🎓 Niveaux</a>
-            <a href="{% url 'admin_sujets' %}" class="text-gray-500 hover:text-gray-800 font-medium text-sm">📄 Sujets</a>
-            <a href="{% url 'admin_verifications' %}" class="text-gray-500 hover:text-gray-800 font-medium text-sm">🔑 Vérifications</a>
-            <a href="{% url 'admin_logs' %}" class="text-gray-500 hover:text-gray-800 font-medium text-sm">📊 Logs</a>
+<header class="bg-white border-b border-gray-200 relative">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 h-14 sm:h-16 flex items-center justify-between">
+        <a href="{% url 'admin_dashboard' %}" class="text-lg sm:text-xl font-black text-[#0037B0] tracking-tight flex-shrink-0">UPGCExam</a>
+
+        <!-- Hamburger (mobile) -->
+        <label for="admin-nav-toggle" class="md:hidden flex items-center gap-1 text-gray-500 text-sm font-medium cursor-pointer hover:text-gray-800">
+            <span>Menu</span>
+            <span class="text-xl leading-none">☰</span>
+        </label>
+        <input type="checkbox" id="admin-nav-toggle" class="hidden peer" />
+
+        <!-- Desktop nav -->
+        <nav class="hidden md:flex items-center space-x-4 lg:space-x-6 overflow-x-auto">
+            <a href="{% url 'admin_dashboard' %}" class="text-gray-500 hover:text-gray-800 font-medium text-xs lg:text-sm whitespace-nowrap">Dashboard</a>
+            <a href="{% url 'admin_utilisateurs' %}" class="text-gray-500 hover:text-gray-800 font-medium text-xs lg:text-sm whitespace-nowrap">👥 Utilisateurs</a>
+            <a href="{% url 'admin_filieres' %}" class="text-gray-500 hover:text-gray-800 font-medium text-xs lg:text-sm whitespace-nowrap">📚 Filières</a>
+            <a href="{% url 'admin_matieres' %}" class="text-gray-500 hover:text-gray-800 font-medium text-xs lg:text-sm whitespace-nowrap">📖 Matières</a>
+            <a href="{% url 'admin_niveaux' %}" class="text-gray-500 hover:text-gray-800 font-medium text-xs lg:text-sm whitespace-nowrap">🎓 Niveaux</a>
+            <a href="{% url 'admin_sujets' %}" class="text-gray-500 hover:text-gray-800 font-medium text-xs lg:text-sm whitespace-nowrap">📄 Sujets</a>
+            <a href="{% url 'admin_verifications' %}" class="text-gray-500 hover:text-gray-800 font-medium text-xs lg:text-sm whitespace-nowrap">🔑 Vérifications</a>
+            <a href="{% url 'admin_logs' %}" class="text-gray-500 hover:text-gray-800 font-medium text-xs lg:text-sm whitespace-nowrap">📊 Logs</a>
         </nav>
-        <div class="flex items-center space-x-3">
-            <a href="{% url 'tableau_de_bord' %}" class="text-sm text-gray-500 hover:text-gray-800">← Accueil</a>
-            <div class="w-8 h-8 bg-[#0037B0] rounded-full flex items-center justify-center text-white text-xs font-bold">
+
+        <div class="hidden sm:flex items-center space-x-3 flex-shrink-0">
+            <a href="{% url 'tableau_de_bord' %}" class="text-xs sm:text-sm text-gray-500 hover:text-gray-800">← Accueil</a>
+            <div class="w-7 h-7 sm:w-8 sm:h-8 bg-[#0037B0] rounded-full flex items-center justify-center text-white text-xs font-bold">
                 {{ request.user.username|first|upper }}
             </div>
         </div>
+    </div>
+
+    <!-- Mobile dropdown menu (visible when checkbox checked) -->
+    <div class="peer-checked:block hidden md:hidden bg-white border-b border-gray-200 shadow-lg">
+        <nav class="px-4 sm:px-6 py-3 space-y-1">
+            <a href="{% url 'admin_dashboard' %}" class="block py-2 text-sm font-medium text-gray-700 hover:text-[#0037B0] rounded-lg hover:bg-gray-50 px-2">🖥️ Dashboard</a>
+            <a href="{% url 'admin_utilisateurs' %}" class="block py-2 text-sm font-medium text-gray-700 hover:text-[#0037B0] rounded-lg hover:bg-gray-50 px-2">👥 Utilisateurs</a>
+            <a href="{% url 'admin_filieres' %}" class="block py-2 text-sm font-medium text-gray-700 hover:text-[#0037B0] rounded-lg hover:bg-gray-50 px-2">📚 Filières</a>
+            <a href="{% url 'admin_matieres' %}" class="block py-2 text-sm font-medium text-gray-700 hover:text-[#0037B0] rounded-lg hover:bg-gray-50 px-2">📖 Matières</a>
+            <a href="{% url 'admin_niveaux' %}" class="block py-2 text-sm font-medium text-gray-700 hover:text-[#0037B0] rounded-lg hover:bg-gray-50 px-2">🎓 Niveaux</a>
+            <a href="{% url 'admin_sujets' %}" class="block py-2 text-sm font-medium text-gray-700 hover:text-[#0037B0] rounded-lg hover:bg-gray-50 px-2">📄 Sujets</a>
+            <a href="{% url 'admin_verifications' %}" class="block py-2 text-sm font-medium text-gray-700 hover:text-[#0037B0] rounded-lg hover:bg-gray-50 px-2">🔑 Vérifications</a>
+            <a href="{% url 'admin_logs' %}" class="block py-2 text-sm font-medium text-gray-700 hover:text-[#0037B0] rounded-lg hover:bg-gray-50 px-2">📊 Logs</a>
+            <a href="{% url 'tableau_de_bord' %}" class="block py-2 text-sm font-medium text-gray-700 hover:text-[#0037B0] rounded-lg hover:bg-gray-50 px-2">🏠 Accueil</a>
+            <hr class="my-2 border-gray-100">
+            <div class="flex items-center gap-2 px-2 py-2">
+                <div class="w-6 h-6 bg-[#0037B0] rounded-full flex items-center justify-center text-white text-[10px] font-bold">{{ request.user.username|first|upper }}</div>
+                <span class="text-xs text-gray-500">{{ request.user.username }}</span>
+            </div>
+        </nav>
     </div>
 </header>
