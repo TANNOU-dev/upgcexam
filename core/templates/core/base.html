@@ -16,7 +16,7 @@
     {% include "core/includes/pwa_head.html" %}
     {% block extra_head %}{% endblock %}
 </head>
-<body class="{% block body_class %}bg-[#F5F7FA] min-h-screen{% endblock %}">
+<body class="{% block body_class %}bg-[#F5F7FA] min-h-screen flex flex-col{% endblock %}">
 
     {% block navbar %}
     {% include "core/includes/navbar.html" %}
@@ -24,7 +24,9 @@
 
     {% include "core/includes/messages.html" %}
 
+    <div class="flex-1">
     {% block content %}{% endblock %}
+    </div>
 
     {% block footer %}
     {% include "core/includes/footer.html" %}
