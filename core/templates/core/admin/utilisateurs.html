@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
     <title>UPGCExam - Utilisateurs</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -16,16 +16,16 @@
 <body>
     {% include 'core/includes/admin_header.html' %}
 
-    <main class="max-w-7xl mx-auto px-6 py-8">
-        <div class="mb-8">
-            <h1 class="text-3xl font-black text-[#0B1C30]">👥 Gestion des utilisateurs</h1>
-            <p class="text-gray-500 mt-1">{{ total }} inscrits · {{ actifs }} actifs · {{ staff }} administrateurs</p>
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+        <div class="mb-6 sm:mb-8">
+            <h1 class="text-2xl sm:text-3xl font-black text-[#0B1C30]">👥 Gestion des utilisateurs</h1>
+            <p class="text-xs sm:text-sm text-gray-500 mt-0.5 sm:mt-1">{{ total }} inscrits · {{ actifs }} actifs · {{ staff }} administrateurs</p>
         </div>
 
         {% if messages %}
-        <div class="mb-6 space-y-2">
+        <div class="mb-4 sm:mb-6 space-y-2">
             {% for message in messages %}
-            <div class="p-3 rounded-lg text-sm {% if message.tags == 'error' %}bg-red-50 text-red-600 border border-red-200{% else %}bg-green-50 text-green-600 border border-green-200{% endif %}">
+            <div class="p-2.5 sm:p-3 rounded-lg text-xs sm:text-sm {% if message.tags == 'error' %}bg-red-50 text-red-600 border border-red-200{% else %}bg-green-50 text-green-600 border border-green-200{% endif %}">
                 {{ message }}
             </div>
             {% endfor %}
@@ -33,81 +33,139 @@
         {% endif %}
 
         <!-- Stats -->
-        <div class="grid grid-cols-3 gap-4 mb-8">
-            <div class="bg-white rounded-xl shadow-sm p-5 text-center">
-                <p class="text-3xl font-black text-[#0037B0]">{{ total }}</p>
-                <p class="text-sm text-gray-400">Total</p>
+        <div class="grid grid-cols-3 gap-2 sm:gap-4 mb-6 sm:mb-8">
+            <div class="bg-white rounded-xl shadow-sm p-3 sm:p-5 text-center">
+                <p class="text-xl sm:text-2xl lg:text-3xl font-black text-[#0037B0]">{{ total }}</p>
+                <p class="text-[10px] sm:text-sm text-gray-400">Total</p>
             </div>
-            <div class="bg-white rounded-xl shadow-sm p-5 text-center">
-                <p class="text-3xl font-black text-[#10B981]">{{ actifs }}</p>
-                <p class="text-sm text-gray-400">Actifs</p>
+            <div class="bg-white rounded-xl shadow-sm p-3 sm:p-5 text-center">
+                <p class="text-xl sm:text-2xl lg:text-3xl font-black text-[#10B981]">{{ actifs }}</p>
+                <p class="text-[10px] sm:text-sm text-gray-400">Actifs</p>
             </div>
-            <div class="bg-white rounded-xl shadow-sm p-5 text-center">
-                <p class="text-3xl font-black text-[#8B5CF6]">{{ staff }}</p>
-                <p class="text-sm text-gray-400">Administrateurs</p>
+            <div class="bg-white rounded-xl shadow-sm p-3 sm:p-5 text-center">
+                <p class="text-xl sm:text-2xl lg:text-3xl font-black text-[#8B5CF6]">{{ staff }}</p>
+                <p class="text-[10px] sm:text-sm text-gray-400">Admins</p>
             </div>
         </div>
 
         <!-- Tableau -->
         <div class="bg-white rounded-xl shadow-sm overflow-hidden">
-            <div class="overflow-x-auto">
+            <!-- Mobile cards -->
+            <div class="sm:hidden divide-y divide-gray-100">
+                {% for u in utilisateurs %}
+                <div class="p-4 hover:bg-gray-50/50 transition">
+                    <div class="flex items-center justify-between mb-2">
+                        <div class="flex items-center gap-2 min-w-0">
+                            <span class="font-semibold text-sm text-gray-900 truncate">{{ u.username }}</span>
+                            {% if u == request.user %}<span class="text-[10px] text-blue-600 flex-shrink-0">(vous)</span>{% endif %}
+                        </div>
+                        <div class="flex items-center gap-1 flex-shrink-0 ml-2">
+                            {% if u.is_superuser %}
+                                <span class="text-[10px] px-1.5 py-0.5 rounded-full font-bold bg-red-100 text-red-700">Superadmin</span>
+                            {% elif u.is_staff %}
+                                <span class="text-[10px] px-1.5 py-0.5 rounded-full font-bold bg-purple-100 text-purple-700">Admin</span>
+                            {% else %}
+                                <span class="text-[10px] px-1.5 py-0.5 rounded-full font-bold bg-blue-100 text-blue-700">Étudiant</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <p class="text-xs text-gray-500 truncate mb-2">{{ u.email|default:'—' }}</p>
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <span class="text-[10px] {% if u.is_active %}text-green-600 font-medium{% else %}text-red-500 font-medium{% endif %}">
+                                {{ u.is_active|yesno:"Actif,Désactivé" }}
+                            </span>
+                            <span class="text-[10px] text-gray-400">{{ u.date_joined|date:'d/m/Y' }}</span>
+                        </div>
+                        {% if u != request.user and not u.is_superuser %}
+                        <div class="flex gap-1">
+                            <form method="post" class="inline">
+                                {% csrf_token %}
+                                <input type="hidden" name="user_id" value="{{ u.id }}">
+                                <button type="submit" name="action" value="toggle_staff"
+                                        class="text-[10px] px-1.5 py-0.5 rounded {% if u.is_staff %}bg-purple-50 text-purple-600{% else %}bg-gray-100 text-gray-600{% endif %} font-medium">
+                                    {{ u.is_staff|yesno:"↓ Rétro,↑ Promo" }}
+                                </button>
+                                <button type="submit" name="action" value="toggle_active"
+                                        class="text-[10px] px-1.5 py-0.5 rounded {% if u.is_active %}bg-orange-50 text-orange-600{% else %}bg-green-50 text-green-600{% endif %} font-medium">
+                                    {{ u.is_active|yesno:"⛔,✅" }}
+                                </button>
+                                <button type="submit" name="action" value="delete_user"
+                                        class="text-[10px] px-1.5 py-0.5 rounded bg-red-50 text-red-600 font-medium"
+                                        onclick="return confirm('Supprimer {{ u.username|escapejs }} définitivement ?')">
+                                    🗑
+                                </button>
+                            </form>
+                        </div>
+                        {% else %}
+                        <span class="text-[10px] text-gray-400">—</span>
+                        {% endif %}
+                    </div>
+                </div>
+                {% empty %}
+                <div class="p-8 text-center text-gray-400 text-sm">Aucun utilisateur.</div>
+                {% endfor %}
+            </div>
+
+            <!-- Desktop table -->
+            <div class="hidden sm:block overflow-x-auto">
                 <table class="w-full text-sm">
                     <thead>
-                        <tr class="bg-gray-50 text-left text-xs font-bold uppercase tracking-wider text-gray-500">
-                            <th class="px-5 py-3">Utilisateur</th>
-                            <th class="px-5 py-3">Email</th>
-                            <th class="px-5 py-3">Rôle</th>
-                            <th class="px-5 py-3">Statut</th>
-                            <th class="px-5 py-3">Inscrit le</th>
-                            <th class="px-5 py-3 text-right">Actions</th>
+                        <tr class="bg-gray-50 text-left text-[10px] sm:text-xs font-bold uppercase tracking-wider text-gray-500">
+                            <th class="px-4 sm:px-5 py-3">Utilisateur</th>
+                            <th class="px-4 sm:px-5 py-3">Email</th>
+                            <th class="px-4 sm:px-5 py-3">Rôle</th>
+                            <th class="px-4 sm:px-5 py-3">Statut</th>
+                            <th class="px-4 sm:px-5 py-3">Inscrit le</th>
+                            <th class="px-4 sm:px-5 py-3 text-right">Actions</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-100">
                         {% for u in utilisateurs %}
-                        <tr class="hover:bg-gray-50/50">
-                            <td class="px-5 py-3">
+                        <tr class="hover:bg-gray-50/50 text-xs sm:text-sm">
+                            <td class="px-4 sm:px-5 py-3">
                                 <span class="font-semibold text-gray-900">{{ u.username }}</span>
-                                {% if u == request.user %}<span class="text-xs text-blue-600 ml-1">(vous)</span>{% endif %}
+                                {% if u == request.user %}<span class="text-[10px] sm:text-xs text-blue-600 ml-1">(vous)</span>{% endif %}
                             </td>
-                            <td class="px-5 py-3 text-gray-500">{{ u.email|default:'—' }}</td>
-                            <td class="px-5 py-3">
+                            <td class="px-4 sm:px-5 py-3 text-gray-500 truncate max-w-[160px] lg:max-w-none">{{ u.email|default:'—' }}</td>
+                            <td class="px-4 sm:px-5 py-3 whitespace-nowrap">
                                 {% if u.is_superuser %}
-                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-red-100 text-red-700">Superadmin</span>
+                                    <span class="inline-flex items-center px-1.5 sm:px-2 py-0.5 rounded-full text-[10px] sm:text-xs font-bold bg-red-100 text-red-700">Superadmin</span>
                                 {% elif u.is_staff %}
-                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-purple-100 text-purple-700">Admin</span>
+                                    <span class="inline-flex items-center px-1.5 sm:px-2 py-0.5 rounded-full text-[10px] sm:text-xs font-bold bg-purple-100 text-purple-700">Admin</span>
                                 {% else %}
-                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-blue-100 text-blue-700">Étudiant</span>
+                                    <span class="inline-flex items-center px-1.5 sm:px-2 py-0.5 rounded-full text-[10px] sm:text-xs font-bold bg-blue-100 text-blue-700">Étudiant</span>
                                 {% endif %}
                             </td>
-                            <td class="px-5 py-3">
+                            <td class="px-4 sm:px-5 py-3 whitespace-nowrap">
                                 {% if u.is_active %}
-                                    <span class="text-green-600 font-medium">Actif</span>
+                                    <span class="text-green-600 font-medium text-xs">Actif</span>
                                 {% else %}
-                                    <span class="text-red-500 font-medium">Désactivé</span>
+                                    <span class="text-red-500 font-medium text-xs">Désactivé</span>
                                 {% endif %}
                             </td>
-                            <td class="px-5 py-3 text-gray-500 text-xs">{{ u.date_joined|date:'d/m/Y' }}</td>
-                            <td class="px-5 py-3 text-right">
+                            <td class="px-4 sm:px-5 py-3 text-gray-500 text-[10px] sm:text-xs whitespace-nowrap">{{ u.date_joined|date:'d/m/Y' }}</td>
+                            <td class="px-4 sm:px-5 py-3 text-right whitespace-nowrap">
                                 {% if u != request.user and not u.is_superuser %}
                                 <form method="post" class="inline-flex items-center gap-1">
                                     {% csrf_token %}
                                     <input type="hidden" name="user_id" value="{{ u.id }}">
                                     <button type="submit" name="action" value="toggle_staff"
-                                            class="text-xs px-2 py-1 rounded {% if u.is_staff %}bg-purple-50 text-purple-600 hover:bg-purple-100{% else %}bg-gray-100 text-gray-600 hover:bg-gray-200{% endif %} font-medium">
+                                            class="text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 rounded {% if u.is_staff %}bg-purple-50 text-purple-600 hover:bg-purple-100{% else %}bg-gray-100 text-gray-600 hover:bg-gray-200{% endif %} font-medium">
                                         {% if u.is_staff %}Rétrograder{% else %}Promouvoir{% endif %}
                                     </button>
                                     <button type="submit" name="action" value="toggle_active"
-                                            class="text-xs px-2 py-1 rounded {% if u.is_active %}bg-orange-50 text-orange-600 hover:bg-orange-100{% else %}bg-green-50 text-green-600 hover:bg-green-100{% endif %} font-medium">
+                                            class="text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 rounded {% if u.is_active %}bg-orange-50 text-orange-600 hover:bg-orange-100{% else %}bg-green-50 text-green-600 hover:bg-green-100{% endif %} font-medium">
                                         {% if u.is_active %}Désactiver{% else %}Activer{% endif %}
                                     </button>
                                     <button type="submit" name="action" value="delete_user"
-                                            class="text-xs px-2 py-1 rounded bg-red-50 text-red-600 hover:bg-red-100 font-medium"
+                                            class="text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 rounded bg-red-50 text-red-600 hover:bg-red-100 font-medium"
                                             onclick="return confirm('Supprimer {{ u.username|escapejs }} définitivement ?')">
                                         Supprimer
                                     </button>
                                 </form>
                                 {% else %}
-                                <span class="text-xs text-gray-400">—</span>
+                                <span class="text-[10px] sm:text-xs text-gray-400">—</span>
                                 {% endif %}
                             </td>
                         </tr>

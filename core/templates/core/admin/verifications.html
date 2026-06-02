@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
     <title>UPGCExam - Vérifications</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -12,87 +12,124 @@
 <body>
     {% include 'core/includes/admin_header.html' %}
 
-    <main class="max-w-7xl mx-auto px-6 py-8">
-        <h1 class="text-3xl font-black text-[#0B1C30] mb-8">🔑 Gestion des vérifications email</h1>
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+        <h1 class="text-2xl sm:text-3xl font-black text-[#0B1C30] mb-6 sm:mb-8">🔑 Gestion des vérifications email</h1>
 
         {% if messages %}
-        <div class="mb-6 space-y-2">
+        <div class="mb-4 sm:mb-6 space-y-2">
             {% for message in messages %}
-            <div class="p-3 rounded-lg text-sm {% if message.tags == 'error' %}bg-red-50 text-red-600 border border-red-200{% else %}bg-green-50 text-green-600 border border-green-200{% endif %}">{{ message }}</div>
+            <div class="p-2.5 sm:p-3 rounded-lg text-xs sm:text-sm {% if message.tags == 'error' %}bg-red-50 text-red-600 border border-red-200{% else %}bg-green-50 text-green-600 border border-green-200{% endif %}">{{ message }}</div>
             {% endfor %}
         </div>
         {% endif %}
 
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
 
             <!-- Codes en cours -->
             <div>
-                <h2 class="text-lg font-bold text-gray-900 mb-4">🔐 Codes de vérification actifs</h2>
+                <h2 class="text-base sm:text-lg font-bold text-gray-900 mb-3 sm:mb-4">🔐 Codes de vérification actifs</h2>
                 <div class="bg-white rounded-xl shadow-sm overflow-hidden">
-                    <table class="w-full text-sm">
-                        <thead>
-                            <tr class="bg-gray-50 text-left text-xs font-bold uppercase tracking-wider text-gray-500">
-                                <th class="px-4 py-3">Email</th>
-                                <th class="px-4 py-3">Expire</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-gray-100">
-                            {% for c in codes %}
-                            <tr class="hover:bg-gray-50/50">
-                                <td class="px-4 py-2.5 font-medium text-gray-900">{{ c.email }}</td>
-                                <td class="px-4 py-2.5 text-xs text-gray-400">{{ c.expire_le|timeuntil }}</td>
-                            </tr>
-                            {% empty %}
-                            <tr><td colspan="2" class="px-4 py-10 text-center text-gray-400">Aucun code actif.</td></tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm">
+                            <thead>
+                                <tr class="bg-gray-50 text-left text-[10px] sm:text-xs font-bold uppercase tracking-wider text-gray-500">
+                                    <th class="px-3 sm:px-4 py-3">Email</th>
+                                    <th class="px-3 sm:px-4 py-3 whitespace-nowrap">Expire</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-100">
+                                {% for c in codes %}
+                                <tr class="hover:bg-gray-50/50 text-xs sm:text-sm">
+                                    <td class="px-3 sm:px-4 py-2.5 font-medium text-gray-900 truncate max-w-[200px]">{{ c.email }}</td>
+                                    <td class="px-3 sm:px-4 py-2.5 text-[10px] sm:text-xs text-gray-400 whitespace-nowrap">{{ c.expire_le|timeuntil }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr><td colspan="2" class="px-4 py-10 text-center text-gray-400">Aucun code actif.</td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
 
             <!-- Utilisateurs non vérifiés -->
             <div>
-                <h2 class="text-lg font-bold text-gray-900 mb-4">⚠️ Utilisateurs non vérifiés</h2>
+                <h2 class="text-base sm:text-lg font-bold text-gray-900 mb-3 sm:mb-4">⚠️ Utilisateurs non vérifiés</h2>
                 <div class="bg-white rounded-xl shadow-sm overflow-hidden">
-                    <table class="w-full text-sm">
-                        <thead>
-                            <tr class="bg-gray-50 text-left text-xs font-bold uppercase tracking-wider text-gray-500">
-                                <th class="px-4 py-3">Utilisateur</th>
-                                <th class="px-4 py-3">Email</th>
-                                <th class="px-4 py-3 text-right">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-gray-100">
-                            {% for u in non_verifies %}
-                            <tr class="hover:bg-gray-50/50">
-                                <td class="px-4 py-2.5 font-medium">{{ u.username }}</td>
-                                <td class="px-4 py-2.5 text-gray-500 text-xs">{{ u.email|default:'—' }}</td>
-                                <td class="px-4 py-2.5 text-right">
-                                    <div class="inline-flex items-center gap-1">
-                                        <form method="post" class="inline">
-                                            {% csrf_token %}
-                                            <input type="hidden" name="email" value="{{ u.email }}">
-                                            <button type="submit" name="action" value="renvoyer"
-                                                    class="text-xs px-2 py-1 rounded bg-blue-50 text-blue-600 hover:bg-blue-100 font-medium">
-                                                🔄 Renvoyer code
-                                            </button>
-                                        </form>
-                                        <form method="post" class="inline">
-                                            {% csrf_token %}
-                                            <input type="hidden" name="user_id" value="{{ u.id }}">
-                                            <button type="submit" name="action" value="forcer_verification"
-                                                    class="text-xs px-2 py-1 rounded bg-green-50 text-green-600 hover:bg-green-100 font-medium">
-                                                ✅ Forcer vérif.
-                                            </button>
-                                        </form>
-                                    </div>
-                                </td>
-                            </tr>
-                            {% empty %}
-                            <tr><td colspan="3" class="px-4 py-10 text-center text-gray-400">Tous les utilisateurs sont vérifiés.</td></tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+                    <!-- Mobile cards -->
+                    <div class="sm:hidden divide-y divide-gray-100">
+                        {% for u in non_verifies %}
+                        <div class="p-4 hover:bg-gray-50/50 transition">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="font-medium text-sm text-[#0B1C30]">{{ u.username }}</span>
+                            </div>
+                            <p class="text-xs text-gray-500 truncate mb-3">{{ u.email|default:'—' }}</p>
+                            <div class="flex gap-2">
+                                <form method="post" class="flex-1">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="email" value="{{ u.email }}">
+                                    <button type="submit" name="action" value="renvoyer"
+                                            class="w-full text-xs px-3 py-1.5 rounded bg-blue-50 text-blue-600 hover:bg-blue-100 font-medium">
+                                        🔄 Renvoyer code
+                                    </button>
+                                </form>
+                                <form method="post" class="flex-1">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="user_id" value="{{ u.id }}">
+                                    <button type="submit" name="action" value="forcer_verification"
+                                            class="w-full text-xs px-3 py-1.5 rounded bg-green-50 text-green-600 hover:bg-green-100 font-medium">
+                                        ✅ Forcer vérif.
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <div class="p-8 text-center text-gray-400 text-sm">Tous les utilisateurs sont vérifiés.</div>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Desktop table -->
+                    <div class="hidden sm:block overflow-x-auto">
+                        <table class="w-full text-sm">
+                            <thead>
+                                <tr class="bg-gray-50 text-left text-[10px] sm:text-xs font-bold uppercase tracking-wider text-gray-500">
+                                    <th class="px-4 py-3">Utilisateur</th>
+                                    <th class="px-4 py-3">Email</th>
+                                    <th class="px-4 py-3 text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-100">
+                                {% for u in non_verifies %}
+                                <tr class="hover:bg-gray-50/50 text-xs sm:text-sm">
+                                    <td class="px-4 py-2.5 font-medium">{{ u.username }}</td>
+                                    <td class="px-4 py-2.5 text-gray-500 text-[10px] sm:text-xs truncate max-w-[180px]">{{ u.email|default:'—' }}</td>
+                                    <td class="px-4 py-2.5 text-right whitespace-nowrap">
+                                        <div class="inline-flex items-center gap-1">
+                                            <form method="post" class="inline">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="email" value="{{ u.email }}">
+                                                <button type="submit" name="action" value="renvoyer"
+                                                        class="text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 rounded bg-blue-50 text-blue-600 hover:bg-blue-100 font-medium">
+                                                    🔄 Renvoyer
+                                                </button>
+                                            </form>
+                                            <form method="post" class="inline">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="user_id" value="{{ u.id }}">
+                                                <button type="submit" name="action" value="forcer_verification"
+                                                        class="text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 rounded bg-green-50 text-green-600 hover:bg-green-100 font-medium">
+                                                    ✅ Forcer
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr><td colspan="3" class="px-4 py-10 text-center text-gray-400">Tous les utilisateurs sont vérifiés.</td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
 

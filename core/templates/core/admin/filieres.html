@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
     <title>UPGCExam - Filières</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -12,71 +12,99 @@
 <body>
     {% include 'core/includes/admin_header.html' %}
 
-    <main class="max-w-5xl mx-auto px-6 py-8">
-        <h1 class="text-3xl font-black text-[#0B1C30] mb-8">📚 Gestion des filières</h1>
+    <main class="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+        <h1 class="text-2xl sm:text-3xl font-black text-[#0B1C30] mb-6 sm:mb-8">📚 Gestion des filières</h1>
 
         {% if messages %}
-        <div class="mb-6 space-y-2">
+        <div class="mb-4 sm:mb-6 space-y-2">
             {% for message in messages %}
-            <div class="p-3 rounded-lg text-sm {% if message.tags == 'error' %}bg-red-50 text-red-600 border border-red-200{% else %}bg-green-50 text-green-600 border border-green-200{% endif %}">{{ message }}</div>
+            <div class="p-2.5 sm:p-3 rounded-lg text-xs sm:text-sm {% if message.tags == 'error' %}bg-red-50 text-red-600 border border-red-200{% else %}bg-green-50 text-green-600 border border-green-200{% endif %}">{{ message }}</div>
             {% endfor %}
         </div>
         {% endif %}
 
         <!-- Ajouter -->
-        <div class="bg-white rounded-xl shadow-sm p-6 mb-8">
-            <h2 class="font-bold text-gray-900 mb-4">Ajouter une filière</h2>
-            <form method="post" class="flex gap-3 items-end">
+        <div class="bg-white rounded-xl shadow-sm p-4 sm:p-6 mb-6 sm:mb-8">
+            <h2 class="font-bold text-sm sm:text-base text-gray-900 mb-3 sm:mb-4">Ajouter une filière</h2>
+            <form method="post" class="flex flex-col sm:flex-row gap-3 items-stretch sm:items-end">
                 {% csrf_token %}
                 <input type="hidden" name="action" value="ajouter">
                 <div>
-                    <label class="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">Code</label>
+                    <label class="block text-[10px] sm:text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">Code</label>
                     <input type="text" name="code" required maxlength="10" placeholder="MI"
-                           class="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-600 outline-none w-20 uppercase">
+                           class="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-600 outline-none w-full sm:w-20 uppercase">
                 </div>
                 <div class="flex-1">
-                    <label class="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">Nom</label>
+                    <label class="block text-[10px] sm:text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">Nom</label>
                     <input type="text" name="nom" required placeholder="Mathématiques-Informatique"
                            class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-600 outline-none">
                 </div>
-                <button type="submit" class="bg-[#0037B0] text-white px-5 py-2 rounded-lg font-bold text-sm hover:bg-[#002A8A] transition">Ajouter</button>
+                <button type="submit" class="bg-[#0037B0] text-white px-5 py-2 rounded-lg font-bold text-sm hover:bg-[#002A8A] transition w-full sm:w-auto text-center">Ajouter</button>
             </form>
         </div>
 
         <!-- Liste -->
         <div class="bg-white rounded-xl shadow-sm overflow-hidden">
-            <table class="w-full text-sm">
-                <thead>
-                    <tr class="bg-gray-50 text-left text-xs font-bold uppercase tracking-wider text-gray-500">
-                        <th class="px-5 py-3">Code</th>
-                        <th class="px-5 py-3">Nom</th>
-                        <th class="px-5 py-3 text-center">Sujets</th>
-                        <th class="px-5 py-3 text-center">Étudiants</th>
-                        <th class="px-5 py-3 text-right">Actions</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-gray-100">
-                    {% for f in filieres %}
-                    <tr class="hover:bg-gray-50/50">
-                        <td class="px-5 py-3 font-bold text-[#0037B0]">{{ f.code }}</td>
-                        <td class="px-5 py-3">{{ f.nom }}</td>
-                        <td class="px-5 py-3 text-center">{{ f.nb_sujets }}</td>
-                        <td class="px-5 py-3 text-center">{{ f.nb_etudiants }}</td>
-                        <td class="px-5 py-3 text-right">
-                            <form method="post" class="inline-flex items-center gap-1">
-                                {% csrf_token %}
-                                <input type="hidden" name="filiere_id" value="{{ f.id }}">
-                                <button type="submit" name="action" value="supprimer"
-                                        class="text-xs px-2 py-1 rounded bg-red-50 text-red-600 hover:bg-red-100 font-medium"
-                                        onclick="return confirm('Supprimer {{ f.code|escapejs }} ?')">Supprimer</button>
-                            </form>
-                        </td>
-                    </tr>
-                    {% empty %}
-                    <tr><td colspan="5" class="px-5 py-10 text-center text-gray-400">Aucune filière. Ajoutez-en une !</td></tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+            <!-- Mobile cards -->
+            <div class="sm:hidden divide-y divide-gray-100">
+                {% for f in filieres %}
+                <div class="p-4 hover:bg-gray-50/50 transition">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="font-bold text-[#0037B0] text-base">{{ f.code }}</span>
+                        <form method="post" class="inline-flex">
+                            {% csrf_token %}
+                            <input type="hidden" name="filiere_id" value="{{ f.id }}">
+                            <button type="submit" name="action" value="supprimer"
+                                    class="text-xs px-2 py-1 rounded bg-red-50 text-red-600 hover:bg-red-100 font-medium"
+                                    onclick="return confirm('Supprimer {{ f.code|escapejs }} ?')">Supprimer</button>
+                        </form>
+                    </div>
+                    <p class="text-sm text-gray-700">{{ f.nom }}</p>
+                    <div class="flex gap-3 mt-2 text-xs text-gray-400">
+                        <span>{{ f.nb_sujets }} sujet{% if f.nb_sujets != 1 %}s{% endif %}</span>
+                        <span>{{ f.nb_etudiants }} étudiant{% if f.nb_etudiants != 1 %}s{% endif %}</span>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="p-8 text-center text-gray-400 text-sm">Aucune filière. Ajoutez-en une !</div>
+                {% endfor %}
+            </div>
+
+            <!-- Desktop table -->
+            <div class="hidden sm:block overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead>
+                        <tr class="bg-gray-50 text-left text-[10px] sm:text-xs font-bold uppercase tracking-wider text-gray-500">
+                            <th class="px-4 sm:px-5 py-3">Code</th>
+                            <th class="px-4 sm:px-5 py-3">Nom</th>
+                            <th class="px-4 sm:px-5 py-3 text-center">Sujets</th>
+                            <th class="px-4 sm:px-5 py-3 text-center">Étudiants</th>
+                            <th class="px-4 sm:px-5 py-3 text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100">
+                        {% for f in filieres %}
+                        <tr class="hover:bg-gray-50/50 text-xs sm:text-sm">
+                            <td class="px-4 sm:px-5 py-3 font-bold text-[#0037B0]">{{ f.code }}</td>
+                            <td class="px-4 sm:px-5 py-3">{{ f.nom }}</td>
+                            <td class="px-4 sm:px-5 py-3 text-center">{{ f.nb_sujets }}</td>
+                            <td class="px-4 sm:px-5 py-3 text-center">{{ f.nb_etudiants }}</td>
+                            <td class="px-4 sm:px-5 py-3 text-right">
+                                <form method="post" class="inline-flex items-center gap-1">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="filiere_id" value="{{ f.id }}">
+                                    <button type="submit" name="action" value="supprimer"
+                                            class="text-[10px] sm:text-xs px-2 py-1 rounded bg-red-50 text-red-600 hover:bg-red-100 font-medium"
+                                            onclick="return confirm('Supprimer {{ f.code|escapejs }} ?')">Supprimer</button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="5" class="px-5 py-10 text-center text-gray-400">Aucune filière. Ajoutez-en une !</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
         </div>
     </main>
 {% include "core/includes/pwa_footer.html" %}

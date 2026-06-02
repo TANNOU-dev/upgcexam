@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
     <title>UPGCExam - Logs</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -12,69 +12,73 @@
 <body>
     {% include 'core/includes/admin_header.html' %}
 
-    <main class="max-w-7xl mx-auto px-6 py-8">
-        <h1 class="text-3xl font-black text-[#0B1C30] mb-8">📊 Activité récente</h1>
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+        <h1 class="text-2xl sm:text-3xl font-black text-[#0B1C30] mb-6 sm:mb-8">📊 Activité récente</h1>
 
         {% if messages %}
-        <div class="mb-6 space-y-2">
+        <div class="mb-4 sm:mb-6 space-y-2">
             {% for message in messages %}
-            <div class="p-3 rounded-lg text-sm {% if message.tags == 'error' %}bg-red-50 text-red-600 border border-red-200{% else %}bg-green-50 text-green-600 border border-green-200{% endif %}">{{ message }}</div>
+            <div class="p-2.5 sm:p-3 rounded-lg text-xs sm:text-sm {% if message.tags == 'error' %}bg-red-50 text-red-600 border border-red-200{% else %}bg-green-50 text-green-600 border border-green-200{% endif %}">{{ message }}</div>
             {% endfor %}
         </div>
         {% endif %}
 
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
             <!-- Activités -->
             <div>
-                <h2 class="text-lg font-bold text-gray-900 mb-4">📋 Activités (100 derniers)</h2>
+                <h2 class="text-base sm:text-lg font-bold text-gray-900 mb-3 sm:mb-4">📋 Activités (100 derniers)</h2>
                 <div class="bg-white rounded-xl shadow-sm overflow-hidden">
-                    <table class="w-full text-sm">
-                        <thead>
-                            <tr class="bg-gray-50 text-left text-xs font-bold uppercase tracking-wider text-gray-500">
-                                <th class="px-4 py-3">Utilisateur</th>
-                                <th class="px-4 py-3">Action</th>
-                                <th class="px-4 py-3">Quand</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-gray-100">
-                            {% for a in activites %}
-                            <tr class="hover:bg-gray-50/50">
-                                <td class="px-4 py-2.5 font-medium text-gray-900">{{ a.utilisateur.username }}</td>
-                                <td class="px-4 py-2.5 text-gray-500">{{ a.description|truncatechars:50 }}</td>
-                                <td class="px-4 py-2.5 text-xs text-gray-400">{{ a.cree_le|timesince }}</td>
-                            </tr>
-                            {% empty %}
-                            <tr><td colspan="3" class="px-4 py-10 text-center text-gray-400">Aucune activité.</td></tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm">
+                            <thead>
+                                <tr class="bg-gray-50 text-left text-[10px] sm:text-xs font-bold uppercase tracking-wider text-gray-500">
+                                    <th class="px-3 sm:px-4 py-3">Utilisateur</th>
+                                    <th class="px-3 sm:px-4 py-3">Action</th>
+                                    <th class="px-3 sm:px-4 py-3 whitespace-nowrap">Quand</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-100">
+                                {% for a in activites %}
+                                <tr class="hover:bg-gray-50/50 text-xs sm:text-sm">
+                                    <td class="px-3 sm:px-4 py-2.5 font-medium text-gray-900 whitespace-nowrap">{{ a.utilisateur.username }}</td>
+                                    <td class="px-3 sm:px-4 py-2.5 text-gray-500 truncate max-w-[180px] lg:max-w-[300px]">{{ a.description|truncatechars:50 }}</td>
+                                    <td class="px-3 sm:px-4 py-2.5 text-[10px] sm:text-xs text-gray-400 whitespace-nowrap">{{ a.cree_le|timesince }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr><td colspan="3" class="px-4 py-10 text-center text-gray-400">Aucune activité.</td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
 
             <!-- Téléchargements -->
             <div>
-                <h2 class="text-lg font-bold text-gray-900 mb-4">⬇️ Téléchargements (100 derniers)</h2>
+                <h2 class="text-base sm:text-lg font-bold text-gray-900 mb-3 sm:mb-4">⬇️ Téléchargements (100 derniers)</h2>
                 <div class="bg-white rounded-xl shadow-sm overflow-hidden">
-                    <table class="w-full text-sm">
-                        <thead>
-                            <tr class="bg-gray-50 text-left text-xs font-bold uppercase tracking-wider text-gray-500">
-                                <th class="px-4 py-3">Utilisateur</th>
-                                <th class="px-4 py-3">Sujet</th>
-                                <th class="px-4 py-3">Quand</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-gray-100">
-                            {% for t in telechargements %}
-                            <tr class="hover:bg-gray-50/50">
-                                <td class="px-4 py-2.5 font-medium text-gray-900">{{ t.utilisateur.username }}</td>
-                                <td class="px-4 py-2.5 text-gray-500">{{ t.sujet.titre|truncatechars:45 }}</td>
-                                <td class="px-4 py-2.5 text-xs text-gray-400">{{ t.telecharge_le|timesince }}</td>
-                            </tr>
-                            {% empty %}
-                            <tr><td colspan="3" class="px-4 py-10 text-center text-gray-400">Aucun téléchargement.</td></tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm">
+                            <thead>
+                                <tr class="bg-gray-50 text-left text-[10px] sm:text-xs font-bold uppercase tracking-wider text-gray-500">
+                                    <th class="px-3 sm:px-4 py-3">Utilisateur</th>
+                                    <th class="px-3 sm:px-4 py-3">Sujet</th>
+                                    <th class="px-3 sm:px-4 py-3 whitespace-nowrap">Quand</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-100">
+                                {% for t in telechargements %}
+                                <tr class="hover:bg-gray-50/50 text-xs sm:text-sm">
+                                    <td class="px-3 sm:px-4 py-2.5 font-medium text-gray-900 whitespace-nowrap">{{ t.utilisateur.username }}</td>
+                                    <td class="px-3 sm:px-4 py-2.5 text-gray-500 truncate max-w-[180px] lg:max-w-[300px]">{{ t.sujet.titre|truncatechars:45 }}</td>
+                                    <td class="px-3 sm:px-4 py-2.5 text-[10px] sm:text-xs text-gray-400 whitespace-nowrap">{{ t.telecharge_le|timesince }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr><td colspan="3" class="px-4 py-10 text-center text-gray-400">Aucun téléchargement.</td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
