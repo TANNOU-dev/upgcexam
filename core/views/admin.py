@@ -5,6 +5,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import Group, Permission, User
 from django.core.paginator import Paginator
+from django.db import IntegrityError
 from django.db.models import Avg, Count, Max, Prefetch, Q, Sum
 from django.db.models.functions import ExtractWeekDay
 from django.http import FileResponse, Http404, JsonResponse
@@ -140,7 +141,7 @@ def admin_dashboard(request):
                     url=reverse("detail_sujet", args=[sujet.id]),
                 )
             messages.success(request, f"Sujet « {sujet.titre} » validé et publié.")
-        except Sujet.DoesNotExist:
+        except (Sujet.DoesNotExist, ValueError):
             messages.error(request, "Sujet introuvable ou déjà traité.")
         return redirect("admin_dashboard")
 
@@ -382,7 +383,7 @@ def admin_utilisateurs(request):
         user_id = request.POST.get("user_id")
         try:
             target = User.objects.get(id=user_id) if user_id else None
-        except User.DoesNotExist:
+        except (User.DoesNotExist, ValueError):
             messages.error(request, "Utilisateur introuvable.")
             return redirect("admin_utilisateurs")
 
@@ -437,23 +438,33 @@ def admin_filieres(request):
         if action == "ajouter":
             nom = request.POST.get("nom", "").strip()
             code = request.POST.get("code", "").strip().upper()
-            if nom and code:
-                Filiere.objects.create(nom=nom, code=code)
-                messages.success(request, f"Filière {code} - {nom} ajoutée.")
+            if nom and code and len(nom) <= 100 and len(code) <= 10:
+                try:
+                    Filiere.objects.create(nom=nom, code=code)
+                    messages.success(request, f"Filière {code} - {nom} ajoutée.")
+                except IntegrityError:
+                    messages.error(request, "Ce code de filière existe déjà.")
             else:
-                messages.error(request, "Nom et code requis.")
+                messages.error(request, "Nom ou code de filière invalide.")
         elif action == "modifier":
             fid = request.POST.get("filiere_id")
             nom = request.POST.get("nom", "").strip()
             code = request.POST.get("code", "").strip().upper()
-            if fid and nom and code:
-                Filiere.objects.filter(id=fid).update(nom=nom, code=code)
-                messages.success(request, "Filière modifiée.")
+            if fid and nom and code and len(nom) <= 100 and len(code) <= 10:
+                try:
+                    updated = Filiere.objects.filter(id=fid).update(nom=nom, code=code)
+                    if updated:
+                        messages.success(request, "Filière modifiée.")
+                except (IntegrityError, ValueError):
+                    messages.error(request, "Modification de filière invalide.")
         elif action == "supprimer":
             fid = request.POST.get("filiere_id")
             if fid:
-                Filiere.objects.filter(id=fid).delete()
-                messages.success(request, "Filière supprimée.")
+                try:
+                    Filiere.objects.filter(id=fid).delete()
+                    messages.success(request, "Filière supprimée.")
+                except ValueError:
+                    messages.error(request, "Filière invalide.")
         return redirect("admin_filieres")
 
     filieres = (
@@ -475,16 +486,30 @@ def admin_matieres(request):
         if action == "ajouter":
             nom = request.POST.get("nom", "").strip()
             filiere_id = request.POST.get("filiere_id")
-            if nom and filiere_id:
-                Matiere.objects.create(nom=nom, filiere_id=filiere_id)
-                messages.success(request, f"Matière {nom} ajoutée.")
+            if nom and filiere_id and len(nom) <= 150:
+                try:
+                    filiere = Filiere.objects.get(id=filiere_id)
+                    _, created = Matiere.objects.get_or_create(
+                        nom__iexact=nom,
+                        filiere=filiere,
+                        defaults={"nom": nom},
+                    )
+                    if created:
+                        messages.success(request, f"Matière {nom} ajoutée.")
+                    else:
+                        messages.error(request, "Cette matière existe déjà pour cette filière.")
+                except (Filiere.DoesNotExist, IntegrityError, ValueError):
+                    messages.error(request, "Matière ou filière invalide.")
             else:
-                messages.error(request, "Nom et filière requis.")
+                messages.error(request, "Nom ou filière invalide.")
         elif action == "supprimer":
             mid = request.POST.get("matiere_id")
             if mid:
-                Matiere.objects.filter(id=mid).delete()
-                messages.success(request, "Matière supprimée.")
+                try:
+                    Matiere.objects.filter(id=mid).delete()
+                    messages.success(request, "Matière supprimée.")
+                except ValueError:
+                    messages.error(request, "Matière invalide.")
         return redirect("admin_matieres")
 
     matieres = (
@@ -507,14 +532,25 @@ def admin_niveaux(request):
         action = request.POST.get("action")
         if action == "ajouter":
             nom = request.POST.get("nom", "").strip()
-            if nom:
-                Niveau.objects.create(nom=nom)
-                messages.success(request, f"Niveau {nom} ajouté.")
+            if nom and len(nom) <= 20:
+                try:
+                    _, created = Niveau.objects.get_or_create(nom__iexact=nom, defaults={"nom": nom})
+                    if created:
+                        messages.success(request, f"Niveau {nom} ajouté.")
+                    else:
+                        messages.error(request, "Ce niveau existe déjà.")
+                except IntegrityError:
+                    messages.error(request, "Ce niveau existe déjà.")
+            else:
+                messages.error(request, "Nom de niveau invalide.")
         elif action == "supprimer":
             nid = request.POST.get("niveau_id")
             if nid:
-                Niveau.objects.filter(id=nid).delete()
-                messages.success(request, "Niveau supprimé.")
+                try:
+                    Niveau.objects.filter(id=nid).delete()
+                    messages.success(request, "Niveau supprimé.")
+                except ValueError:
+                    messages.error(request, "Niveau invalide.")
         return redirect("admin_niveaux")
 
     niveaux = Niveau.objects.annotate(nb_sujets=Count("sujets")).order_by("nom")
@@ -635,14 +671,16 @@ def admin_sujets(request):
                 Sujet.objects.filter(id__in=existing_ids).delete()
                 messages.success(request, f"{len(existing_ids)} sujet(s) supprimé(s) définitivement.")
         else:
-            if sujet_id:
-                sujet = get_object_or_404(Sujet, id=sujet_id)
-                if sujet.visibilite == "restreint":
-                    Sujet.objects.filter(id=sujet_id).update(visibilite="visible")
-                    messages.success(request, "Sujet désormais visible par tous.")
-                else:
-                    Sujet.objects.filter(id=sujet_id).update(visibilite="restreint")
-                    messages.success(request, "Sujet passé en accès restreint.")
+            ids_list = _parse_subject_ids([sujet_id])
+            sujet = Sujet.objects.filter(id__in=ids_list).first()
+            if sujet is None:
+                messages.error(request, "Sujet invalide ou introuvable.")
+            elif sujet.visibilite == "restreint":
+                Sujet.objects.filter(id=sujet.id).update(visibilite="visible")
+                messages.success(request, "Sujet désormais visible par tous.")
+            else:
+                Sujet.objects.filter(id=sujet.id).update(visibilite="restreint")
+                messages.success(request, "Sujet passé en accès restreint.")
 
         return redirect("admin_sujets")
 
@@ -663,7 +701,10 @@ def admin_sujets(request):
     if filtre_statut:
         sujets = sujets.filter(statut=filtre_statut)
     if filtre_filiere:
-        sujets = sujets.filter(filiere_id=filtre_filiere)
+        try:
+            sujets = sujets.filter(filiere_id=int(filtre_filiere))
+        except ValueError:
+            sujets = sujets.none()
     if filtre_annee:
         sujets = sujets.filter(annee_academique=filtre_annee)
     if filtre_visibilite:
@@ -783,8 +824,8 @@ def admin_verifications(request):
         action = request.POST.get("action")
         if action == "renvoyer":
             email = request.POST.get("email", "").strip()
-            if email and User.objects.filter(email=email).exists():
-                user = User.objects.get(email=email)
+            user = User.objects.filter(email__iexact=email).first()
+            if email and user is not None:
                 try:
                     creer_code_verification(email, request)
                 except Exception:
@@ -799,11 +840,15 @@ def admin_verifications(request):
         elif action == "forcer_verification":
             user_id = request.POST.get("user_id")
             if user_id:
-                user = get_object_or_404(User, id=user_id)
-                profil, _ = Utilisateur.objects.get_or_create(user=user)
-                profil.email_verifie = True
-                profil.save()
-                messages.success(request, f"Email de {user.username} vérifié manuellement.")
+                try:
+                    user = User.objects.get(id=user_id)
+                except (User.DoesNotExist, ValueError):
+                    messages.error(request, "Utilisateur invalide ou introuvable.")
+                else:
+                    profil, _ = Utilisateur.objects.get_or_create(user=user)
+                    profil.email_verifie = True
+                    profil.save()
+                    messages.success(request, f"Email de {user.username} vérifié manuellement.")
         return redirect("admin_verifications")
 
     codes = Verification.objects.filter(utilise=False, expire_le__gte=timezone.now()).order_by("-expire_le")
@@ -830,11 +875,14 @@ def admin_groupes(request):
 
         if action == "ajouter":
             nom = request.POST.get("nom", "").strip()
-            if nom:
-                Group.objects.create(name=nom)
-                messages.success(request, f"Groupe « {nom} » créé.")
+            if nom and len(nom) <= 150:
+                _, created = Group.objects.get_or_create(name=nom)
+                if created:
+                    messages.success(request, f"Groupe « {nom} » créé.")
+                else:
+                    messages.error(request, "Ce groupe existe déjà.")
             else:
-                messages.error(request, "Nom du groupe requis.")
+                messages.error(request, "Nom du groupe invalide.")
 
         elif action == "supprimer":
             gid = request.POST.get("groupe_id")
@@ -844,28 +892,35 @@ def admin_groupes(request):
                     nom = groupe.name
                     groupe.delete()
                     messages.success(request, f"Groupe « {nom} » supprimé.")
-                except Group.DoesNotExist:
+                except (Group.DoesNotExist, ValueError):
                     messages.error(request, "Groupe introuvable.")
 
         elif action == "renommer":
             gid = request.POST.get("groupe_id")
             nom = request.POST.get("nom", "").strip()
-            if gid and nom:
+            if gid and nom and len(nom) <= 150:
                 try:
                     groupe = Group.objects.get(id=gid)
                     groupe.name = nom
                     groupe.save()
                     messages.success(request, "Groupe renommé.")
-                except Group.DoesNotExist:
+                except (Group.DoesNotExist, ValueError):
                     messages.error(request, "Groupe introuvable.")
+                except IntegrityError:
+                    messages.error(request, "Ce nom de groupe existe déjà.")
 
         elif action == "modifier_permissions":
             gid = request.POST.get("groupe_id")
             if gid:
-                groupe = get_object_or_404(Group, id=gid)
-                perm_ids = request.POST.getlist("permissions")
-                groupe.permissions.set(perm_ids)
-                messages.success(request, f"Permissions de « {groupe.name} » mises à jour.")
+                try:
+                    groupe = Group.objects.get(id=gid)
+                    perm_ids = {int(perm_id) for perm_id in request.POST.getlist("permissions")}
+                    if Permission.objects.filter(id__in=perm_ids).count() != len(perm_ids):
+                        raise ValueError
+                    groupe.permissions.set(perm_ids)
+                    messages.success(request, f"Permissions de « {groupe.name} » mises à jour.")
+                except (Group.DoesNotExist, IntegrityError, ValueError):
+                    messages.error(request, "Groupe ou permissions invalides.")
 
         elif action == "ajouter_utilisateur":
             gid = request.POST.get("groupe_id")
@@ -876,7 +931,7 @@ def admin_groupes(request):
                     user = User.objects.get(id=uid)
                     user.groups.add(groupe)
                     messages.success(request, f"{user.username} ajouté au groupe « {groupe.name} ».")
-                except (Group.DoesNotExist, User.DoesNotExist):
+                except (Group.DoesNotExist, User.DoesNotExist, ValueError):
                     messages.error(request, "Erreur.")
 
         elif action == "retirer_utilisateur":
@@ -888,7 +943,7 @@ def admin_groupes(request):
                     user = User.objects.get(id=uid)
                     user.groups.remove(groupe)
                     messages.success(request, f"{user.username} retiré du groupe « {groupe.name} ».")
-                except (Group.DoesNotExist, User.DoesNotExist):
+                except (Group.DoesNotExist, User.DoesNotExist, ValueError):
                     messages.error(request, "Erreur.")
 
         return redirect("admin_groupes")

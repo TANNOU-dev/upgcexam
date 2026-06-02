@@ -27,6 +27,30 @@ from .shared import (
 )
 
 
+def _catalog_ids_are_valid(filiere_id, niveau_id):
+    """Vérifie et normalise les identifiants de catalogue reçus par formulaire."""
+    try:
+        filiere_id = int(filiere_id)
+        niveau_id = int(niveau_id)
+    except (TypeError, ValueError):
+        return None
+    if (
+        not Filiere.objects.filter(id=filiere_id).exists()
+        or not Niveau.objects.filter(id=niveau_id).exists()
+    ):
+        return None
+    return filiere_id, niveau_id
+
+
+def _academic_year_is_valid(value):
+    """Accepte uniquement une année universitaire au format 2025-2026."""
+    try:
+        first_year, second_year = (int(part) for part in value.split("-"))
+    except (TypeError, ValueError):
+        return False
+    return len(value) == 9 and second_year == first_year + 1
+
+
 def accueil(request):
     sujets_qs = _sujets_accessibles(request)
     total_sujets = sujets_qs.count()
@@ -60,9 +84,15 @@ def bibliotheque(request):
             Q(titre__icontains=query) | Q(description__icontains=query)
         )
     if filiere_id:
-        sujets = sujets.filter(filiere_id=filiere_id)
+        try:
+            sujets = sujets.filter(filiere_id=int(filiere_id))
+        except ValueError:
+            sujets = sujets.none()
     if matiere_id:
-        sujets = sujets.filter(matiere_id=matiere_id)
+        try:
+            sujets = sujets.filter(matiere_id=int(matiere_id))
+        except ValueError:
+            sujets = sujets.none()
     if annee:
         sujets = sujets.filter(annee_academique=annee)
 
@@ -145,8 +175,17 @@ def ajouter_sujet(request):
         if not all([titre, filiere_id, nom_matiere, niveau_id, annee_academique, fichier]):
             messages.error(request, "Tous les champs sont obligatoires.")
             return redirect("ajouter_sujet")
-        if not Filiere.objects.filter(id=filiere_id).exists() or not Niveau.objects.filter(id=niveau_id).exists():
+        catalog_ids = _catalog_ids_are_valid(filiere_id, niveau_id)
+        if catalog_ids is None:
             messages.error(request, "Filière ou niveau invalide.")
+            return redirect("ajouter_sujet")
+        filiere_id, niveau_id = catalog_ids
+        if (
+            len(titre) > 200
+            or len(nom_matiere) > 150
+            or not _academic_year_is_valid(annee_academique)
+        ):
+            messages.error(request, "Les informations du sujet sont invalides.")
             return redirect("ajouter_sujet")
         ok, err = valider_fichier_pdf(fichier)
         if not ok:
@@ -225,8 +264,17 @@ def modifier_sujet(request, sujet_id):
         if not all([titre, filiere_id, nom_matiere, niveau_id, annee_academique]):
             messages.error(request, "Tous les champs obligatoires doivent être remplis.")
             return redirect("modifier_sujet", sujet_id=sujet.id)
-        if not Filiere.objects.filter(id=filiere_id).exists() or not Niveau.objects.filter(id=niveau_id).exists():
+        catalog_ids = _catalog_ids_are_valid(filiere_id, niveau_id)
+        if catalog_ids is None:
             messages.error(request, "Filière ou niveau invalide.")
+            return redirect("modifier_sujet", sujet_id=sujet.id)
+        filiere_id, niveau_id = catalog_ids
+        if (
+            len(titre) > 200
+            or len(nom_matiere) > 150
+            or not _academic_year_is_valid(annee_academique)
+        ):
+            messages.error(request, "Les informations du sujet sont invalides.")
             return redirect("modifier_sujet", sujet_id=sujet.id)
         if request.user.is_staff and visibilite not in dict(Sujet.VISIBILITE_CHOICES):
             messages.error(request, "Visibilité invalide.")

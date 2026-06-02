@@ -86,7 +86,7 @@ def inscription(request):
                 try:
                     profil.filiere = Filiere.objects.get(id=filiere_id)
                     profil.save()
-                except Filiere.DoesNotExist:
+                except (Filiere.DoesNotExist, ValueError):
                     pass
             try:
                 creer_code_verification(email, request)

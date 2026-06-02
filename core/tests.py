@@ -1,8 +1,10 @@
 from datetime import timedelta
 import json
+from pathlib import Path
 import shutil
 
-from django.contrib.auth.models import User
+from django.contrib.auth.models import Group, User
+from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase, override_settings
 from django.urls import reverse
@@ -57,6 +59,17 @@ class CoreViewsTests(TestCase):
         )
 
         self.assertRedirects(response, reverse("bibliotheque"))
+
+    def test_login_ignores_backslash_external_next_url(self):
+        self._login_user()
+
+        response = self.client.post(
+            f"{reverse('connexion')}?next=/\\example.com",
+            {"username": "etudiant", "password": "Motdepasse12345"},
+        )
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, reverse("tableau_de_bord"))
 
     def test_login_ignores_external_next_url(self):
         self._login_user()
@@ -447,3 +460,99 @@ class CoreViewsTests(TestCase):
         self.assertEqual(response["Cache-Control"], "no-cache")
         self.assertEqual(response["Service-Worker-Allowed"], "/")
         response.close()
+
+
+    def test_add_subject_rejects_forged_catalog_id_without_server_error(self):
+        user = self._login_user()
+        niveau = Niveau.objects.create(nom="L3")
+        self.client.force_login(user)
+        pdf = SimpleUploadedFile("sujet.pdf", b"%PDF-1.4", content_type="application/pdf")
+
+        response = self.client.post(
+            reverse("ajouter_sujet"),
+            {
+                "titre": "Sujet forgé",
+                "filiere": "invalide",
+                "matiere": "Sécurité",
+                "niveau": str(niveau.id),
+                "annee_academique": "2025-2026",
+                "fichier_pdf": pdf,
+            },
+        )
+
+        self.assertRedirects(response, reverse("ajouter_sujet"))
+        self.assertFalse(Sujet.objects.filter(titre="Sujet forgé").exists())
+
+    def test_subject_model_validation_rejects_fake_pdf(self):
+        filiere = Filiere.objects.create(nom="Informatique", code="INFO")
+        matiere = Matiere.objects.create(nom="Sécurité", filiere=filiere)
+        niveau = Niveau.objects.create(nom="L3")
+        sujet = Sujet(
+            titre="Faux PDF",
+            filiere=filiere,
+            matiere=matiere,
+            niveau=niveau,
+            annee_academique="2025-2026",
+            fichier_pdf=SimpleUploadedFile("fake.pdf", b"texte", content_type="application/pdf"),
+        )
+
+        with self.assertRaises(ValidationError):
+            sujet.full_clean()
+
+    def test_subject_model_validation_rejects_mismatched_subject(self):
+        owner = User.objects.create_user(username="owner", password="Pass12345")
+        sujet = self._create_sujet(owner)
+        autre_filiere = Filiere.objects.create(nom="Droit", code="DROIT")
+        sujet.filiere = autre_filiere
+
+        with self.assertRaises(ValidationError):
+            sujet.full_clean()
+
+    def test_subject_pdf_is_deleted_with_queryset(self):
+        owner = User.objects.create_user(username="owner", password="Pass12345")
+        sujet = self._create_sujet(owner)
+        pdf_path = Path(sujet.fichier_pdf.path)
+        self.assertTrue(pdf_path.exists())
+
+        with self.captureOnCommitCallbacks(execute=True):
+            Sujet.objects.filter(pk=sujet.pk).delete()
+
+        self.assertFalse(pdf_path.exists())
+
+    def test_library_ignores_forged_catalog_filter_without_server_error(self):
+        response = self.client.get(reverse("bibliotheque"), {"filiere": "invalid"})
+
+        self.assertEqual(response.status_code, 200)
+
+    def test_admin_duplicate_level_is_rejected_without_server_error(self):
+        admin = User.objects.create_user(username="staff", password="Pass12345", is_staff=True)
+        Niveau.objects.create(nom="L1")
+        self.client.force_login(admin)
+
+        response = self.client.post(
+            reverse("admin_niveaux"),
+            {"action": "ajouter", "nom": "l1"},
+        )
+
+        self.assertRedirects(response, reverse("admin_niveaux"))
+        self.assertEqual(Niveau.objects.count(), 1)
+
+    def test_admin_group_permissions_reject_forged_id_without_server_error(self):
+        admin = User.objects.create_superuser(
+            username="superadmin",
+            email="superadmin@example.com",
+            password="Pass12345",
+        )
+        group = Group.objects.create(name="Bibliotheque")
+        self.client.force_login(admin)
+
+        response = self.client.post(
+            reverse("admin_groupes"),
+            {
+                "action": "modifier_permissions",
+                "groupe_id": str(group.id),
+                "permissions": ["invalid"],
+            },
+        )
+
+        self.assertRedirects(response, reverse("admin_groupes"))
