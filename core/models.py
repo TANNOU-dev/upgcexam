@@ -181,11 +181,19 @@ class PushSubscription(models.Model):
 class Verification(models.Model):
     MAX_TENTATIVES = 5
 
+    USAGE_EMAIL = "email"
+    USAGE_PASSWORD_RESET = "password_reset"
+    USAGE_CHOICES = [
+        (USAGE_EMAIL, "Vérification email"),
+        (USAGE_PASSWORD_RESET, "Réinitialisation du mot de passe"),
+    ]
+
     email = models.EmailField(db_index=True)
     code = models.CharField(max_length=6)
     expire_le = models.DateTimeField(db_index=True)
     utilise = models.BooleanField(default=False)
     tentatives = models.PositiveSmallIntegerField(default=0)
+    usage = models.CharField(max_length=20, choices=USAGE_CHOICES, default=USAGE_EMAIL)
 
     class Meta:
         verbose_name = "Vérification"

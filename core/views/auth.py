@@ -219,7 +219,7 @@ def password_reset_envoyer(request):
             messages.error(request, "Aucun compte trouvé avec cette adresse email.")
             return render(request, "core/password_reset.html")
 
-        code = creer_code_verification(email, request)
+        code = creer_code_verification(email, request, usage=Verification.USAGE_PASSWORD_RESET)
         request.session["reset_email"] = email
         messages.success(request, "Un code de vérification a été envoyé à votre adresse email.")
         return redirect("password_reset_code")
@@ -236,7 +236,7 @@ def password_reset_code(request):
     if request.method == "POST":
         code_saisi = request.POST.get("code", "").strip()
         try:
-            verif = Verification.objects.get(email=email, code=code_saisi)
+            verif = Verification.objects.get(email=email, code=code_saisi, usage=Verification.USAGE_PASSWORD_RESET)
             if verif.est_valide():
                 verif.utilise = True
                 verif.save()

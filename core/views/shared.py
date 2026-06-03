@@ -34,13 +34,14 @@ def _sujets_accessibles(request):
     return qs
 
 
-def creer_code_verification(email, request=None):
+def creer_code_verification(email, request=None, usage=Verification.USAGE_EMAIL):
     Verification.objects.filter(email=email, utilise=False).update(utilise=True)
     code = generer_code_verification()
     Verification.objects.create(
         email=email,
         code=code,
         expire_le=timezone.now() + timedelta(minutes=10),
+        usage=usage,
     )
     try:
         envoyer_code_verification(email, code)
