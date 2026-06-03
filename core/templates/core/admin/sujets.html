@@ -1,403 +1,383 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UPGCExam - Sujets</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <style>* { font-family: 'Inter', sans-serif; } body { background: #f5f7fa; }</style>
-{% include "core/includes/pwa_head.html" %}
-</head>
-<body>
-    {% include 'core/includes/admin_header.html' %}
+{% extends "core/base.html" %}
 
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 py-8">
-        <div class="flex items-center justify-between mb-6 sm:mb-8">
-            <div>
-                <h1 class="text-2xl sm:text-3xl font-black text-[#0B1C30]">📄 Sujets</h1>
-                <p class="text-sm text-gray-500 mt-1">{{ stats.total }} total · {{ stats.actifs }} actifs · {{ stats.en_attente }} en attente · {{ stats.restreints }} 🔒 restreints</p>
+{% block title %}UPGCExam - Sujets{% endblock %}
+
+{% block extra_css %}
+<style>
+    * { font-family: 'Inter', sans-serif; }
+    body { background: #f5f7fa; }
+</style>
+{% endblock %}
+
+{% block body_class %}bg-[#f5f7fa] min-h-screen flex flex-col{% endblock %}
+
+{% block navbar %}
+{% include 'core/includes/admin_header.html' %}
+{% endblock %}
+
+{% block presence_tracker %}{% endblock %}
+
+{% block content_wrapper_class %}flex-1{% endblock %}
+
+{% block content %}
+<main class="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+    <div class="flex items-center justify-between mb-6 sm:mb-8">
+        <div>
+            <h1 class="text-2xl sm:text-3xl font-black text-[#0B1C30]">📄 Sujets</h1>
+            <p class="text-sm text-gray-500 mt-1">{{ stats.total }} total · {{ stats.actifs }} actifs · {{ stats.en_attente }} en attente · {{ stats.restreints }} 🔒 restreints</p>
+        </div>
+    </div>
+
+    <!-- Alertes : toutes les actions recommandées -->
+    <div class="space-y-2 mb-4">
+        {% if stats.en_attente > 0 %}
+        <a href="?statut=en_attente"
+           class="flex items-center gap-3 bg-yellow-50 border border-yellow-200 rounded-xl px-4 py-3 hover:bg-yellow-100 transition group">
+            <span class="w-10 h-10 rounded-full bg-yellow-100 flex items-center justify-center text-lg">⏳</span>
+            <div class="flex-1">
+                <p class="font-bold text-yellow-800 text-sm">{{ stats.en_attente }} sujet(s) en attente de validation</p>
+                <p class="text-xs text-yellow-600">Cliquez pour les filtrer → cocher tout → publier</p>
             </div>
-        </div>
-
-        {% if messages %}
-        <div class="mb-6 space-y-2">
-            {% for message in messages %}
-            <div class="p-3 rounded-lg text-sm {% if message.tags == 'error' %}bg-red-50 text-red-600 border border-red-200{% else %}bg-green-50 text-green-600 border border-green-200{% endif %}">{{ message }}</div>
-            {% endfor %}
-        </div>
+            <span class="text-yellow-500 text-sm font-bold group-hover:translate-x-1 transition">→</span>
+        </a>
         {% endif %}
+        {% if stats.restreints > 0 %}
+        <a href="?statut=actif&amp;visibilite=restreint"
+           class="flex items-center gap-3 bg-red-50 border border-red-200 rounded-xl px-4 py-3 hover:bg-red-100 transition group">
+            <span class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center text-lg">🔒</span>
+            <div class="flex-1">
+                <p class="font-bold text-red-800 text-sm">{{ stats.restreints }} sujet(s) restreints à rendre publics</p>
+                <p class="text-xs text-red-600">Cliquez pour les filtrer → cocher tout → rendre visibles</p>
+            </div>
+            <span class="text-red-500 text-sm font-bold group-hover:translate-x-1 transition">→</span>
+        </a>
+        {% endif %}
+        {% if stats.archives > 0 %}
+        <a href="?statut=archive"
+           class="flex items-center gap-3 bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 hover:bg-gray-100 transition group">
+            <span class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-lg">📦</span>
+            <div class="flex-1">
+                <p class="font-bold text-gray-800 text-sm">{{ stats.archives }} sujet(s) archivés à réactiver</p>
+                <p class="text-xs text-gray-500">Cliquez pour les filtrer → cocher tout → réactiver</p>
+            </div>
+            <span class="text-gray-400 text-sm font-bold group-hover:translate-x-1 transition">→</span>
+        </a>
+        {% endif %}
+    </div>
 
-        <!-- Alertes : toutes les actions recommandées -->
-        <div class="space-y-2 mb-4">
-            {% if stats.en_attente > 0 %}
-            <a href="?statut=en_attente"
-               class="flex items-center gap-3 bg-yellow-50 border border-yellow-200 rounded-xl px-4 py-3 hover:bg-yellow-100 transition group">
-                <span class="w-10 h-10 rounded-full bg-yellow-100 flex items-center justify-center text-lg">⏳</span>
+    <!-- Stats -->
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-6">
+        <div class="bg-white rounded-xl shadow-sm p-4 text-center">
+            <p class="text-2xl sm:text-3xl font-black text-[#0037B0]">{{ stats.total }}</p>
+            <p class="text-xs sm:text-sm text-gray-400">Total</p>
+        </div>
+        <div class="bg-white rounded-xl shadow-sm p-4 text-center">
+            <p class="text-2xl sm:text-3xl font-black text-[#10B981]">{{ stats.actifs }}</p>
+            <p class="text-xs sm:text-sm text-gray-400">Publiés</p>
+        </div>
+        <div class="bg-white rounded-xl shadow-sm p-4 text-center">
+            <p class="text-2xl sm:text-3xl font-black text-[#F59E0B]">{{ stats.en_attente }}</p>
+            <p class="text-xs sm:text-sm text-gray-400">En attente</p>
+        </div>
+        <div class="bg-white rounded-xl shadow-sm p-4 text-center">
+            <p class="text-2xl sm:text-3xl font-black text-[#EF4444]">{{ stats.restreints }}</p>
+            <p class="text-xs sm:text-sm text-gray-400">🔒 Restreints</p>
+        </div>
+    </div>
+
+    <!-- Recherche + Filtres -->
+    <div class="bg-white rounded-xl shadow-sm p-4 mb-4">
+        <form method="get" class="space-y-3">
+            <div class="flex flex-col sm:flex-row gap-3">
                 <div class="flex-1">
-                    <p class="font-bold text-yellow-800 text-sm">{{ stats.en_attente }} sujet(s) en attente de validation</p>
-                    <p class="text-xs text-yellow-600">Cliquez pour les filtrer → cocher tout → publier</p>
+                    <input type="text" name="q" value="{{ recherche }}"
+                           placeholder="🔍 Titre, matière, email…"
+                           class="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-blue-600">
                 </div>
-                <span class="text-yellow-500 text-sm font-bold group-hover:translate-x-1 transition">→</span>
-            </a>
-            {% endif %}
-            {% if stats.restreints > 0 %}
-            <a href="?statut=actif&amp;visibilite=restreint"
-               class="flex items-center gap-3 bg-red-50 border border-red-200 rounded-xl px-4 py-3 hover:bg-red-100 transition group">
-                <span class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center text-lg">🔒</span>
-                <div class="flex-1">
-                    <p class="font-bold text-red-800 text-sm">{{ stats.restreints }} sujet(s) restreints à rendre publics</p>
-                    <p class="text-xs text-red-600">Cliquez pour les filtrer → cocher tout → rendre visibles</p>
+                <button type="submit"
+                        class="bg-[#0037B0] text-white px-5 py-2.5 rounded-lg font-bold text-sm hover:bg-[#002A8A] transition w-full sm:w-auto">
+                    Rechercher
+                </button>
+            </div>
+            <div class="flex flex-wrap gap-3 items-end">
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">Statut</label>
+                    <select name="statut" class="px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-blue-600">
+                        <option value="">Tous</option>
+                        <option value="actif" {% if filtre_statut == 'actif' %}selected{% endif %}>Actif</option>
+                        <option value="en_attente" {% if filtre_statut == 'en_attente' %}selected{% endif %}>En attente</option>
+                        <option value="archive" {% if filtre_statut == 'archive' %}selected{% endif %}>Archivé</option>
+                    </select>
                 </div>
-                <span class="text-red-500 text-sm font-bold group-hover:translate-x-1 transition">→</span>
-            </a>
-            {% endif %}
-            {% if stats.archives > 0 %}
-            <a href="?statut=archive"
-               class="flex items-center gap-3 bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 hover:bg-gray-100 transition group">
-                <span class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-lg">📦</span>
-                <div class="flex-1">
-                    <p class="font-bold text-gray-800 text-sm">{{ stats.archives }} sujet(s) archivés à réactiver</p>
-                    <p class="text-xs text-gray-500">Cliquez pour les filtrer → cocher tout → réactiver</p>
-                </div>
-                <span class="text-gray-400 text-sm font-bold group-hover:translate-x-1 transition">→</span>
-            </a>
-            {% endif %}
-
-        </div>
-
-        <!-- Stats -->
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-6">
-            <div class="bg-white rounded-xl shadow-sm p-4 text-center">
-                <p class="text-2xl sm:text-3xl font-black text-[#0037B0]">{{ stats.total }}</p>
-                <p class="text-xs sm:text-sm text-gray-400">Total</p>
-            </div>
-            <div class="bg-white rounded-xl shadow-sm p-4 text-center">
-                <p class="text-2xl sm:text-3xl font-black text-[#10B981]">{{ stats.actifs }}</p>
-                <p class="text-xs sm:text-sm text-gray-400">Publiés</p>
-            </div>
-            <div class="bg-white rounded-xl shadow-sm p-4 text-center">
-                <p class="text-2xl sm:text-3xl font-black text-[#F59E0B]">{{ stats.en_attente }}</p>
-                <p class="text-xs sm:text-sm text-gray-400">En attente</p>
-            </div>
-            <div class="bg-white rounded-xl shadow-sm p-4 text-center">
-                <p class="text-2xl sm:text-3xl font-black text-[#EF4444]">{{ stats.restreints }}</p>
-                <p class="text-xs sm:text-sm text-gray-400">🔒 Restreints</p>
-            </div>
-        </div>
-
-        <!-- Recherche + Filtres -->
-        <div class="bg-white rounded-xl shadow-sm p-4 mb-4">
-            <form method="get" class="space-y-3">
-                <div class="flex flex-col sm:flex-row gap-3">
-                    <div class="flex-1">
-                        <input type="text" name="q" value="{{ recherche }}"
-                               placeholder="🔍 Titre, matière, email…"
-                               class="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-blue-600">
-                    </div>
-                    <button type="submit"
-                            class="bg-[#0037B0] text-white px-5 py-2.5 rounded-lg font-bold text-sm hover:bg-[#002A8A] transition w-full sm:w-auto">
-                        Rechercher
-                    </button>
-                </div>
-                <div class="flex flex-wrap gap-3 items-end">
-                    <div>
-                        <label class="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">Statut</label>
-                        <select name="statut" class="px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-blue-600">
-                            <option value="">Tous</option>
-                            <option value="actif" {% if filtre_statut == 'actif' %}selected{% endif %}>Actif</option>
-                            <option value="en_attente" {% if filtre_statut == 'en_attente' %}selected{% endif %}>En attente</option>
-                            <option value="archive" {% if filtre_statut == 'archive' %}selected{% endif %}>Archivé</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">Filière</label>
-                        <select name="filiere" class="px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-blue-600">
-                            <option value="">Toutes</option>
-                            {% for f in filieres %}
-                            <option value="{{ f.id }}" {% if filtre_filiere|stringformat:'s' == f.id|stringformat:'s' %}selected{% endif %}>{{ f.code }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">Année</label>
-                        <select name="annee" class="px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-blue-600">
-                            <option value="">Toutes</option>
-                            {% for a in annees %}
-                            <option value="{{ a }}" {% if filtre_annee == a %}selected{% endif %}>{{ a }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <input type="hidden" name="visibilite" value="{{ filtre_visibilite }}">
-                    <a href="{% url 'admin_sujets' %}" class="text-sm text-gray-500 hover:text-gray-700 px-3 py-2">Réinitialiser</a>
-                </div>
-            </form>
-        </div>
-
-        <!-- Barre d'actions groupées -->
-        <div id="bulkBar" class="hidden flex-col sm:flex-row items-start sm:items-center justify-between bg-blue-50 border border-blue-200 rounded-xl p-4 mb-4 gap-3">
-            <div class="flex items-center gap-2 flex-wrap">
-                <span class="w-7 h-7 rounded-full bg-[#0037B0] text-white flex items-center justify-center text-xs font-bold" id="bulkCount">0</span>
-                <span class="text-sm font-semibold text-[#0B1C30]">sujet(s)</span>
-                <div id="bulkResume" class="flex gap-1.5"></div>
-            </div>
-            <div class="flex flex-wrap gap-2">
-                <button id="bulkValider" onclick="bulkAction('valider')"
-                    class="hidden items-center gap-1 text-xs px-4 py-2 rounded-lg bg-green-600 text-white hover:bg-green-700 font-semibold transition shadow-sm">
-                    ✅ Publier ces sujets
-                </button>
-                <button id="bulkArchiver" onclick="bulkAction('archiver')"
-                    class="hidden items-center gap-1 text-xs px-4 py-2 rounded-lg bg-orange-500 text-white hover:bg-orange-600 font-semibold transition shadow-sm">
-                    📦 Archiver ces sujets
-                </button>
-                <button id="bulkReactiver" onclick="bulkAction('reactiver')"
-                    class="hidden items-center gap-1 text-xs px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 font-semibold transition shadow-sm">
-                    🔄 Réactiver ces sujets
-                </button>
-                <button id="bulkRendreVisible" onclick="bulkAction('rendre_visible')"
-                    class="hidden items-center gap-1 text-xs px-4 py-2 rounded-lg bg-yellow-500 text-white hover:bg-yellow-600 font-semibold transition shadow-sm">
-                    🔓 Rendre visibles à tous
-                </button>
-                <button id="bulkRestreindre" onclick="bulkAction('restreindre')"
-                    class="hidden items-center gap-1 text-xs px-4 py-2 rounded-lg bg-purple-600 text-white hover:bg-purple-700 font-semibold transition shadow-sm">
-                    🔒 Passer en accès restreint
-                </button>
-                <button onclick="bulkAction('supprimer')"
-                    class="items-center gap-1 text-xs px-4 py-2 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 font-semibold transition border border-red-200">
-                    🗑 Supprimer définitivement
-                </button>
-            </div>
-        </div>
-
-        <!-- CSRF pour les actions groupées (JS lit ce token) -->
-        <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}" id="bulkCsrfToken">
-
-        <!-- Tableau -->
-        <div class="bg-white rounded-xl shadow-sm overflow-hidden">
-            <div class="overflow-x-auto">
-                <table class="w-full text-sm">
-                    <thead>
-                        <tr class="bg-gray-50 text-left text-xs font-bold uppercase tracking-wider text-gray-500">
-                            <th class="px-2 sm:px-3 py-3 w-10">
-                                <input type="checkbox" id="selectAll" onclick="toggleAll()" class="rounded border-gray-300">
-                            </th>
-                            <th class="px-2 sm:px-3 py-3">Titre</th>
-                            <th class="px-2 sm:px-3 py-3 hidden sm:table-cell">Auteur</th>
-                            <th class="px-2 sm:px-3 py-3 hidden md:table-cell">Filière</th>
-                            <th class="px-2 sm:px-3 py-3 hidden lg:table-cell">Matière</th>
-                            <th class="px-2 sm:px-3 py-3 text-center hidden sm:table-cell">Année</th>
-                            <th class="px-2 sm:px-3 py-3 text-center">Statut</th>
-                            <th class="px-2 sm:px-3 py-3 text-center hidden sm:table-cell">Visib.</th>
-                            <th class="px-2 sm:px-3 py-3 text-center">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-gray-100">
-                        {% for s in sujets %}
-                        <tr class="hover:bg-gray-50/50">
-                            <td class="px-2 sm:px-3 py-3">
-                                <input type="checkbox" name="sujets_ids" value="{{ s.id }}" class="row-checkbox rounded border-gray-300" data-statut="{{ s.statut }}" data-visibilite="{{ s.visibilite }}" onchange="updateBulkBar()">
-                            </td>
-                            <td class="px-2 sm:px-3 py-3 font-medium text-gray-900 max-w-[140px] sm:max-w-[180px] truncate text-xs sm:text-sm">{{ s.titre }}</td>
-                            <td class="px-2 sm:px-3 py-3 text-gray-500 text-xs hidden sm:table-cell">{{ s.publie_par.username|default:'—' }}</td>
-                            <td class="px-2 sm:px-3 py-3 hidden md:table-cell"><span class="text-xs font-bold text-[#0037B0] bg-blue-50 px-2 py-0.5 rounded">{{ s.filiere.code }}</span></td>
-                            <td class="px-2 sm:px-3 py-3 text-gray-500 text-xs hidden lg:table-cell">{{ s.matiere.nom|truncatechars:18 }}</td>
-                            <td class="px-2 sm:px-3 py-3 text-center text-gray-500 text-xs hidden sm:table-cell">{{ s.annee_academique }}</td>
-                            <td class="px-2 sm:px-3 py-3 text-center">
-                                {% if s.statut == 'actif' %}
-                                <span class="inline-flex items-center px-1.5 sm:px-2 py-0.5 rounded-full text-xs font-bold bg-green-100 text-green-700">Publié</span>
-                                {% elif s.statut == 'en_attente' %}
-                                <span class="inline-flex items-center px-1.5 sm:px-2 py-0.5 rounded-full text-xs font-bold bg-yellow-100 text-yellow-700">Attente</span>
-                                {% else %}
-                                <span class="inline-flex items-center px-1.5 sm:px-2 py-0.5 rounded-full text-xs font-bold bg-gray-100 text-gray-600">Archivé</span>
-                                {% endif %}
-                            </td>
-                            <td class="px-2 sm:px-3 py-3 text-center hidden sm:table-cell">
-                                {% if s.visibilite == 'restreint' %}
-                                <span class="text-xs font-bold text-red-600">🔒</span>
-                                {% else %}
-                                <span class="text-xs font-bold text-blue-600">👁</span>
-                                {% endif %}
-                            </td>
-                            <td class="px-2 sm:px-3 py-3 text-right">
-                                <div class="inline-flex items-center gap-1">
-                                    <a href="{% url 'admin_voir_sujet_pdf' s.id %}" target="_blank"
-                                       class="text-xs px-1.5 sm:px-2 py-1 rounded bg-gray-100 text-gray-600 hover:bg-gray-200 font-medium">👁</a>
-                                    {% if s.statut == 'en_attente' %}
-                                    <form method="post" class="inline">
-                                        {% csrf_token %}
-                                        <input type="hidden" name="sujet_id" value="{{ s.id }}">
-                                        <button type="submit" name="action" value="valider"
-                                                class="text-xs px-1.5 sm:px-2 py-1 rounded bg-green-50 text-green-600 hover:bg-green-100 font-medium">✅</button>
-                                    </form>
-                                    {% endif %}
-                                    {% if s.statut == 'actif' %}
-                                    <form method="post" class="inline">
-                                        {% csrf_token %}
-                                        <input type="hidden" name="sujet_id" value="{{ s.id }}">
-                                        <button type="submit" name="action" value="archiver"
-                                                class="text-xs px-1.5 sm:px-2 py-1 rounded bg-orange-50 text-orange-600 hover:bg-orange-100 font-medium">📦</button>
-                                    </form>
-                                    <form method="post" class="inline">
-                                        {% csrf_token %}
-                                        <input type="hidden" name="sujet_id" value="{{ s.id }}">
-                                        <button type="submit" name="action" value="visibilite"
-                                                class="text-xs px-1.5 sm:px-2 py-1 rounded {% if s.visibilite == 'restreint' %}bg-yellow-50 text-yellow-600 hover:bg-yellow-100{% else %}bg-purple-50 text-purple-600 hover:bg-purple-100{% endif %} font-medium">
-                                            {% if s.visibilite == 'restreint' %}🔓{% else %}🔒{% endif %}
-                                        </button>
-                                    </form>
-                                    {% endif %}
-                                    {% if s.statut == 'archive' %}
-                                    <form method="post" class="inline">
-                                        {% csrf_token %}
-                                        <input type="hidden" name="sujet_id" value="{{ s.id }}">
-                                        <button type="submit" name="action" value="reactiver"
-                                                class="text-xs px-1.5 sm:px-2 py-1 rounded bg-blue-50 text-blue-600 hover:bg-blue-100 font-medium">🔄</button>
-                                    </form>
-                                    {% endif %}
-                                    <form method="post" class="inline" onsubmit="return confirm('Supprimer « {{ s.titre|escapejs }} » ?')">
-                                        {% csrf_token %}
-                                        <input type="hidden" name="sujet_id" value="{{ s.id }}">
-                                        <button type="submit" name="action" value="supprimer"
-                                                class="text-xs px-1.5 sm:px-2 py-1 rounded bg-red-50 text-red-600 hover:bg-red-100 font-medium">🗑</button>
-                                    </form>
-                                </div>
-                            </td>
-                        </tr>
-                        {% empty %}
-                        <tr><td colspan="9" class="px-4 py-10 text-center text-gray-400">Aucun sujet trouvé.</td></tr>
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">Filière</label>
+                    <select name="filiere" class="px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-blue-600">
+                        <option value="">Toutes</option>
+                        {% for f in filieres %}
+                        <option value="{{ f.id }}" {% if filtre_filiere|stringformat:'s' == f.id|stringformat:'s' %}selected{% endif %}>{{ f.code }}</option>
                         {% endfor %}
-                    </tbody>
-                </table>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">Année</label>
+                    <select name="annee" class="px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-blue-600">
+                        <option value="">Toutes</option>
+                        {% for a in annees %}
+                        <option value="{{ a }}" {% if filtre_annee == a %}selected{% endif %}>{{ a }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <input type="hidden" name="visibilite" value="{{ filtre_visibilite }}">
+                <a href="{% url 'admin_sujets' %}" class="text-sm text-gray-500 hover:text-gray-700 px-3 py-2">Réinitialiser</a>
             </div>
-        </div>
+        </form>
+    </div>
 
-        <!-- Pagination -->
-        {% if sujets.paginator.num_pages > 1 %}
-        <div class="flex flex-wrap justify-center mt-6 gap-2">
-            {% if sujets.has_previous %}
-            <a href="?page={{ sujets.previous_page_number }}&statut={{ filtre_statut }}&filiere={{ filtre_filiere }}&annee={{ filtre_annee }}&visibilite={{ filtre_visibilite }}&q={{ recherche|urlencode }}"
-               class="px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-sm hover:bg-gray-50">← Précédent</a>
-            {% endif %}
-            <span class="px-3 py-1.5 text-sm text-gray-500">Page {{ sujets.number }}/{{ sujets.paginator.num_pages }}</span>
-            {% if sujets.has_next %}
-            <a href="?page={{ sujets.next_page_number }}&statut={{ filtre_statut }}&filiere={{ filtre_filiere }}&annee={{ filtre_annee }}&visibilite={{ filtre_visibilite }}&q={{ recherche|urlencode }}"
-               class="px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-sm hover:bg-gray-50">Suivant →</a>
-            {% endif %}
+    <!-- Barre d'actions groupées -->
+    <div id="bulkBar" class="hidden flex-col sm:flex-row items-start sm:items-center justify-between bg-blue-50 border border-blue-200 rounded-xl p-4 mb-4 gap-3">
+        <div class="flex items-center gap-2 flex-wrap">
+            <span class="w-7 h-7 rounded-full bg-[#0037B0] text-white flex items-center justify-center text-xs font-bold" id="bulkCount">0</span>
+            <span class="text-sm font-semibold text-[#0B1C30]">sujet(s)</span>
+            <div id="bulkResume" class="flex gap-1.5"></div>
         </div>
+        <div class="flex flex-wrap gap-2">
+            <button id="bulkValider" onclick="bulkAction('valider')"
+                class="hidden items-center gap-1 text-xs px-4 py-2 rounded-lg bg-green-600 text-white hover:bg-green-700 font-semibold transition shadow-sm">
+                ✅ Publier ces sujets
+            </button>
+            <button id="bulkArchiver" onclick="bulkAction('archiver')"
+                class="hidden items-center gap-1 text-xs px-4 py-2 rounded-lg bg-orange-500 text-white hover:bg-orange-600 font-semibold transition shadow-sm">
+                📦 Archiver ces sujets
+            </button>
+            <button id="bulkReactiver" onclick="bulkAction('reactiver')"
+                class="hidden items-center gap-1 text-xs px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 font-semibold transition shadow-sm">
+                🔄 Réactiver ces sujets
+            </button>
+            <button id="bulkRendreVisible" onclick="bulkAction('rendre_visible')"
+                class="hidden items-center gap-1 text-xs px-4 py-2 rounded-lg bg-yellow-500 text-white hover:bg-yellow-600 font-semibold transition shadow-sm">
+                🔓 Rendre visibles à tous
+            </button>
+            <button id="bulkRestreindre" onclick="bulkAction('restreindre')"
+                class="hidden items-center gap-1 text-xs px-4 py-2 rounded-lg bg-purple-600 text-white hover:bg-purple-700 font-semibold transition shadow-sm">
+                🔒 Passer en accès restreint
+            </button>
+            <button onclick="bulkAction('supprimer')"
+                class="items-center gap-1 text-xs px-4 py-2 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 font-semibold transition border border-red-200">
+                🗑 Supprimer définitivement
+            </button>
+        </div>
+    </div>
+
+    <!-- CSRF pour les actions groupées (JS lit ce token) -->
+    <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}" id="bulkCsrfToken">
+
+    <!-- Tableau -->
+    <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+                <thead>
+                    <tr class="bg-gray-50 text-left text-xs font-bold uppercase tracking-wider text-gray-500">
+                        <th class="px-2 sm:px-3 py-3 w-10">
+                            <input type="checkbox" id="selectAll" onclick="toggleAll()" class="rounded border-gray-300">
+                        </th>
+                        <th class="px-2 sm:px-3 py-3">Titre</th>
+                        <th class="px-2 sm:px-3 py-3 hidden sm:table-cell">Auteur</th>
+                        <th class="px-2 sm:px-3 py-3 hidden md:table-cell">Filière</th>
+                        <th class="px-2 sm:px-3 py-3 hidden lg:table-cell">Matière</th>
+                        <th class="px-2 sm:px-3 py-3 text-center hidden sm:table-cell">Année</th>
+                        <th class="px-2 sm:px-3 py-3 text-center">Statut</th>
+                        <th class="px-2 sm:px-3 py-3 text-center hidden sm:table-cell">Visib.</th>
+                        <th class="px-2 sm:px-3 py-3 text-center">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                    {% for s in sujets %}
+                    <tr class="hover:bg-gray-50/50">
+                        <td class="px-2 sm:px-3 py-3">
+                            <input type="checkbox" name="sujets_ids" value="{{ s.id }}" class="row-checkbox rounded border-gray-300" data-statut="{{ s.statut }}" data-visibilite="{{ s.visibilite }}" onchange="updateBulkBar()">
+                        </td>
+                        <td class="px-2 sm:px-3 py-3 font-medium text-gray-900 max-w-[140px] sm:max-w-[180px] truncate text-xs sm:text-sm">{{ s.titre }}</td>
+                        <td class="px-2 sm:px-3 py-3 text-gray-500 text-xs hidden sm:table-cell">{{ s.publie_par.username|default:'—' }}</td>
+                        <td class="px-2 sm:px-3 py-3 hidden md:table-cell"><span class="text-xs font-bold text-[#0037B0] bg-blue-50 px-2 py-0.5 rounded">{{ s.filiere.code }}</span></td>
+                        <td class="px-2 sm:px-3 py-3 text-gray-500 text-xs hidden lg:table-cell">{{ s.matiere.nom|truncatechars:18 }}</td>
+                        <td class="px-2 sm:px-3 py-3 text-center text-gray-500 text-xs hidden sm:table-cell">{{ s.annee_academique }}</td>
+                        <td class="px-2 sm:px-3 py-3 text-center">
+                            {% if s.statut == 'actif' %}
+                            <span class="inline-flex items-center px-1.5 sm:px-2 py-0.5 rounded-full text-xs font-bold bg-green-100 text-green-700">Publié</span>
+                            {% elif s.statut == 'en_attente' %}
+                            <span class="inline-flex items-center px-1.5 sm:px-2 py-0.5 rounded-full text-xs font-bold bg-yellow-100 text-yellow-700">Attente</span>
+                            {% else %}
+                            <span class="inline-flex items-center px-1.5 sm:px-2 py-0.5 rounded-full text-xs font-bold bg-gray-100 text-gray-600">Archivé</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-2 sm:px-3 py-3 text-center hidden sm:table-cell">
+                            {% if s.visibilite == 'restreint' %}
+                            <span class="text-xs font-bold text-red-600">🔒</span>
+                            {% else %}
+                            <span class="text-xs font-bold text-blue-600">👁</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-2 sm:px-3 py-3 text-right">
+                            <div class="inline-flex items-center gap-1">
+                                <a href="{% url 'admin_voir_sujet_pdf' s.id %}" target="_blank"
+                                   class="text-xs px-1.5 sm:px-2 py-1 rounded bg-gray-100 text-gray-600 hover:bg-gray-200 font-medium">👁</a>
+                                {% if s.statut == 'en_attente' %}
+                                <form method="post" class="inline">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="sujet_id" value="{{ s.id }}">
+                                    <button type="submit" name="action" value="valider"
+                                            class="text-xs px-1.5 sm:px-2 py-1 rounded bg-green-50 text-green-600 hover:bg-green-100 font-medium">✅</button>
+                                </form>
+                                {% endif %}
+                                {% if s.statut == 'actif' %}
+                                <form method="post" class="inline">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="sujet_id" value="{{ s.id }}">
+                                    <button type="submit" name="action" value="archiver"
+                                            class="text-xs px-1.5 sm:px-2 py-1 rounded bg-orange-50 text-orange-600 hover:bg-orange-100 font-medium">📦</button>
+                                </form>
+                                <form method="post" class="inline">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="sujet_id" value="{{ s.id }}">
+                                    <button type="submit" name="action" value="visibilite"
+                                            class="text-xs px-1.5 sm:px-2 py-1 rounded {% if s.visibilite == 'restreint' %}bg-yellow-50 text-yellow-600 hover:bg-yellow-100{% else %}bg-purple-50 text-purple-600 hover:bg-purple-100{% endif %} font-medium">
+                                        {% if s.visibilite == 'restreint' %}🔓{% else %}🔒{% endif %}
+                                    </button>
+                                </form>
+                                {% endif %}
+                                {% if s.statut == 'archive' %}
+                                <form method="post" class="inline">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="sujet_id" value="{{ s.id }}">
+                                    <button type="submit" name="action" value="reactiver"
+                                            class="text-xs px-1.5 sm:px-2 py-1 rounded bg-blue-50 text-blue-600 hover:bg-blue-100 font-medium">🔄</button>
+                                </form>
+                                {% endif %}
+                                <form method="post" class="inline" onsubmit="return confirm('Supprimer « {{ s.titre|escapejs }} » ?')">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="sujet_id" value="{{ s.id }}">
+                                    <button type="submit" name="action" value="supprimer"
+                                            class="text-xs px-1.5 sm:px-2 py-1 rounded bg-red-50 text-red-600 hover:bg-red-100 font-medium">🗑</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="9" class="px-4 py-10 text-center text-gray-400">Aucun sujet trouvé.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Pagination -->
+    {% if sujets.paginator.num_pages > 1 %}
+    <div class="flex flex-wrap justify-center mt-6 gap-2">
+        {% if sujets.has_previous %}
+        <a href="?page={{ sujets.previous_page_number }}&statut={{ filtre_statut }}&filiere={{ filtre_filiere }}&annee={{ filtre_annee }}&visibilite={{ filtre_visibilite }}&q={{ recherche|urlencode }}"
+           class="px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-sm hover:bg-gray-50">← Précédent</a>
         {% endif %}
-    </main>
+        <span class="px-3 py-1.5 text-sm text-gray-500">Page {{ sujets.number }}/{{ sujets.paginator.num_pages }}</span>
+        {% if sujets.has_next %}
+        <a href="?page={{ sujets.next_page_number }}&statut={{ filtre_statut }}&filiere={{ filtre_filiere }}&annee={{ filtre_annee }}&visibilite={{ filtre_visibilite }}&q={{ recherche|urlencode }}"
+           class="px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-sm hover:bg-gray-50">Suivant →</a>
+        {% endif %}
+    </div>
+    {% endif %}
+</main>
+{% endblock %}
 
-    <script>
-    function toggleAll() {
-        var checked = document.getElementById('selectAll').checked;
-        document.querySelectorAll('.row-checkbox').forEach(function(cb) { cb.checked = checked; });
-        updateBulkBar();
+{% block extra_js %}
+<script>
+function toggleAll() {
+    var checked = document.getElementById('selectAll').checked;
+    document.querySelectorAll('.row-checkbox').forEach(function(cb) { cb.checked = checked; });
+    updateBulkBar();
+}
+function updateBulkBar() {
+    var checked = document.querySelectorAll('.row-checkbox:checked');
+    var bar = document.getElementById('bulkBar');
+    var count = document.getElementById('bulkCount');
+    count.textContent = checked.length;
+
+    if (checked.length === 0) {
+        bar.classList.add('hidden');
+        bar.classList.remove('flex');
+        return;
     }
-    function updateBulkBar() {
-        var checked = document.querySelectorAll('.row-checkbox:checked');
-        var bar = document.getElementById('bulkBar');
-        var count = document.getElementById('bulkCount');
-        count.textContent = checked.length;
+    bar.classList.remove('hidden');
+    bar.classList.add('flex');
 
-        if (checked.length === 0) {
-            bar.classList.add('hidden');
-            bar.classList.remove('flex');
-            return;
-        }
-        bar.classList.remove('hidden');
-        bar.classList.add('flex');
+    var statuts = {};
+    var visibilites = {};
+    checked.forEach(function(cb) {
+        var s = cb.dataset.statut;
+        var v = cb.dataset.visibilite;
+        statuts[s] = (statuts[s] || 0) + 1;
+        visibilites[v] = (visibilites[v] || 0) + 1;
+    });
 
-        // Analyser les statuts des sujets sélectionnés
-        var statuts = {};
-        var visibilites = {};
-        checked.forEach(function(cb) {
-            var s = cb.dataset.statut;
-            var v = cb.dataset.visibilite;
-            statuts[s] = (statuts[s] || 0) + 1;
-            visibilites[v] = (visibilites[v] || 0) + 1;
-        });
-
-        // Afficher le résumé dans la barre
-        var resume = document.getElementById('bulkResume');
-        resume.innerHTML = '';
-        var etiquetteStatut = { 'actif': 'Publiés', 'en_attente': 'En attente', 'archive': 'Archivés' };
-        var etiquetteVisi = { 'visible': '👁 Visibles', 'restreint': '🔒 Restreints' };
-        for (var s in statuts) {
-            var badge = document.createElement('span');
-            badge.className = 'text-xs px-2 py-0.5 rounded-full font-bold ' +
-                (s === 'actif' ? 'bg-green-100 text-green-700' :
-                 s === 'en_attente' ? 'bg-yellow-100 text-yellow-700' : 'bg-gray-100 text-gray-600');
-            badge.textContent = statuts[s] + ' ' + (etiquetteStatut[s] || s);
-            resume.appendChild(badge);
-        }
-        for (var v in visibilites) {
-            var badge = document.createElement('span');
-            badge.className = 'text-xs px-2 py-0.5 rounded-full font-bold ' +
-                (v === 'visible' ? 'bg-blue-100 text-blue-600' : 'bg-red-100 text-red-600');
-            badge.textContent = visibilites[v] + ' ' + (etiquetteVisi[v] || v);
-            resume.appendChild(badge);
-        }
-
-        // Boutons visibles seulement si TOUS les sujets cochés sont concernés
-        // Valider : que des sujets en_attente
-        document.getElementById('bulkValider').classList.toggle('hidden',
-            !(statuts['en_attente'] && Object.keys(statuts).length === 1));
-
-        // Archiver : que des sujets actifs
-        document.getElementById('bulkArchiver').classList.toggle('hidden',
-            !(statuts['actif'] && Object.keys(statuts).length === 1));
-
-        // Réactiver : que des sujets archivés
-        document.getElementById('bulkReactiver').classList.toggle('hidden',
-            !(statuts['archive'] && Object.keys(statuts).length === 1));
-
-        // Rendre visible : que des sujets restreints (actifs)
-        document.getElementById('bulkRendreVisible').classList.toggle('hidden',
-            !(statuts['actif'] && visibilites['restreint'] && Object.keys(statuts).length === 1 && Object.keys(visibilites).length === 1));
-
-        // Restreindre : que des sujets visibles (actifs)
-        document.getElementById('bulkRestreindre').classList.toggle('hidden',
-            !(statuts['actif'] && visibilites['visible'] && Object.keys(statuts).length === 1 && Object.keys(visibilites).length === 1));
-
-        // Supprimer : toujours visible
+    var resume = document.getElementById('bulkResume');
+    resume.innerHTML = '';
+    var etiquetteStatut = { 'actif': 'Publiés', 'en_attente': 'En attente', 'archive': 'Archivés' };
+    var etiquetteVisi = { 'visible': '👁 Visibles', 'restreint': '🔒 Restreints' };
+    for (var s in statuts) {
+        var badge = document.createElement('span');
+        badge.className = 'text-xs px-2 py-0.5 rounded-full font-bold ' +
+            (s === 'actif' ? 'bg-green-100 text-green-700' :
+             s === 'en_attente' ? 'bg-yellow-100 text-yellow-700' : 'bg-gray-100 text-gray-600');
+        badge.textContent = statuts[s] + ' ' + (etiquetteStatut[s] || s);
+        resume.appendChild(badge);
     }
-    function bulkAction(action) {
-        var checked = document.querySelectorAll('.row-checkbox:checked');
-        if (checked.length === 0) return;
-        if (action === 'supprimer' && !confirm('Supprimer ' + checked.length + ' sujet(s) définitivement ?')) return;
-
-        var form = document.createElement('form');
-        form.method = 'post';
-        form.action = '';
-
-        // CSRF
-        var csrf = document.createElement('input');
-        csrf.type = 'hidden';
-        csrf.name = 'csrfmiddlewaretoken';
-        csrf.value = document.querySelector('[name=csrfmiddlewaretoken]').value;
-        form.appendChild(csrf);
-
-        // Action
-        var act = document.createElement('input');
-        act.type = 'hidden';
-        act.name = 'action';
-        act.value = action;
-        form.appendChild(act);
-
-        // Selected IDs
-        checked.forEach(function(cb) {
-            var inp = document.createElement('input');
-            inp.type = 'hidden';
-            inp.name = 'sujets_ids';
-            inp.value = cb.value;
-            form.appendChild(inp);
-        });
-
-        document.body.appendChild(form);
-        form.submit();
+    for (var v in visibilites) {
+        var badge = document.createElement('span');
+        badge.className = 'text-xs px-2 py-0.5 rounded-full font-bold ' +
+            (v === 'visible' ? 'bg-blue-100 text-blue-600' : 'bg-red-100 text-red-600');
+        badge.textContent = visibilites[v] + ' ' + (etiquetteVisi[v] || v);
+        resume.appendChild(badge);
     }
-    </script>
-{% include "core/includes/footer.html" %}
-{% include "core/includes/pwa_footer.html" %}
-</body>
-</html>
+    document.getElementById('bulkValider').classList.toggle('hidden',
+        !(statuts['en_attente'] && Object.keys(statuts).length === 1));
+    document.getElementById('bulkArchiver').classList.toggle('hidden',
+        !(statuts['actif'] && Object.keys(statuts).length === 1));
+    document.getElementById('bulkReactiver').classList.toggle('hidden',
+        !(statuts['archive'] && Object.keys(statuts).length === 1));
+    document.getElementById('bulkRendreVisible').classList.toggle('hidden',
+        !(statuts['actif'] && visibilites['restreint'] && Object.keys(statuts).length === 1 && Object.keys(visibilites).length === 1));
+    document.getElementById('bulkRestreindre').classList.toggle('hidden',
+        !(statuts['actif'] && visibilites['visible'] && Object.keys(statuts).length === 1 && Object.keys(visibilites).length === 1));
+}
+function bulkAction(action) {
+    var checked = document.querySelectorAll('.row-checkbox:checked');
+    if (checked.length === 0) return;
+    if (action === 'supprimer' && !confirm('Supprimer ' + checked.length + ' sujet(s) définitivement ?')) return;
+
+    var form = document.createElement('form');
+    form.method = 'post';
+    form.action = '';
+
+    var csrf = document.createElement('input');
+    csrf.type = 'hidden';
+    csrf.name = 'csrfmiddlewaretoken';
+    csrf.value = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    form.appendChild(csrf);
+
+    var act = document.createElement('input');
+    act.type = 'hidden';
+    act.name = 'action';
+    act.value = action;
+    form.appendChild(act);
+
+    checked.forEach(function(cb) {
+        var inp = document.createElement('input');
+        inp.type = 'hidden';
+        inp.name = 'sujets_ids';
+        inp.value = cb.value;
+        form.appendChild(inp);
+    });
+
+    document.body.appendChild(form);
+    form.submit();
+}
+</script>
+{% endblock %}
