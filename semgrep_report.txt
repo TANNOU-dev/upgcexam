@@ -1,0 +1,321 @@
+                    
+                    
+┌──────────────────┐
+│ 21 Code Findings │
+└──────────────────┘
+                  
+    core/qa_e2e.py
+    ❯❱ python.django.security.audit.unvalidated-password.unvalidated-password
+          ❰❰ Blocking ❱❱
+          The password on 'admin_user' is being set without validating the password. Call                     
+          django.contrib.auth.password_validation.validate_password() with validation functions before setting
+          the password. See https://docs.djangoproject.com/en/3.0/topics/auth/passwords/ for more information.
+          Details: https://sg.run/OPBL                                                                        
+                                                                                                              
+           ▶▶┆ Autofix ▶ if django.contrib.auth.password_validation.validate_password("QaAdmin12345!", user=admin_user):
+              admin_user.set_password("QaAdmin12345!")                                                                  
+          211┆ admin_user.set_password("QaAdmin12345!")
+                           
+    core/templates/500.html
+    ❯❱ html.security.audit.missing-integrity.missing-integrity
+          ❰❰ Blocking ❱❱
+          This tag is missing an 'integrity' subresource integrity attribute. The 'integrity' attribute allows
+          for the browser to verify that externally hosted files (for example from a CDN) are delivered       
+          without unexpected manipulation. Without this attribute, if an attacker can modify the externally   
+          hosted resource, this could lead to XSS and other types of attacks. To prevent this, include the    
+          base64-encoded cryptographic hash of the resource (file) you’re telling the browser to fetch in the 
+          'integrity' attribute for all externally hosted files.                                              
+          Details: https://sg.run/krXA                                                                        
+                                                                                                              
+            4┆ <script src="https://cdn.tailwindcss.com"></script>
+                                           
+    core/templates/core/admin/filieres.html
+    ❯❱ python.django.security.django-no-csrf-token.django-no-csrf-token
+          ❰❰ Blocking ❱❱
+          Manually-created forms in django templates should specify a csrf_token to prevent CSRF attacks.
+          Details: https://sg.run/N0Bp                                                                   
+                                                                                                         
+           28┆ <form method="post" class="flex flex-col sm:flex-row gap-3 items-stretch sm:items-end">
+           29┆     {% csrf_token %}
+           30┆     <input type="hidden" name="action" value="ajouter">
+           31┆     <div>
+           32┆         <label class="block text-[10px] sm:text-xs font-bold uppercase tracking-wider text-
+               gray-500 mb-1">Code</label>                                                                
+           33┆         <input type="text" name="code" required maxlength="10" placeholder="MI"
+           34┆                class="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2
+               focus:ring-blue-600 outline-none w-full sm:w-20 uppercase">                           
+           35┆     </div>
+           36┆     <div class="flex-1">
+           37┆         <label class="block text-[10px] sm:text-xs font-bold uppercase tracking-wider text-
+               gray-500 mb-1">Nom</label>                                                                 
+             [hid 5 additional lines, adjust with --max-lines-per-finding] 
+                                           
+    core/templates/core/admin/matieres.html
+    ❯❱ python.django.security.django-no-csrf-token.django-no-csrf-token
+          ❰❰ Blocking ❱❱
+          Manually-created forms in django templates should specify a csrf_token to prevent CSRF attacks.
+          Details: https://sg.run/N0Bp                                                                   
+                                                                                                         
+           28┆ <form method="post" class="flex flex-col sm:flex-row gap-3 items-stretch sm:items-end">
+           29┆     {% csrf_token %}
+           30┆     <input type="hidden" name="action" value="ajouter">
+           31┆     <div>
+           32┆         <label class="block text-[10px] sm:text-xs font-bold uppercase tracking-wider text-
+               gray-500 mb-1">Filière</label>                                                             
+           33┆         <select name="filiere_id" required class="w-full sm:w-auto px-3 py-2 border border-
+               gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-600 outline-none">                
+           34┆             {% for f in filieres %}
+           35┆             <option value="{{ f.id }}">{{ f.code }}</option>
+           36┆             {% endfor %}
+           37┆         </select>
+             [hid 8 additional lines, adjust with --max-lines-per-finding] 
+                                         
+    core/templates/core/admin/sujets.html
+    ❯❱ html.security.audit.missing-integrity.missing-integrity
+          ❰❰ Blocking ❱❱
+          This tag is missing an 'integrity' subresource integrity attribute. The 'integrity' attribute allows
+          for the browser to verify that externally hosted files (for example from a CDN) are delivered       
+          without unexpected manipulation. Without this attribute, if an attacker can modify the externally   
+          hosted resource, this could lead to XSS and other types of attacks. To prevent this, include the    
+          base64-encoded cryptographic hash of the resource (file) you’re telling the browser to fetch in the 
+          'integrity' attribute for all externally hosted files.                                              
+          Details: https://sg.run/krXA                                                                        
+                                                                                                              
+            7┆ <script src="https://cdn.tailwindcss.com"></script>
+                                               
+    core/templates/core/admin/utilisateurs.html
+    ❯❱ python.django.security.django-no-csrf-token.django-no-csrf-token
+          ❰❰ Blocking ❱❱
+          Manually-created forms in django templates should specify a csrf_token to prevent CSRF attacks.
+          Details: https://sg.run/N0Bp                                                                   
+                                                                                                         
+           76┆ <form method="post" class="inline">
+           77┆     {% csrf_token %}
+           78┆     <input type="hidden" name="user_id" value="{{ u.id }}">
+           79┆     <button type="submit" name="action" value="toggle_staff"
+           80┆             class="text-[10px] px-1.5 py-0.5 rounded {% if u.is_staff %}bg-purple-50 text-
+               purple-600{% else %}bg-gray-100 text-gray-600{% endif %} font-medium">                    
+           81┆         {{ u.is_staff|yesno:"↓ Rétro,↑ Promo" }}
+           82┆     </button>
+           83┆     <button type="submit" name="action" value="toggle_active"
+           84┆             class="text-[10px] px-1.5 py-0.5 rounded {% if u.is_active %}bg-orange-50 text-
+               orange-600{% else %}bg-green-50 text-green-600{% endif %} font-medium">                    
+           85┆         {{ u.is_active|yesno:"⛔,✅" }}
+             [hid 7 additional lines, adjust with --max-lines-per-finding] 
+          144┆ <form method="post" class="inline-flex items-center gap-1">
+          145┆     {% csrf_token %}
+          146┆     <input type="hidden" name="user_id" value="{{ u.id }}">
+          147┆     <button type="submit" name="action" value="toggle_staff"
+          148┆             class="text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 rounded {% if   
+               u.is_staff %}bg-purple-50 text-purple-600 hover:bg-purple-100{% else %}bg-gray-100 text-
+               gray-600 hover:bg-gray-200{% endif %} font-medium">                                     
+          149┆         {% if u.is_staff %}Rétrograder{% else %}Promouvoir{% endif %}
+          150┆     </button>
+          151┆     <button type="submit" name="action" value="toggle_active"
+          152┆             class="text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 rounded {% if    
+               u.is_active %}bg-orange-50 text-orange-600 hover:bg-orange-100{% else %}bg-green-50 text-
+               green-600 hover:bg-green-100{% endif %} font-medium">                                    
+          153┆         {% if u.is_active %}Désactiver{% else %}Activer{% endif %}
+             [hid 7 additional lines, adjust with --max-lines-per-finding] 
+                                 
+    core/templates/core/base.html
+    ❯❱ html.security.audit.missing-integrity.missing-integrity
+          ❰❰ Blocking ❱❱
+          This tag is missing an 'integrity' subresource integrity attribute. The 'integrity' attribute allows
+          for the browser to verify that externally hosted files (for example from a CDN) are delivered       
+          without unexpected manipulation. Without this attribute, if an attacker can modify the externally   
+          hosted resource, this could lead to XSS and other types of attacks. To prevent this, include the    
+          base64-encoded cryptographic hash of the resource (file) you’re telling the browser to fetch in the 
+          'integrity' attribute for all externally hosted files.                                              
+          Details: https://sg.run/krXA                                                                        
+                                                                                                              
+            7┆ <script src="https://cdn.tailwindcss.com"></script>
+                                        
+    core/templates/core/inscription.html
+    ❯❱ html.security.audit.missing-integrity.missing-integrity
+          ❰❰ Blocking ❱❱
+          This tag is missing an 'integrity' subresource integrity attribute. The 'integrity' attribute allows
+          for the browser to verify that externally hosted files (for example from a CDN) are delivered       
+          without unexpected manipulation. Without this attribute, if an attacker can modify the externally   
+          hosted resource, this could lead to XSS and other types of attacks. To prevent this, include the    
+          base64-encoded cryptographic hash of the resource (file) you’re telling the browser to fetch in the 
+          'integrity' attribute for all externally hosted files.                                              
+          Details: https://sg.run/krXA                                                                        
+                                                                                                              
+            7┆ <script src="https://cdn.tailwindcss.com"></script>
+                                  
+    core/templates/core/login.html
+    ❯❱ html.security.audit.missing-integrity.missing-integrity
+          ❰❰ Blocking ❱❱
+          This tag is missing an 'integrity' subresource integrity attribute. The 'integrity' attribute allows
+          for the browser to verify that externally hosted files (for example from a CDN) are delivered       
+          without unexpected manipulation. Without this attribute, if an attacker can modify the externally   
+          hosted resource, this could lead to XSS and other types of attacks. To prevent this, include the    
+          base64-encoded cryptographic hash of the resource (file) you’re telling the browser to fetch in the 
+          'integrity' attribute for all externally hosted files.                                              
+          Details: https://sg.run/krXA                                                                        
+                                                                                                              
+            9┆ <script src="https://cdn.tailwindcss.com"></script>
+                                           
+    core/templates/core/password_reset.html
+    ❯❱ html.security.audit.missing-integrity.missing-integrity
+          ❰❰ Blocking ❱❱
+          This tag is missing an 'integrity' subresource integrity attribute. The 'integrity' attribute allows
+          for the browser to verify that externally hosted files (for example from a CDN) are delivered       
+          without unexpected manipulation. Without this attribute, if an attacker can modify the externally   
+          hosted resource, this could lead to XSS and other types of attacks. To prevent this, include the    
+          base64-encoded cryptographic hash of the resource (file) you’re telling the browser to fetch in the 
+          'integrity' attribute for all externally hosted files.                                              
+          Details: https://sg.run/krXA                                                                        
+                                                                                                              
+            7┆ <script src="https://cdn.tailwindcss.com"></script>
+                                                
+    core/templates/core/password_reset_code.html
+    ❯❱ html.security.audit.missing-integrity.missing-integrity
+          ❰❰ Blocking ❱❱
+          This tag is missing an 'integrity' subresource integrity attribute. The 'integrity' attribute allows
+          for the browser to verify that externally hosted files (for example from a CDN) are delivered       
+          without unexpected manipulation. Without this attribute, if an attacker can modify the externally   
+          hosted resource, this could lead to XSS and other types of attacks. To prevent this, include the    
+          base64-encoded cryptographic hash of the resource (file) you’re telling the browser to fetch in the 
+          'integrity' attribute for all externally hosted files.                                              
+          Details: https://sg.run/krXA                                                                        
+                                                                                                              
+            7┆ <script src="https://cdn.tailwindcss.com"></script>
+   
+    ❯❱ python.django.security.django-no-csrf-token.django-no-csrf-token
+          ❰❰ Blocking ❱❱
+          Manually-created forms in django templates should specify a csrf_token to prevent CSRF attacks.
+          Details: https://sg.run/N0Bp                                                                   
+                                                                                                         
+           49┆ <form method="post" class="space-y-6">
+           50┆     {% csrf_token %}
+           51┆     <input type="hidden" name="email" value="{{ email }}">
+           52┆     <div>
+           53┆         <label class="block text-sm font-semibold text-gray-700 mb-3">Code de
+               vérification</label>                                                         
+           54┆         <div class="flex justify-center gap-3" id="otpContainer">
+           55┆             <input type="text" maxlength="1" class="otp-input bg-[#F8F9FF] border border- 
+               gray-200 rounded-lg" inputmode="numeric" pattern="[0-9]" autofocus oninput="moveNext(this,
+               0)">                                                                                      
+           56┆             <input type="text" maxlength="1" class="otp-input bg-[#F8F9FF] border border-
+               gray-200 rounded-lg" inputmode="numeric" pattern="[0-9]" oninput="moveNext(this, 1)">    
+           57┆             <input type="text" maxlength="1" class="otp-input bg-[#F8F9FF] border border-
+               gray-200 rounded-lg" inputmode="numeric" pattern="[0-9]" oninput="moveNext(this, 2)">    
+           58┆             <input type="text" maxlength="1" class="otp-input bg-[#F8F9FF] border border-
+               gray-200 rounded-lg" inputmode="numeric" pattern="[0-9]" oninput="moveNext(this, 3)">    
+             [hid 11 additional lines, adjust with --max-lines-per-finding] 
+                                               
+    core/templates/core/password_reset_new.html
+    ❯❱ html.security.audit.missing-integrity.missing-integrity
+          ❰❰ Blocking ❱❱
+          This tag is missing an 'integrity' subresource integrity attribute. The 'integrity' attribute allows
+          for the browser to verify that externally hosted files (for example from a CDN) are delivered       
+          without unexpected manipulation. Without this attribute, if an attacker can modify the externally   
+          hosted resource, this could lead to XSS and other types of attacks. To prevent this, include the    
+          base64-encoded cryptographic hash of the resource (file) you’re telling the browser to fetch in the 
+          'integrity' attribute for all externally hosted files.                                              
+          Details: https://sg.run/krXA                                                                        
+                                                                                                              
+            7┆ <script src="https://cdn.tailwindcss.com"></script>
+   
+    ❯❱ python.django.security.django-no-csrf-token.django-no-csrf-token
+          ❰❰ Blocking ❱❱
+          Manually-created forms in django templates should specify a csrf_token to prevent CSRF attacks.
+          Details: https://sg.run/N0Bp                                                                   
+                                                                                                         
+           70┆ <form method="post" class="space-y-4">
+           71┆     {% csrf_token %}
+           72┆     <input type="hidden" name="email" value="{{ email }}">
+           73┆
+           74┆     <div class="input-wrap">
+           75┆         <svg class="input-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+           76┆             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 
+               15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8
+               0v4h8z"/>                                                                                
+           77┆         </svg>
+           78┆         <input type="password" name="password" placeholder="Nouveau mot de passe"
+               class="form-input" required minlength="8">                                       
+           79┆     </div>
+             [hid 10 additional lines, adjust with --max-lines-per-finding] 
+                                         
+    core/templates/core/verification.html
+    ❯❱ html.security.audit.missing-integrity.missing-integrity
+          ❰❰ Blocking ❱❱
+          This tag is missing an 'integrity' subresource integrity attribute. The 'integrity' attribute allows
+          for the browser to verify that externally hosted files (for example from a CDN) are delivered       
+          without unexpected manipulation. Without this attribute, if an attacker can modify the externally   
+          hosted resource, this could lead to XSS and other types of attacks. To prevent this, include the    
+          base64-encoded cryptographic hash of the resource (file) you’re telling the browser to fetch in the 
+          'integrity' attribute for all externally hosted files.                                              
+          Details: https://sg.run/krXA                                                                        
+                                                                                                              
+            7┆ <script src="https://cdn.tailwindcss.com"></script>
+   
+    ❯❱ python.django.security.django-no-csrf-token.django-no-csrf-token
+          ❰❰ Blocking ❱❱
+          Manually-created forms in django templates should specify a csrf_token to prevent CSRF attacks.
+          Details: https://sg.run/N0Bp                                                                   
+                                                                                                         
+           49┆ <form method="post" class="space-y-6">
+           50┆     {% csrf_token %}
+           51┆     <div>
+           52┆         <label class="block text-sm font-semibold text-gray-700 mb-3">Code de
+               vérification</label>                                                         
+           53┆         <div class="flex justify-center gap-3" id="otpContainer">
+           54┆             <input type="text" maxlength="1" class="otp-input bg-[#F8F9FF] border border- 
+               gray-200 rounded-lg" inputmode="numeric" pattern="[0-9]" autofocus oninput="moveNext(this,
+               0)">                                                                                      
+           55┆             <input type="text" maxlength="1" class="otp-input bg-[#F8F9FF] border border-
+               gray-200 rounded-lg" inputmode="numeric" pattern="[0-9]" oninput="moveNext(this, 1)">    
+           56┆             <input type="text" maxlength="1" class="otp-input bg-[#F8F9FF] border border-
+               gray-200 rounded-lg" inputmode="numeric" pattern="[0-9]" oninput="moveNext(this, 2)">    
+           57┆             <input type="text" maxlength="1" class="otp-input bg-[#F8F9FF] border border-
+               gray-200 rounded-lg" inputmode="numeric" pattern="[0-9]" oninput="moveNext(this, 3)">    
+           58┆             <input type="text" maxlength="1" class="otp-input bg-[#F8F9FF] border border-
+               gray-200 rounded-lg" inputmode="numeric" pattern="[0-9]" oninput="moveNext(this, 4)">    
+             [hid 10 additional lines, adjust with --max-lines-per-finding] 
+                 
+    core/tests.py
+    ❯❱ python.lang.security.audit.hardcoded-password-default-argument.hardcoded-password-default-argument
+          ❰❰ Blocking ❱❱
+          Hardcoded password is used as a default argument to '_login_user'. This could be dangerous if a real
+          password is not supplied.                                                                           
+          Details: https://sg.run/Lw9r                                                                        
+                                                                                                              
+           45┆ def _login_user(self, username="etudiant", password="Motdepasse12345"):
+           46┆     user = User.objects.create_user(username=username, password=password)
+           47┆     Utilisateur.objects.create(user=user, email_verifie=True)
+           48┆     return user
+                      
+    core/views/auth.py
+   ❯❯❱ python.django.security.passwords.use-none-for-password-default.use-none-for-password-default
+          ❰❰ Blocking ❱❱
+          'nouveau_mdp' is using the empty string as its default and is being used to set the password on
+          'user'. If you meant to set an unusable password, set the default value to 'None' or call      
+          'set_unusable_password()'.                                                                     
+          Details: https://sg.run/zvBW                                                                   
+                                                                                                         
+           ▶▶┆ Autofix ▶ None
+          167┆ nouveau_mdp = request.POST.get("nouveau_mot_de_passe", "")
+   
+    ❯❱ python.django.security.audit.unvalidated-password.unvalidated-password
+          ❰❰ Blocking ❱❱
+          The password on 'user' is being set without validating the password. Call                           
+          django.contrib.auth.password_validation.validate_password() with validation functions before setting
+          the password. See https://docs.djangoproject.com/en/3.0/topics/auth/passwords/ for more information.
+          Details: https://sg.run/OPBL                                                                        
+                                                                                                              
+           ▶▶┆ Autofix ▶ if django.contrib.auth.password_validation.validate_password(nouveau_mdp, user=user):
+              user.set_password(nouveau_mdp)                                                                  
+          202┆ user.set_password(nouveau_mdp)
+   
+   ❯❯❱ python.django.security.passwords.use-none-for-password-default.use-none-for-password-default
+          ❰❰ Blocking ❱❱
+          'password' is using the empty string as its default and is being used to set the password on 'user'.
+          If you meant to set an unusable password, set the default value to 'None' or call                   
+          'set_unusable_password()'.                                                                          
+          Details: https://sg.run/zvBW                                                                        
+                                                                                                              
+           ▶▶┆ Autofix ▶ None
+          264┆ password = request.POST.get("password", "")
