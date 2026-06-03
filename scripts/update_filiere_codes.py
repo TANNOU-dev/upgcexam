@@ -1,22 +1,20 @@
 """
-Mise à jour des codes filières — version corrigée avec les noms réels de la base.
+Crée ou met à jour les filières avec leur nom et code.
 Usage : python manage.py shell < scripts/update_filiere_codes.py
 """
 from core.models import Filiere
 
-# Dictionnaire : nom EXACT dans la base → code
-CODES = {
+# Dictionnaire : nom de la filière → code
+FILIERES = {
     "Agriculture": "AGRI",
     "Économie et Gestion Agropastorale": "GAP",
     "Zootechnie": "ZOO",
     "Lettres Modernes": "LM",
     "Anglais": "ANG",
     "Sciences de l'Information et de la Communication": "SIC",
-    "Sciences de l’Information et de la Communication (SIC)": "SIC",
     "Médecine et spécialités médicales": "MED",
     "Chirurgie et spécialités chirurgicales": "CHIR",
     "Santé de la mère et de l'enfant": "SME",
-    "Santé de la mère et de l’enfant": "SME",
     "Sciences fondamentales et biologiques": "SFB",
     "Santé publique et spécialités connexes": "SP",
     "Géosciences": "GEO",
@@ -27,7 +25,6 @@ CODES = {
     "Physique Chimie": "PC",
     "Informatique": "INFO",
     "Mathématiques-Informatique, Physique Chimie": "MPC",
-    "Mathématiques-Informatique, Physique Chimie (MPC)": "MPC",
     "Géographie": "GEOG",
     "Droit": "DRT",
     "Sociologie": "SOCIO",
@@ -36,16 +33,18 @@ CODES = {
     "Philosophie": "PHILO",
 }
 
-ok, notfound = 0, 0
-for filiere in Filiere.objects.all():
-    nom = filiere.nom.strip()
-    if nom in CODES:
-        filiere.code = CODES[nom]
-        filiere.save()
-        print(f"✅ {nom} → {filiere.code}")
-        ok += 1
-    else:
-        print(f"❌ {nom} → AUCUN CODE")
-        notfound += 1
+cree, mis_a_jour = 0, 0
 
-print(f"\nRésultat : {ok} mis à jour, {notfound} non trouvés")
+for nom, code in FILIERES.items():
+    filiere, created = Filiere.objects.update_or_create(
+        nom=nom,
+        defaults={"code": code},
+    )
+    if created:
+        print(f"✅ Créée : {nom} → {code}")
+        cree += 1
+    else:
+        print(f"♻️  Mise à jour : {nom} → {code}")
+        mis_a_jour += 1
+
+print(f"\nRésultat : {cree} créée(s), {mis_a_jour} mise(s) à jour")
