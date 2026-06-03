@@ -1,15 +1,16 @@
+
+db.sqlite3
+.env
+.idea/
+logs/
+# Logs
+/media/
 *.pyc
 __pycache__/
 *.pyo
+semgrep_report.txt
 *.sqlite3
-db.sqlite3
-/media/
 /staticfiles/
-venv/
-.env
-.vscode/
-.idea/
 sujets/
-
-# Logs
-logs/
+venv/
+.vscode/
