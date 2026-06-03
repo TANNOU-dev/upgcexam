@@ -55,71 +55,31 @@
             </div>
         </div>
 
-        <!-- ===== ACTIVITÉ DES ÉTUDIANTS ===== -->
+        <!-- ===== TOP ÉTUDIANTS CETTE SEMAINE ===== -->
+        {% if activite_stats.top_etudiants %}
         <div class="bg-white rounded-2xl shadow-sm border border-gray-50 p-4 sm:p-5 lg:p-6 mb-6 sm:mb-8">
             <div class="flex items-center justify-between mb-4 sm:mb-5">
                 <div class="min-w-0">
-                    <h2 class="font-bold text-sm sm:text-base text-[#0B1C30]">Activité des étudiants</h2>
-                    <p class="text-[10px] sm:text-xs text-gray-400 mt-0.5 truncate">Temps de connexion agrégé</p>
+                    <h2 class="font-bold text-sm sm:text-base text-[#0B1C30]">Top étudiants cette semaine</h2>
+                    <p class="text-[10px] sm:text-xs text-gray-400 mt-0.5 truncate">Étudiants les plus actifs</p>
                 </div>
-                <span class="text-[10px] sm:text-xs text-gray-400 flex-shrink-0 ml-2">Cette semaine</span>
+                <a href="{% url 'admin_presences' %}" class="text-[10px] sm:text-xs text-[#0037B0] font-semibold hover:underline flex-shrink-0 ml-2">Voir tous →</a>
             </div>
-
-            <!-- Mini stats activité -->
-            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 lg:gap-4 mb-4 sm:mb-6">
-                <div class="bg-[#0037B0]/5 rounded-xl p-3 sm:p-4">
-                    <p class="text-lg sm:text-xl lg:text-2xl font-black text-[#0037B0]">{{ activite_stats.actifs_ajd }}</p>
-                    <p class="text-[10px] sm:text-xs text-gray-500 mt-0.5">Actifs aujourd'hui</p>
-                </div>
-                <div class="bg-[#10B981]/5 rounded-xl p-3 sm:p-4">
-                    <p class="text-lg sm:text-xl lg:text-2xl font-black text-[#10B981]">{{ activite_stats.actifs_semaine }}</p>
-                    <p class="text-[10px] sm:text-xs text-gray-500 mt-0.5">Actifs cette semaine</p>
-                </div>
-                <div class="bg-[#F59E0B]/5 rounded-xl p-3 sm:p-4">
-                    <p class="text-lg sm:text-xl lg:text-2xl font-black text-[#F59E0B]">{{ activite_stats.temps_total_ajd }}</p>
-                    <p class="text-[10px] sm:text-xs text-gray-500 mt-0.5">Temps aujourd'hui</p>
-                </div>
-                <div class="bg-[#8B5CF6]/5 rounded-xl p-3 sm:p-4">
-                    <p class="text-lg sm:text-xl lg:text-2xl font-black text-[#8B5CF6]">{{ activite_stats.temps_total_semaine }}</p>
-                    <p class="text-[10px] sm:text-xs text-gray-500 mt-0.5">Temps cette semaine</p>
-                </div>
-            </div>
-
-            <!-- Graphe hebdo -->
-            <div class="flex items-end h-24 sm:h-28 lg:h-32 gap-0.5 sm:gap-1 mb-3 sm:mb-4">
-                {% for jour in activite_stats.activite_hebdo %}
-                <div class="flex flex-col items-center h-full justify-end flex-1">
-                    <div class="w-full rounded-t-md transition-all duration-300 hover:opacity-80"
-                         style="height: {{ jour.hauteur_px }}px; min-height: {% if jour.secondes > 0 %}4px{% else %}1.5px{% endif %}; background: {% if jour.secondes > 0 %}linear-gradient(180deg, #8B5CF6, #A78BFA){% else %}#E5E7EB{% endif %};">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-1.5 sm:gap-2">
+                {% for etu in activite_stats.top_etudiants %}
+                <div class="flex items-center justify-between px-2.5 sm:px-3 py-2 rounded-lg bg-gray-50 hover:bg-gray-100 transition">
+                    <div class="flex items-center gap-2 sm:gap-2.5 min-w-0">
+                        <div class="w-6 h-6 sm:w-7 sm:h-7 bg-[#8B5CF6] rounded-full flex items-center justify-center text-white text-[10px] sm:text-xs font-bold flex-shrink-0">
+                            {{ etu.utilisateur__username|first|upper }}
+                        </div>
+                        <span class="text-xs sm:text-sm font-medium text-[#0B1C30] truncate">{{ etu.utilisateur__username }}</span>
                     </div>
-                    <span class="text-[8px] sm:text-[10px] text-gray-400 mt-1 sm:mt-1.5 font-medium">{{ jour.jour|slice:":3" }}</span>
+                    <span class="text-[10px] sm:text-xs font-bold text-[#8B5CF6] flex-shrink-0">{{ etu.temps }}</span>
                 </div>
                 {% endfor %}
             </div>
-
-            <!-- Top étudiants -->
-            {% if activite_stats.top_etudiants %}
-            <div class="border-t border-gray-100 pt-4 sm:pt-5">
-                <div class="flex items-center justify-between mb-2 sm:mb-3">
-                    <h3 class="text-xs sm:text-sm font-bold text-[#0B1C30]">Top étudiants cette semaine</h3>
-                    <a href="{% url 'admin_presences' %}" class="text-[10px] sm:text-xs text-[#0037B0] font-semibold hover:underline">Voir tous →</a>
-                </div>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-1.5 sm:gap-2">
-                    {% for etu in activite_stats.top_etudiants %}
-                    <div class="flex items-center justify-between px-2.5 sm:px-3 py-2 rounded-lg bg-gray-50 hover:bg-gray-100 transition">
-                        <div class="flex items-center gap-2 sm:gap-2.5 min-w-0">
-                            <div class="w-6 h-6 sm:w-7 sm:h-7 bg-[#8B5CF6] rounded-full flex items-center justify-center text-white text-[10px] sm:text-xs font-bold flex-shrink-0">
-                                {{ etu.utilisateur__username|first|upper }}
-                            </div>
-                            <span class="text-xs sm:text-sm font-medium text-[#0B1C30] truncate">{{ etu.utilisateur__username }}</span>
-                        </div>
-                        <span class="text-[10px] sm:text-xs font-bold text-[#8B5CF6] flex-shrink-0">{{ etu.temps }}</span>
-                    </div>
-                    {% endfor %}
-                </div>
-            </div>
-            {% endif %}
         </div>
+        {% endif %}
 
         <!-- ===== NAVIGATION RAPIDE ADMIN ===== -->
         <div class="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-8 gap-2 sm:gap-3 lg:gap-4 mb-6 sm:mb-8">
