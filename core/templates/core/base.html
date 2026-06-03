@@ -5,7 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}UPGCExam{% endblock %}</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    {% block google_fonts %}
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    {% endblock %}
     <link rel="manifest" href="/static/manifest.json">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -22,9 +24,9 @@
     {% include "core/includes/navbar.html" %}
     {% endblock %}
 
-    {% include "core/includes/messages.html" %}
+    {% block messages %}{% include "core/includes/messages.html" %}{% endblock %}
 
-    <div class="flex-1">
+    <div class="{% block content_wrapper_class %}flex-1{% endblock %}">
     {% block content %}{% endblock %}
     </div>
 
@@ -32,7 +34,7 @@
     {% include "core/includes/footer.html" %}
     {% endblock %}
 
-    {% include "core/includes/presence_tracker.html" %}
+    {% block presence_tracker %}{% include "core/includes/presence_tracker.html" %}{% endblock %}
     <script>
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('/static/pwa/sw.js', { scope: '/' }).then(function(reg) {

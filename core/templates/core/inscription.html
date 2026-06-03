@@ -1,408 +1,360 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Inscription — UPGCExam</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
-    <style>
-        * { font-family: 'Inter', sans-serif; }
-        html, body { height: 100%; margin: 0; }
+{% extends "core/base.html" %}
 
-        /* ---- LEFT PANEL ---- */
-        .left-panel {
-            background: linear-gradient(155deg, #2952d9 0%, #1a35c4 40%, #1328a8 100%);
-            position: relative;
-            overflow: hidden;
-        }
-        .left-panel::before {
-            content: '';
-            position: absolute;
-            top: -80px; right: -80px;
-            width: 320px; height: 320px;
-            border-radius: 50%;
-            background: rgba(255,255,255,0.055);
-            pointer-events: none;
-        }
-        .left-panel::after {
-            content: '';
-            position: absolute;
-            bottom: -60px; left: -60px;
-            width: 260px; height: 260px;
-            border-radius: 50%;
-            background: rgba(255,255,255,0.04);
-            pointer-events: none;
-        }
+{% block title %}Inscription — UPGCExam{% endblock %}
 
-        .badge-elite {
-            display: inline-block;
-            border: 1.5px solid rgba(255,255,255,0.35);
-            color: rgba(255,255,255,0.9);
-            font-size: 11px;
-            font-weight: 700;
-            letter-spacing: 0.16em;
-            text-transform: uppercase;
-            padding: 6px 16px;
-            border-radius: 999px;
-        }
+{% block body_class %}min-h-screen flex{% endblock %}
 
-        .left-body {
-            color: rgba(255,255,255,0.28);
-            font-size: 13px;
-            line-height: 1.65;
-        }
+{% block google_fonts %}
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+{% endblock %}
 
-        .feature-item {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-        }
-        .feature-icon {
-            width: 40px; height: 40px;
-            border-radius: 10px;
-            background: rgba(255,255,255,0.13);
-            display: flex; align-items: center; justify-content: center;
-            flex-shrink: 0;
-        }
-        .feature-text {
-            color: rgba(255,255,255,0.88);
-            font-size: 14px;
-            font-weight: 500;
-        }
+{% block extra_css %}
+<style>
+    * { font-family: 'Inter', sans-serif; }
 
-        /* ---- RIGHT PANEL ---- */
-        .right-panel { background: #ffffff; }
+    /* ---- LEFT PANEL ---- */
+    .left-panel {
+        background: linear-gradient(155deg, #2952d9 0%, #1a35c4 40%, #1328a8 100%);
+        position: relative;
+        overflow: hidden;
+    }
+    .left-panel::before {
+        content: '';
+        position: absolute;
+        top: -80px; right: -80px;
+        width: 320px; height: 320px;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.055);
+        pointer-events: none;
+    }
+    .left-panel::after {
+        content: '';
+        position: absolute;
+        bottom: -60px; left: -60px;
+        width: 260px; height: 260px;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.04);
+        pointer-events: none;
+    }
 
-        .form-label {
-            display: block;
-            font-size: 11px;
-            font-weight: 800;
-            letter-spacing: 0.12em;
-            text-transform: uppercase;
-            color: #374151;
-            margin-bottom: 8px;
-        }
-        .label-optional {
-            font-weight: 600;
-            letter-spacing: 0.09em;
-            color: #9ca3af;
-            text-transform: uppercase;
-            font-size: 10px;
-            margin-left: 4px;
-        }
+    .badge-elite {
+        display: inline-block;
+        border: 1.5px solid rgba(255,255,255,0.35);
+        color: rgba(255,255,255,0.9);
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        padding: 6px 16px;
+        border-radius: 999px;
+    }
 
-        .input-wrap {
-            position: relative;
-            display: flex;
-            align-items: center;
-        }
-        .input-icon {
-            position: absolute;
-            left: 14px;
-            color: #9ca3af;
-            width: 18px; height: 18px;
-            flex-shrink: 0;
-            pointer-events: none;
-        }
-        .form-input {
-            width: 100%;
-            padding: 13px 16px 13px 42px;
-            background: #f1f4fb;
-            border: 1.5px solid transparent;
-            border-radius: 10px;
-            font-size: 14px;
-            color: #111827;
-            outline: none;
-            transition: border-color 0.15s, background 0.15s;
-            font-family: 'Inter', sans-serif;
-        }
-        .form-input::placeholder { color: #9ca3af; }
-        .form-input:focus {
-            background: #fff;
-            border-color: #1d3fa8;
-            box-shadow: 0 0 0 3px rgba(29,63,168,0.08);
-        }
+    .left-body { color: rgba(255,255,255,0.28); font-size: 13px; line-height: 1.65; }
 
-        .form-select-wrap { position: relative; }
-        .select-icon {
-            position: absolute;
-            left: 14px; top: 50%;
-            transform: translateY(-50%);
-            color: #9ca3af;
-            width: 18px; height: 18px;
-            pointer-events: none;
-        }
-        .select-chevron {
-            position: absolute;
-            right: 14px; top: 50%;
-            transform: translateY(-50%);
-            color: #6b7280;
-            width: 18px; height: 18px;
-            pointer-events: none;
-        }
-        .form-select {
-            width: 100%;
-            padding: 13px 40px 13px 42px;
-            background: #f1f4fb;
-            border: 1.5px solid transparent;
-            border-radius: 10px;
-            font-size: 14px;
-            color: #6b7280;
-            appearance: none;
-            -webkit-appearance: none;
-            outline: none;
-            cursor: pointer;
-            font-family: 'Inter', sans-serif;
-            transition: border-color 0.15s;
-        }
-        .form-select:focus {
-            background: #fff;
-            border-color: #1d3fa8;
-            box-shadow: 0 0 0 3px rgba(29,63,168,0.08);
-        }
-        .form-select option {
-            color: #111827;
-        }
+    .feature-item { display: flex; align-items: center; gap: 14px; }
+    .feature-icon {
+        width: 40px; height: 40px;
+        border-radius: 10px;
+        background: rgba(255,255,255,0.13);
+        display: flex; align-items: center; justify-content: center;
+        flex-shrink: 0;
+    }
+    .feature-text { color: rgba(255,255,255,0.88); font-size: 14px; font-weight: 500; }
 
-        .btn-submit {
-            width: 100%;
-            padding: 16px;
-            background: #1d3fa8;
-            color: white;
-            border: none;
-            border-radius: 12px;
-            font-size: 16px;
-            font-weight: 700;
-            cursor: pointer;
-            letter-spacing: 0.01em;
-            transition: background 0.15s, box-shadow 0.15s;
-        }
-        .btn-submit:hover {
-            background: #162e87;
-            box-shadow: 0 4px 20px rgba(29,63,168,0.3);
-        }
+    /* ---- RIGHT PANEL ---- */
+    .right-panel { background: #ffffff; overflow-y: auto; }
 
-        .eye-btn {
-            position: absolute;
-            right: 14px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #9ca3af;
-            background: none;
-            border: none;
-            cursor: pointer;
-            padding: 4px;
-        }
-        .eye-btn:hover { color: #6b7280; }
-        .eye-btn svg {
-            width: 18px; height: 18px;
-        }
-    </style>
-{% include "core/includes/pwa_head.html" %}
-</head>
-<body>
-    <div class="flex min-h-screen">
+    .form-label {
+        display: block;
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: #374151;
+        margin-bottom: 8px;
+    }
+    .label-optional {
+        font-weight: 600;
+        letter-spacing: 0.09em;
+        color: #9ca3af;
+        text-transform: uppercase;
+        font-size: 10px;
+        margin-left: 4px;
+    }
+    .input-wrap { position: relative; display: flex; align-items: center; }
+    .input-icon {
+        position: absolute;
+        left: 14px;
+        color: #9ca3af;
+        width: 18px; height: 18px;
+        flex-shrink: 0;
+        pointer-events: none;
+    }
+    .form-input {
+        width: 100%;
+        padding: 13px 16px 13px 42px;
+        background: #f1f4fb;
+        border: 1.5px solid transparent;
+        border-radius: 10px;
+        font-size: 14px;
+        color: #111827;
+        outline: none;
+        transition: border-color 0.15s, background 0.15s;
+        font-family: 'Inter', sans-serif;
+    }
+    .form-input:focus {
+        border-color: #2952d9;
+        background: #ffffff;
+    }
+    .form-input::placeholder { color: #9ca3af; }
 
-        <!-- ============ LEFT PANEL ============ -->
-        <div class="left-panel w-[49%] hidden lg:flex flex-col justify-center px-14 py-16 relative z-10">
+    .eye-btn {
+        position: absolute;
+        right: 14px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #9ca3af;
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 4px;
+    }
+    .eye-btn:hover { color: #6b7280; }
+    .eye-btn svg { width: 18px; height: 18px; }
 
-            <div class="mb-8">
-                <span class="badge-elite">Rejoignez l'élite</span>
-            </div>
+    .select-input {
+        width: 100%;
+        padding: 13px 42px 13px 42px;
+        background: #f1f4fb;
+        border: 1.5px solid transparent;
+        border-radius: 10px;
+        font-size: 14px;
+        color: #111827;
+        outline: none;
+        transition: border-color 0.15s, background 0.15s;
+        -webkit-appearance: none;
+        appearance: none;
+        font-family: 'Inter', sans-serif;
+        cursor: pointer;
+    }
+    .select-input:focus { border-color: #2952d9; background: #ffffff; }
 
-            <h1 class="text-5xl font-black text-white leading-[1.1] mb-7">
-                Préparez votre<br>avenir académique<br>avec rigueur.
-            </h1>
+    .btn-creer {
+        width: 100%;
+        padding: 15px;
+        background: linear-gradient(135deg, #2952d9, #1a35c4);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        font-size: 15px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: box-shadow 0.2s, transform 0.1s;
+        font-family: 'Inter', sans-serif;
+    }
+    .btn-creer:hover { box-shadow: 0 8px 28px rgba(41,82,217,0.32); }
+    .btn-creer:active { transform: scale(0.98); }
 
-            <p class="left-body mb-10">
-                Accédez à la bibliothèque d'examens la plus<br>
-                complète et suivez votre progression en temps réel<br>
-                au sein de l'Université Péléforo Gon Coulibaly.
-            </p>
+    .terms-check { accent-color: #2952d9; }
 
-            <div class="space-y-4">
-                <div class="feature-item">
-                    <div class="feature-icon">
-                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
-                        </svg>
-                    </div>
-                    <span class="feature-text">Certification Officielle UPGC</span>
+    .select-arrow {
+        position: absolute;
+        right: 14px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #9ca3af;
+        width: 16px; height: 16px;
+        pointer-events: none;
+    }
+</style>
+{% endblock %}
+
+{% block navbar %}{% endblock %}
+
+{% block messages %}{% endblock %}
+
+{% block presence_tracker %}{% endblock %}
+
+{% block footer %}{% endblock %}
+
+{% block content_wrapper_class %}flex-1 flex{% endblock %}
+
+{% block content %}
+<!-- LEFT PANEL -->
+<div class="left-panel w-2/5 hidden lg:flex flex-col justify-between p-10 xl:p-14 relative">
+    <div>
+        <div class="flex items-center gap-3 mb-12">
+            <div class="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center text-white font-black text-lg">U</div>
+            <span class="text-white font-bold text-lg tracking-tight">UPGCExam</span>
+        </div>
+        <span class="badge-elite">🎓 Excellence académique</span>
+        <h2 class="text-white text-3xl xl:text-4xl font-black leading-[1.2] mt-6 max-w-[340px]">Rejoignez la plateforme d'examens</h2>
+        <p class="left-body mt-5 max-w-[340px]">Accédez à une bibliothèque complète de sujets d'examens et préparez-vous avec des ressources de qualité.</p>
+        <div class="flex flex-col gap-4 mt-10">
+            <div class="feature-item">
+                <div class="feature-icon">
+                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                 </div>
-
-                <div class="feature-item">
-                    <div class="feature-icon">
-                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
-                        </svg>
-                    </div>
-                    <span class="feature-text">Plus de 500 annales disponibles</span>
-                </div>
+                <span class="feature-text">Accès à tous les sujets</span>
             </div>
-
-        </div><!-- end left panel -->
-
-        <!-- ============ RIGHT PANEL ============ -->
-        <div class="right-panel flex-1 flex flex-col justify-center px-8 lg:px-16 py-14">
-
-            <div class="w-full max-w-md mx-auto">
-
-                <!-- Titre -->
-                <div class="mb-8">
-                    <h2 class="text-3xl font-extrabold text-gray-900 mb-2">Créer un compte</h2>
-                    <p class="text-sm text-gray-400 leading-relaxed">
-                        Inscrivez-vous pour commencer votre parcours<br class="hidden sm:block"> d'excellence.
-                    </p>
+            <div class="feature-item">
+                <div class="feature-icon">
+                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
                 </div>
-
-                <!-- Messages Django -->
-                {% if messages %}
-                    {% for message in messages %}
-                        <div class="mb-5 p-3 rounded-lg text-sm {% if message.tags == 'error' %}bg-red-50 text-red-600 border border-red-200{% else %}bg-green-50 text-green-600 border border-green-200{% endif %}">
-                            {{ message }}
-                        </div>
-                    {% endfor %}
-                {% endif %}
-
-                <!-- Formulaire -->
-                <form method="post" class="space-y-5">
-                    {% csrf_token %}
-
-                    <!-- Nom d'utilisateur -->
-                    <div>
-                        <label class="form-label">Nom d'utilisateur</label>
-                        <div class="input-wrap">
-                            <svg class="input-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
-                            </svg>
-                            <input type="text" name="username" class="form-input" placeholder="ex: Jean.Kouame" autocomplete="username" required />
-                        </div>
-                    </div>
-
-                    <!-- Email -->
-                    <div>
-                        <label class="form-label">Email</label>
-                        <div class="input-wrap">
-                            <svg class="input-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
-                            </svg>
-                            <input type="email" name="email" class="form-input" placeholder="votre.email@institution.ci" autocomplete="email" required />
-                        </div>
-                    </div>
-
-                    <!-- Filière (optionnel) -->
-                    <div>
-                        <label class="form-label">
-                            Filière
-                            <span class="label-optional">(Optionnel)</span>
-                        </label>
-                        <div class="form-select-wrap">
-                            <svg class="select-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422A12.083 12.083 0 0121 13c0 5.523-4.477 10-10 10S2 18.523 2 13c0-.85.097-1.679.28-2.476L12 14z"/>
-                            </svg>
-                            <svg class="select-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/>
-                            </svg>
-                            <select name="filiere" class="form-select">
-                                <option value="" disabled selected>Sélectionnez votre parcours</option>
-                                {% for f in filieres %}
-                                    <option value="{{ f.id }}">{{ f.nom }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                    </div>
-
-                    <!-- Mot de passe + Confirmer -->
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div>
-                            <label class="form-label">Mot de passe</label>
-                            <div class="input-wrap">
-                                <svg class="input-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
-                                </svg>
-                                <input id="insc_password" type="password" name="password" class="form-input" placeholder="••••••••" autocomplete="new-password" required />
-                                <button type="button" class="eye-btn" onclick="togglePassword('insc_password', this)" tabindex="-1">
-                                    <svg class="eye-open" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-                                    </svg>
-                                    <svg class="eye-closed hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/>
-                                    </svg>
-                                </button>
-                            </div>
-                        </div>
-                        <div>
-                            <label class="form-label">Confirmer</label>
-                            <div class="input-wrap">
-                                <svg class="input-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
-                                </svg>
-                                <input id="insc_password2" type="password" name="password2" class="form-input" placeholder="••••••••" autocomplete="new-password" required />
-                                <button type="button" class="eye-btn" onclick="togglePassword('insc_password2', this)" tabindex="-1">
-                                    <svg class="eye-open" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-                                    </svg>
-                                    <svg class="eye-closed hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/>
-                                    </svg>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Bouton submit -->
-                    <button type="submit" class="btn-submit mt-1">
-                        S'inscrire
-                    </button>
-
-                    <!-- Notice vérification -->
-                    <div class="flex items-start gap-3 pt-1">
-                        <div class="flex-shrink-0 mt-0.5">
-                            <div class="w-5 h-5 rounded-full border-2 flex items-center justify-center" style="border-color:#1d3fa8;">
-                                <span class="text-[10px] font-black leading-none" style="color:#1d3fa8;">i</span>
-                            </div>
-                        </div>
-                        <p class="text-sm leading-relaxed" style="color:#1d3fa8;">
-                            Un code de vérification sera envoyé par email pour valider votre inscription.
-                        </p>
-                    </div>
-
-                </form>
-
-                <!-- Déjà un compte -->
-                <p class="mt-8 text-sm text-gray-500 text-center">
-                    Déjà un compte ?
-                    <a href="{% url 'connexion' %}" class="font-semibold hover:underline transition-colors" style="color:#1d3fa8;">
-                        Connectez-vous
-                    </a>
-                </p>
-
+                <span class="feature-text">Téléchargement illimité</span>
             </div>
-        </div><!-- end right panel -->
-
+            <div class="feature-item">
+                <div class="feature-icon">
+                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                </div>
+                <span class="feature-text">Communauté d'étudiants</span>
+            </div>
+        </div>
     </div>
+    <p class="text-white/20 text-xs mt-8">Université Peléforo Gon Coulibaly – Korhogo</p>
+</div>
 
-    <script>
-        function togglePassword(fieldId, btn) {
-            const field = document.getElementById(fieldId);
-            const openIcon = btn.querySelector('.eye-open');
-            const closedIcon = btn.querySelector('.eye-closed');
-            if (field.type === 'password') {
-                field.type = 'text';
-                openIcon.classList.add('hidden');
-                closedIcon.classList.remove('hidden');
-            } else {
-                field.type = 'password';
-                openIcon.classList.remove('hidden');
-                closedIcon.classList.add('hidden');
-            }
+<!-- RIGHT PANEL -->
+<div class="right-panel w-full lg:w-3/5 flex items-center justify-center p-6 sm:p-10 xl:p-16">
+    <div class="w-full" style="max-width:520px;">
+        <div class="flex items-center justify-between mb-8">
+            <h2 class="text-2xl font-black text-gray-900">Créer un compte</h2>
+            <a href="{% url 'connexion' %}" class="text-sm font-bold hover:underline" style="color:#2952d9;">Se connecter</a>
+        </div>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="mb-5 p-3 rounded-lg text-sm {% if message.tags == 'error' %}bg-red-50 text-red-600 border border-red-200{% elif message.tags == 'warning' %}bg-yellow-50 text-yellow-700 border border-yellow-200{% else %}bg-green-50 text-green-600 border border-green-200{% endif %}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <form method="post" class="space-y-5">
+            {% csrf_token %}
+
+            <!-- Nom d'utilisateur -->
+            <div>
+                <label class="form-label">Nom d'utilisateur</label>
+                <div class="input-wrap">
+                    <svg class="input-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                    <input type="text" name="username" class="form-input" placeholder="Votre nom d'utilisateur" required>
+                </div>
+            </div>
+
+            <!-- Email -->
+            <div>
+                <label class="form-label">Adresse email <span class="label-optional">(UPGC)</span></label>
+                <div class="input-wrap">
+                    <svg class="input-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                    <input type="email" name="email" class="form-input" placeholder="vous@upgc.edu.ci" required>
+                </div>
+            </div>
+
+            <!-- Niveau / Filière -->
+            <div>
+                <label class="form-label">Filière</label>
+                <div class="input-wrap">
+                    <svg class="input-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+                    <select name="filiere" class="select-input" required>
+                        <option value="">Choisissez votre filière</option>
+                        {% for f in filieres %}
+                        <option value="{{ f.id }}">{{ f.nom }} ({{ f.code }})</option>
+                        {% endfor %}
+                    </select>
+                    <svg class="select-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                </div>
+            </div>
+
+            <div>
+                <label class="form-label">Niveau</label>
+                <div class="input-wrap">
+                    <svg class="input-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/></svg>
+                    <select name="niveau" class="select-input" required>
+                        <option value="">Sélectionnez un niveau</option>
+                        {% for n in niveaux %}
+                        <option value="{{ n.id }}">{{ n.nom }}</option>
+                        {% endfor %}
+                    </select>
+                    <svg class="select-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                </div>
+            </div>
+
+            <!-- Mot de passe -->
+            <div>
+                <label class="form-label">Mot de passe</label>
+                <div class="input-wrap">
+                    <svg class="input-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                    <input id="password" type="password" name="password" class="form-input" placeholder="Minimum 8 caractères" minlength="8" required>
+                    <button type="button" class="eye-btn" onclick="togglePassword(this)" tabindex="-1">
+                        <svg class="eye-open" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                        <svg class="eye-closed hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/></svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Confirmation mot de passe -->
+            <div>
+                <label class="form-label">Confirmer le mot de passe</label>
+                <div class="input-wrap">
+                    <svg class="input-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                    <input id="password2" type="password" name="password2" class="form-input" placeholder="Ressaisissez le mot de passe" minlength="8" required>
+                    <button type="button" class="eye-btn" onclick="togglePassword2(this)" tabindex="-1">
+                        <svg class="eye-open2 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                        <svg class="eye-closed2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/></svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Bouton submit -->
+            <button type="submit" class="btn-creer">Créer mon compte</button>
+
+            <!-- Checkbox conditions -->
+            <label class="flex items-start gap-3 cursor-pointer mt-2">
+                <input type="checkbox" name="accept_terms" class="terms-check mt-0.5" required>
+                <span class="text-xs leading-relaxed text-gray-500">
+                    J'accepte les
+                    <a href="#" class="font-bold hover:underline" style="color:#2952d9;">conditions d'utilisation</a>
+                    et la
+                    <a href="#" class="font-bold hover:underline" style="color:#2952d9;">politique de confidentialité</a>.
+                </span>
+            </label>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function togglePassword(btn) {
+        var field = document.getElementById('password');
+        var open = btn.querySelector('.eye-open');
+        var closed = btn.querySelector('.eye-closed');
+        if (field.type === 'password') {
+            field.type = 'text';
+            open.classList.add('hidden');
+            closed.classList.remove('hidden');
+        } else {
+            field.type = 'password';
+            open.classList.remove('hidden');
+            closed.classList.add('hidden');
         }
-    </script>
-{% include "core/includes/pwa_footer.html" %}
-</body>
-</html>
+    }
+    function togglePassword2(btn) {
+        var field = document.getElementById('password2');
+        var open = btn.querySelector('.eye-open2');
+        var closed = btn.querySelector('.eye-closed2');
+        if (field.type === 'password') {
+            field.type = 'text';
+            open.classList.remove('hidden');
+            closed.classList.add('hidden');
+        } else {
+            field.type = 'password';
+            open.classList.add('hidden');
+            closed.classList.remove('hidden');
+        }
+    }
+</script>
+{% endblock %}
