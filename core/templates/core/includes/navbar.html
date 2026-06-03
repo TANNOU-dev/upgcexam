@@ -114,12 +114,24 @@ function toggleMenu() {
     }
 }
 
-// Fermer le menu en cliquant ailleurs
+// Menu hamburger mobile
+var mobileBtn = document.getElementById('mobileMenuBtn');
+var mobileMenu = document.getElementById('mobileMenu');
+if (mobileBtn && mobileMenu) {
+    mobileBtn.addEventListener('click', function() {
+        mobileMenu.classList.toggle('hidden');
+    });
+}
+
+// Fermer les menus en cliquant ailleurs
 document.addEventListener('click', function(e) {
     var menu = document.getElementById('dropdownMenu');
     var btn = document.getElementById('profileMenu');
     if (menu && btn && !btn.contains(e.target)) {
         menu.classList.add('hidden');
+    }
+    if (mobileMenu && mobileBtn && !mobileBtn.contains(e.target) && !mobileMenu.contains(e.target)) {
+        mobileMenu.classList.add('hidden');
     }
 });
 </script>
