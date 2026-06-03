@@ -1,16 +1,21 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head><meta charset="UTF-8"><title>Erreur serveur | UPGCExam</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
-<style>*{font-family:'Inter',sans-serif;}</style>
-</head>
-<body class="bg-[#F5F7FA] min-h-screen flex items-center justify-center">
-    <div class="text-center px-6">
-        <h1 class="text-6xl font-black text-red-500 mb-4">500</h1>
-        <h2 class="text-2xl font-bold text-[#0B1C30] mb-2">Erreur interne</h2>
-        <p class="text-gray-500 mb-8">Une erreur s'est produite. Réessayez plus tard.</p>
-        <a href="/" class="inline-flex bg-[#0037B0] hover:bg-[#002A8A] text-white font-bold px-6 py-3 rounded-lg transition">Retour à l'accueil</a>
-    </div>
-</body>
-</html>
+{% extends "core/base.html" %}
+
+{% block title %}Erreur serveur | UPGCExam{% endblock %}
+
+{% block body_class %}bg-[#F5F7FA] min-h-screen flex items-center justify-center{% endblock %}
+
+{% block navbar %}{% endblock %}
+{% block footer %}{% endblock %}
+{% block messages %}{% endblock %}
+{% block presence_tracker %}{% endblock %}
+
+{% block content_wrapper_class %}{% endblock %}
+
+{% block content %}
+<div class="text-center px-6">
+    <h1 class="text-6xl font-black text-red-500 mb-4">500</h1>
+    <h2 class="text-2xl font-bold text-[#0B1C30] mb-2">Erreur interne</h2>
+    <p class="text-gray-500 mb-8">Une erreur s'est produite. Réessayez plus tard.</p>
+    <a href="/" class="inline-flex bg-[#0037B0] hover:bg-[#002A8A] text-white font-bold px-6 py-3 rounded-lg transition">Retour à l'accueil</a>
+</div>
+{% endblock %}
