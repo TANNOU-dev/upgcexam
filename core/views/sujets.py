@@ -10,6 +10,8 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.views.decorators.http import require_POST
 
+import hashlib
+
 from ..decorators import email_verifie_required
 from ..models import Activite, Filiere, Matiere, Niveau, Sujet, Telechargement
 from ..navigation import (
@@ -142,6 +144,22 @@ def ajouter_sujet(request):
         if not ok:
             messages.error(request, err)
         else:
+            # Vérifier si le fichier n'est pas un doublon
+            fichier.seek(0)
+            empreinte = hashlib.sha256(fichier.read()).hexdigest()
+            fichier.seek(0)
+            if Sujet.objects.filter(empreinte=empreinte).exists():
+                messages.error(request, "❌ Ce fichier a déjà été ajouté par un autre étudiant.")
+                return render(
+                    request,
+                    "core/ajouter_sujet.html",
+                    {
+                        "filieres": filieres,
+                        "niveaux": niveaux,
+                        "annees": annees,
+                        **ctx_retour(request),
+                    },
+                )
             matiere, _ = Matiere.objects.get_or_create(
                 nom__iexact=nom_matiere,
                 filiere_id=filiere_id,

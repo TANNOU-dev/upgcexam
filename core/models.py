@@ -4,6 +4,8 @@ from django.utils import timezone
 
 from .utils import formater_taille_pdf
 
+import hashlib
+
 
 class Filiere(models.Model):
     nom = models.CharField(max_length=100)
@@ -80,6 +82,7 @@ class Sujet(models.Model):
     fichier_pdf = models.FileField(upload_to="sujets/")
     taille_pdf = models.CharField(max_length=10, blank=True, null=True)
     auteur_nom = models.CharField(max_length=100, blank=True, null=True)
+    empreinte = models.CharField(max_length=64, unique=True, blank=True, null=True, verbose_name="Empreinte SHA256 du fichier")
     publie_par = models.ForeignKey(
         User, on_delete=models.SET_NULL, null=True, blank=True, related_name="sujets_publies"
     )
@@ -106,6 +109,10 @@ class Sujet(models.Model):
                 size = None
             if size is not None:
                 self.taille_pdf = formater_taille_pdf(size)
+            if not self.empreinte:
+                self.fichier_pdf.seek(0)
+                self.empreinte = hashlib.sha256(self.fichier_pdf.read()).hexdigest()
+                self.fichier_pdf.seek(0)
         super().save(*args, **kwargs)
 
 
