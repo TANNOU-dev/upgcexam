@@ -168,3 +168,44 @@
 
     </div>
 {% endblock %}
+
+{% block extra_js %}
+<script>
+(function() {
+    var form = document.querySelector('form');
+    if (!form) return;
+    var btn = form.querySelector('button[type="submit"]:not([name="archiver"])');
+    if (!btn) return;
+
+    // Snapshot des valeurs initiales
+    var inputs = form.querySelectorAll('input, select, textarea');
+    var snapshot = {};
+    inputs.forEach(function(el) {
+        if (el.name) snapshot[el.name] = el.value;
+        if (el.type === 'file') snapshot[el.name + '_file'] = el.files.length;
+    });
+
+    function checkChanges() {
+        var changed = false;
+        inputs.forEach(function(el) {
+            if (!el.name) return;
+            if (el.type === 'file') {
+                if (el.files.length !== (snapshot[el.name + '_file'] || 0)) changed = true;
+            } else if (el.value !== snapshot[el.name]) {
+                changed = true;
+            }
+        });
+        btn.disabled = !changed;
+        btn.classList.toggle('opacity-50', !changed);
+        btn.classList.toggle('cursor-not-allowed', !changed);
+    }
+
+    inputs.forEach(function(el) {
+        el.addEventListener('input', checkChanges);
+        el.addEventListener('change', checkChanges);
+    });
+
+    checkChanges(); // état initial
+})();
+</script>
+{% endblock %}
