@@ -302,11 +302,15 @@ def tableau_de_bord(request):
 
 
 def _temps_activite(utilisateur_id):
-    """Calcule le temps d'activité par jour pour un utilisateur."""
+    """Calcule le temps d'activité par jour pour un utilisateur.
+    Semaine ISO : lundi 00:00 → dimanche 23:59.
+    """
     mapping = {2: 0, 3: 1, 4: 2, 5: 3, 6: 4, 7: 5, 1: 6}
-    cette_semaine = timezone.now() - timezone.timedelta(days=7)
+    now = timezone.now()
+    lundi = now - timezone.timedelta(days=now.weekday())
+    debut_semaine = lundi.replace(hour=0, minute=0, second=0, microsecond=0)
     sessions = PresenceSession.objects.filter(
-        utilisateur_id=utilisateur_id, debut__gte=cette_semaine
+        utilisateur_id=utilisateur_id, debut__gte=debut_semaine
     ).annotate(jour_sem=ExtractWeekDay("debut"))
     valeurs = [0] * 7
     for s in sessions:
