@@ -54,8 +54,12 @@ def admin_dashboard(request):
     }
 
     # ---- Statistiques de présence agrégées (tous les utilisateurs) ----
-    aujourdhui = timezone.now().replace(hour=0, minute=0, second=0, microsecond=0)
-    cette_semaine = aujourdhui - timezone.timedelta(days=7)
+    # Semaine ISO : lundi 00:00 → dimanche 23:59
+    now = timezone.now()
+    lundi = now - timezone.timedelta(days=now.weekday())
+    debut_semaine = lundi.replace(hour=0, minute=0, second=0, microsecond=0)
+    aujourdhui = now.replace(hour=0, minute=0, second=0, microsecond=0)
+    cette_semaine = debut_semaine
 
     sessions_aujourdhui = PresenceSession.objects.filter(debut__gte=aujourdhui)
     sessions_semaine = PresenceSession.objects.filter(debut__gte=cette_semaine)
@@ -662,8 +666,11 @@ def admin_voir_sujet_pdf(request, sujet_id):
 def admin_presences(request):
     """Liste tous les étudiants avec leur temps de connexion."""
 
-    aujourdhui = timezone.now().replace(hour=0, minute=0, second=0, microsecond=0)
-    cette_semaine = aujourdhui - timezone.timedelta(days=7)
+    now = timezone.now()
+    lundi = now - timezone.timedelta(days=now.weekday())
+    debut_semaine = lundi.replace(hour=0, minute=0, second=0, microsecond=0)
+    aujourdhui = now.replace(hour=0, minute=0, second=0, microsecond=0)
+    cette_semaine = debut_semaine
 
     from django.db.models import Sum, Max
 
