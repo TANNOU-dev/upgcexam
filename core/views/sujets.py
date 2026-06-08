@@ -254,14 +254,7 @@ def modifier_sujet(request, sujet_id):
                 return redirect("modifier_sujet", sujet_id=sujet.id)
             sujet.fichier_pdf = fichier
 
-        # Seuls les admins peuvent changer la visibilite
-        if request.user.is_staff:
-            sujet.visibilite = visibilite
-            sujet.save()
-            messages.success(request, "Sujet modifié avec succès.")
-            return redirect_apres_sujet(request, sujet=sujet, defaut="detail_sujet")
-
-        # Pour un non-admin : ne remettre en attente QUE si des champs ont changé
+        # Détection des changements (admin ou non-admin)
         original = Sujet.objects.get(id=sujet.id)  # état avant modif
         a_change = (
             (titre and titre != original.titre)
@@ -274,10 +267,18 @@ def modifier_sujet(request, sujet_id):
             or (annee_academique and annee_academique != original.annee_academique)
             or description != original.description
             or fichier is not None
+            or (request.user.is_staff and visibilite != original.visibilite)
         )
 
         if not a_change:
             messages.warning(request, "Aucune modification détectée.")
+            return redirect_apres_sujet(request, sujet=sujet, defaut="detail_sujet")
+
+        # Seuls les admins peuvent changer la visibilite
+        if request.user.is_staff:
+            sujet.visibilite = visibilite
+            sujet.save()
+            messages.success(request, "Sujet modifié avec succès.")
             return redirect_apres_sujet(request, sujet=sujet, defaut="detail_sujet")
 
         sujet.statut = "en_attente"
